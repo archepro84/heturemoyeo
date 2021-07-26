@@ -23,7 +23,7 @@ module.exports = (sequelize, DataTypes) => {
             type: DataTypes.INTEGER,
             required: true,
         },
-        like: {
+        likeItem: {
             type: DataTypes.STRING,
             required: true,
         }
