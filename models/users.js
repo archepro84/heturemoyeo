@@ -39,6 +39,9 @@ module.exports = (sequelize, DataTypes) => {
         profileImg: {
             type: DataTypes.STRING
         },
+        statusMessage: {
+            type: DataTypes.STRING
+        },
         rating: {
             type: DataTypes.INTEGER,
             required: true,

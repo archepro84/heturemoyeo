@@ -29,9 +29,13 @@ module.exports = {
             profileImg: {
                 type: Sequelize.STRING
             },
+            statusMessage: {
+                type: Sequelize.STRING,
+            },
             rating: {
                 type: Sequelize.INTEGER,
                 allowNull: false,
+                defaultValue: '70'
             },
             createdAt: {
                 allowNull: false,
