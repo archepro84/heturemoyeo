@@ -1,58 +1,98 @@
 const express = require("express");
 const router = express.Router();
+<<<<<<< HEAD
+const Joi = require("joi");
+const { Users, sequelize, Sequelize } = require("../models");
+const authmiddleware = require("../middleware/auth-middleware");
+
+const userIdSchema = Joi.number().min(1).required();
+router.route("/me").post(authmiddleware, async (req, res) => {
+  try {
+    const { userId } = res.locals.user;
+    const query = `
+=======
 const Joi = require('joi')
 const {Users, sequelize, Sequelize} = require("../models")
 const authmiddleware = require("../middleware/auth-middleware")
 
-
 const userIdSchema = Joi.number().min(1).required();
+
+
+router.route("/target/all").get(authmiddleware, async (req, res) => {
+  try {
+    const { userId } = res.locals.user;
+
+    const user = await Users.findOne({
+      where: { userId },
+    }).then((user) => {
+      if (!user) {
+        res.status(412).send({
+          errorMessage: "유저 정보를 찾을 수 없습니다.",
+        });
+        return;
+      }
+      return user["dataValues"];
+    });
+
+    res
+      .status(200)
+      .send({ rating: user.rating, statusMessage: user.statusMessage });
+  } catch (error) {
+    res.status(412).send({
+      errorMessage: "유저 속성값을 불러오는데 실패했습니다.",
+    });
+  }
+});
+
+
 router.route('/me')
     .post(authmiddleware, async (req, res) => {
         try {
             const {userId} = res.locals.user
             const query = `
+>>>>>>> a58292d1b5fa504803011003d7a5a9d0c6f95cf1
                 SELECT u.userId, u.email, u.name, u.nickname, u.profileImg, u.statusMessage,
                 (SELECT GROUP_CONCAT(likeItem ORDER BY likeItem ASC SEPARATOR ', ')
                     FROM Likes 
                     WHERE userId = u.userId
                     GROUP BY userId) AS likeItem
                 FROM Users AS u
-                WHERE userId = ${userId};`
-            await sequelize.query(query, {type: Sequelize.QueryTypes.SELECT})
-                .then((result) => {
-                    let likeItem = Array();
-                    if (result[0].likeItem)
-                        for (const Item of result[0].likeItem.split(', '))
-                            likeItem.push(Item)
-                    res.send({
-                        userId: result[0].userId,
-                        email: result[0].email,
-                        name: result[0].name,
-                        nickname: result[0].nickname,
-                        profileImg: result[0].profileImg,
-                        statusMessage: result[0].statusMessage,
-                        likeItem
-                    })
-                })
-        } catch (error) {
-            res.status(401).send(
-                {errorMessage: "정보를 찾을 수 없습니다."}
-            )
-        }
-    })
+                WHERE userId = ${userId};`;
+    await sequelize
+      .query(query, { type: Sequelize.QueryTypes.SELECT })
+      .then((result) => {
+        let likeItem = Array();
+        if (result[0].likeItem)
+          for (const Item of result[0].likeItem.split(", "))
+            likeItem.push(Item);
+        res.send({
+          userId: result[0].userId,
+          email: result[0].email,
+          name: result[0].name,
+          nickname: result[0].nickname,
+          profileImg: result[0].profileImg,
+          statusMessage: result[0].statusMessage,
+          likeItem,
+        });
+      });
+  } catch (error) {
+    res.status(401).send({ errorMessage: "정보를 찾을 수 없습니다." });
+  }
+});
 
-router.route('/target/post')
-    .get(authmiddleware, async (req, res) => {
-        try {
-            const userId = res.locals.user.userId;
-            const targetUserId = await userIdSchema.validateAsync(
-                Object.keys(req.query).length ? req.query.userId : req.body.userId
-            );
-            if (userId == targetUserId) {
-                res.status(412).send({errorMessage: "동일한 아이디를 조회할 수 없습니다."})
-                return;
-            }
-            const query = `
+router.route("/target/post").get(authmiddleware, async (req, res) => {
+  try {
+    const userId = res.locals.user.userId;
+    const targetUserId = await userIdSchema.validateAsync(
+      Object.keys(req.query).length ? req.query.userId : req.body.userId
+    );
+    if (userId == targetUserId) {
+      res
+        .status(412)
+        .send({ errorMessage: "동일한 아이디를 조회할 수 없습니다." });
+      return;
+    }
+    const query = `
                 SELECT nickname, rating, profileImg, statusMessage, 
                 (SELECT GROUP_CONCAT(likeItem ORDER BY likeItem ASC SEPARATOR ', ')
                     FROM Likes 
@@ -76,45 +116,45 @@ router.route('/target/post')
                             FROM  Friends
                             WHERE giveUserId  = ${targetUserId} AND receiveUserId  = ${userId}) AS b)) AS isFriend
                 FROM Users AS u
-                WHERE userId = ${targetUserId}`
+                WHERE userId = ${targetUserId}`;
 
-            // 검색된 데이터가 없을 경우 에러가 발생한다.
-            await sequelize.query(query, {type: Sequelize.QueryTypes.SELECT})
-                .then((result) => {
-                    let likeItem = Array();
-                    if (result[0].likeItem)
-                        for (const Item of result[0].likeItem.split(', '))
-                            likeItem.push(Item)
-                    res.send({
-                        nickname: result[0].nickname,
-                        rating: result[0].rating,
-                        profileImg: result[0].profileImg,
-                        statusMessage: result[0].statusMessage,
-                        likeItem,
-                        scheduleCount: result[0].scheduleCount,
-                        scheduleTitle: result[0].scheduleTitle,
-                        isFriend: result[0].scheduleTitle == 'Y' ? true : false,
-                    })
-                })
-        } catch (error) {
-            res.status(401).send(
-                {errorMessage: "정보를 찾을 수 없습니다."}
-            )
-        }
-    })
-router.route('/target/friend')
-    .get(authmiddleware, async (req, res) => {
-        try {
-            const userId = res.locals.user.userId;
-            const targetUserId = await userIdSchema.validateAsync(
-                Object.keys(req.query).length ? req.query.userId : req.body.userId
-            );
-            if (userId == targetUserId) {
-                res.status(412).send({errorMessage: "동일한 아이디를 조회할 수 없습니다."})
-                return;
-            }
+    // 검색된 데이터가 없을 경우 에러가 발생한다.
+    await sequelize
+      .query(query, { type: Sequelize.QueryTypes.SELECT })
+      .then((result) => {
+        let likeItem = Array();
+        if (result[0].likeItem)
+          for (const Item of result[0].likeItem.split(", "))
+            likeItem.push(Item);
+        res.send({
+          nickname: result[0].nickname,
+          rating: result[0].rating,
+          profileImg: result[0].profileImg,
+          statusMessage: result[0].statusMessage,
+          likeItem,
+          scheduleCount: result[0].scheduleCount,
+          scheduleTitle: result[0].scheduleTitle,
+          isFriend: result[0].scheduleTitle == "Y" ? true : false,
+        });
+      });
+  } catch (error) {
+    res.status(401).send({ errorMessage: "정보를 찾을 수 없습니다." });
+  }
+});
+router.route("/target/friend").get(authmiddleware, async (req, res) => {
+  try {
+    const userId = res.locals.user.userId;
+    const targetUserId = await userIdSchema.validateAsync(
+      Object.keys(req.query).length ? req.query.userId : req.body.userId
+    );
+    if (userId == targetUserId) {
+      res
+        .status(412)
+        .send({ errorMessage: "동일한 아이디를 조회할 수 없습니다." });
+      return;
+    }
 
-            const query = `
+    const query = `
                 SELECT u.userId, u.email, u.name, u.nickname, u.profileImg, u.statusMessage,
                 (SELECT GROUP_CONCAT(likeItem ORDER BY likeItem ASC SEPARATOR ', ')
                     FROM Likes 
@@ -129,27 +169,47 @@ router.route('/target/friend')
                             WHERE giveUserId  = ${targetUserId} AND receiveUserId  = ${userId}) AS a
                         JOIN (SELECT DISTINCT 1
                             FROM  Friends
-                            WHERE giveUserId = ${userId} AND receiveUserId  = ${targetUserId}) AS b))`
+                            WHERE giveUserId = ${userId} AND receiveUserId  = ${targetUserId}) AS b))`;
 
-            // 검색된 데이터가 없을 경우 에러가 발생한다.
-            await sequelize.query(query, {type: Sequelize.QueryTypes.SELECT})
-                .then((result) => {
-                    let likeItem = Array();
-                    if (result[0].likeItem)
-                        for (const Item of result[0].likeItem.split(', '))
-                            likeItem.push(Item)
-                    res.send({
-                        nickname: result[0].nickname,
-                        rating: result[0].rating,
-                        profileImg: result[0].profileImg,
-                        statusMessage: result[0].statusMessage,
-                        likeItem,
-                    })
-                })
-        } catch (error) {
-            res.status(401).send(
-                {errorMessage: "정보를 찾을 수 없습니다."}
-            )
-        }
-    })
-module.exports = router
+    // 검색된 데이터가 없을 경우 에러가 발생한다.
+    await sequelize
+      .query(query, { type: Sequelize.QueryTypes.SELECT })
+      .then((result) => {
+        let likeItem = Array();
+        if (result[0].likeItem)
+          for (const Item of result[0].likeItem.split(", "))
+            likeItem.push(Item);
+        res.send({
+          nickname: result[0].nickname,
+          rating: result[0].rating,
+          profileImg: result[0].profileImg,
+          statusMessage: result[0].statusMessage,
+          likeItem,
+        });
+      });
+  } catch (error) {
+    res.status(401).send({ errorMessage: "정보를 찾을 수 없습니다." });
+  }
+});
+
+router.route("/status").put(authmiddleware, async (req, res) => {
+  try {
+    const { userId } = res.locals.user;
+    const { statusMessage } = await userSchema.validateAsync(req.body);
+
+    await Users.update(
+      { statusMessage },
+      {
+        where: { userId },
+      }
+    ).then((statusMsg) => {
+      if (statusMsg) {
+        res.send({});
+      }
+    });
+  } catch (error) {
+    res.status(401).send({ errorMessage: "정보를 찾을 수 없습니다." });
+  }
+});
+
+module.exports = router;
