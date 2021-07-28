@@ -4,7 +4,7 @@ const {Users} = require("../models")
 
 require('dotenv').config();
 
-const authorizationSchema = Joi.string().require()
+const authorizationSchema = Joi.string().required()
 module.exports = async (req, res, next) => {
     try {
         const Authorization = await authorizationSchema.validateAsync(
