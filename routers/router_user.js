@@ -4,8 +4,36 @@ const Joi = require('joi')
 const {Users, sequelize, Sequelize} = require("../models")
 const authmiddleware = require("../middleware/auth-middleware")
 
-
 const userIdSchema = Joi.number().min(1).required();
+
+
+router.route("/target/all").get(authmiddleware, async (req, res) => {
+  try {
+    const { userId } = res.locals.user;
+
+    const user = await Users.findOne({
+      where: { userId },
+    }).then((user) => {
+      if (!user) {
+        res.status(412).send({
+          errorMessage: "유저 정보를 찾을 수 없습니다.",
+        });
+        return;
+      }
+      return user["dataValues"];
+    });
+
+    res
+      .status(200)
+      .send({ rating: user.rating, statusMessage: user.statusMessage });
+  } catch (error) {
+    res.status(412).send({
+      errorMessage: "유저 속성값을 불러오는데 실패했습니다.",
+    });
+  }
+});
+
+
 router.route('/me')
     .post(authmiddleware, async (req, res) => {
         try {
