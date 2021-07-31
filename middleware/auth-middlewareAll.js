@@ -4,7 +4,7 @@ const {Users} = require("../models")
 
 require('dotenv').config();
 
-const authorizationSchema = Joi.string().require()
+const authorizationSchema = Joi.string().required()
 module.exports = async (req, res, next) => {
     try {
         const Authorization = await authorizationSchema.validateAsync(
@@ -17,9 +17,6 @@ module.exports = async (req, res, next) => {
             })
         next()
     } catch (error) {
-        // res.status(401).send(
-        //     {errorMessage: "사용자 인증에 실패하였습니다."}
-        // )
         next()
     }
 }

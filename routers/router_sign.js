@@ -30,7 +30,7 @@ const signSchema = Joi.object({
         new RegExp("^(?=.*[a-zA-Z0-9])((?=.*\\d)|(?=.*\\W)).{6,20}$")
     ),
 
-    profileImg: Joi.string().max(5000),
+    profileImg: Joi.string().max(5000).allow(null, ""),
 
     statusMessage: Joi.string().min(2).max(250),
 

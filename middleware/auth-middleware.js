@@ -10,13 +10,13 @@ module.exports = async (req, res, next) => {
         const Authorization = await authorizationSchema.validateAsync(
             req.cookies.authorization ? req.cookies.authorization : req.headers.authorization)
         const {userId} = jwt.verify(Authorization, process.env.SECRET_KEY);
-
         await Users.findByPk(userId)
             .then((user) => {
                 res.locals.user = user['dataValues']
             })
         next()
     } catch (error) {
+        console.log(`${req.method} ${req.baseUrl} : ${error.message}`);
         res.status(401).send(
             {errorMessage: "사용자 인증에 실패하였습니다."}
         )

@@ -20,27 +20,20 @@ router.route("/")
     .post(loginCheckMiddleware, async (req, res) => {
         try {
             const {email, password} = await loginSchema.validateAsync(req.body);
-
             const user = await Users.findOne({
                 where: {email, password},
             }).then((user) => {
                 if (!user) {
-                    res.status(412).send({
-                        errorMessage: "이메일 또는 패스워드가 잘못되었습니다.",
-                    });
-                    return;
+                    throw Error("이메일 또는 패스워드가 잘못되었습니다.")
                 }
                 return user["dataValues"];
             });
 
             const token = jwt.sign({userId: user.userId}, process.env.SECRET_KEY);
-
             res.cookie("authorization", token);
-            res.send({
-                token,
-                userId: user.userId,
-            });
+            res.send({token});
         } catch (error) {
+            console.log(`${req.method} ${req.baseUrl} : ${error.message}`);
             res.status(401).send({
                 errorMessage: "요청한 데이터가 올바르지 않습니다.",
             });
@@ -49,11 +42,9 @@ router.route("/")
 
 router.route('/test')
     .post((req, res) => {
-        const token = jwt.sign({userId: 1}, process.env.SECRET_KEY);
+        const token = jwt.sign({userId: 2}, process.env.SECRET_KEY);
         res.cookie("authorization", token);
-        res.send({
-            token,
-        });
+        res.send({token});
     })
 
 module.exports = router;

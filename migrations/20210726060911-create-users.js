@@ -47,6 +47,15 @@ module.exports = {
                 type: Sequelize.DATE,
                 defaultValue: Sequelize.fn('now')
             }
+        }).then(() => {
+            const TR_Users_Query = `
+                    CREATE TRIGGER TR_Users
+                    AFTER UPDATE ON Users
+                    FOR EACH ROW
+                    BEGIN
+                        DELETE FROM Likes WHERE userId = old.userId;
+                    END `
+            queryInterface.sequelize.query(TR_Users_Query)
         });
     },
     down: async (queryInterface, Sequelize) => {

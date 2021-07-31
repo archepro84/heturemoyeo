@@ -45,10 +45,6 @@ module.exports = {
             bring: {
                 type: Sequelize.STRING
             },
-            public: {
-                type: Sequelize.TINYINT.UNSIGNED,
-                allowNull: false,
-            },
             createdAt: {
                 allowNull: false,
                 type: Sequelize.DATE,
@@ -59,7 +55,26 @@ module.exports = {
                 type: Sequelize.DATE,
                 defaultValue: Sequelize.fn('now')
             }
-        });
+        }).then(() => {
+            const TR_Posts_UPDATE_Query = `
+                    CREATE TRIGGER TR_Posts_UPDATE
+                    AFTER UPDATE ON Posts
+                    FOR EACH ROW
+                    BEGIN
+                        DELETE FROM Tags WHERE postId = old.postId;
+                    END `
+            queryInterface.sequelize.query(TR_Posts_UPDATE_Query)
+        })
+            .then(() => {
+                const TR_Posts_INSERT_Query = `
+                    CREATE TRIGGER TR_Posts_INSERT
+                    AFTER INSERT ON Posts
+                    FOR EACH ROW
+                    BEGIN
+                        INSERT INTO Channels (postId, userId) values (new.postId, new.userId);
+                    END `
+                queryInterface.sequelize.query(TR_Posts_INSERT_Query)
+            });
     },
     down: async (queryInterface, Sequelize) => {
         await queryInterface.dropTable('Posts');

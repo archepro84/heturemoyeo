@@ -51,10 +51,6 @@ module.exports = (sequelize, DataTypes) => {
         bring: {
             type: DataTypes.STRING,
         },
-        public: {
-            type: DataTypes.TINYINT.UNSIGNED,
-            required: true,
-        },
     }, {
         sequelize,
         modelName: 'Posts',
