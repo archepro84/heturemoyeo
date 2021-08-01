@@ -250,4 +250,37 @@ router.route('/posts')
         }
     })
 
+router.route('/posts/my')
+    .get(authmiddleware, async (req, res) => {
+        try {
+            let result = Array()
+            const {start, limit} = await startLimitSchema.validateAsync(
+                Object.keys(req.query).length ? req.query : req.body
+            )
+
+            const query = ``
+            // await sequelize.query(query, {type: Sequelize.QueryTypes.SELECT})
+            //     .then((searchList) => {
+            //         for (const search of searchList) {
+            //             result.push({
+            //                 postId: search.postId,
+            //                 title: search.title,
+            //                 postImg: search.postImg,
+            //                 currentMember: search.currentMember,
+            //                 maxMember: search.maxMember,
+            //                 startDate: search.startDate,
+            //                 endDate: search.endDate,
+            //                 place: search.place,
+            //             })
+            //         }
+            res.send(result)
+            // })
+        } catch (error) {
+            console.log(`${req.method} ${req.baseUrl} : ${error.message}`);
+            res.status(412).send({
+                errorMessage: "게시글 리스트를 정상적으로 가져올 수 없습니다.",
+            });
+        }
+    })
+
 module.exports = router;
