@@ -49,12 +49,12 @@ module.exports = {
             }
         }).then(() => {
             const TR_Users_Query = `
-                    CREATE TRIGGER TR_Users
-                    AFTER UPDATE ON Users
-                    FOR EACH ROW
-                    BEGIN
-                        DELETE FROM Likes WHERE userId = old.userId;
-                    END `
+                CREATE TRIGGER TR_Users
+                AFTER UPDATE ON Users
+                FOR EACH ROW
+                BEGIN
+                    DELETE FROM Likes WHERE userId = old.userId;
+                END `
             queryInterface.sequelize.query(TR_Users_Query)
         });
     },

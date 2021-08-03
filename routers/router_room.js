@@ -4,7 +4,6 @@ const authmiddleware = require("../middleware/auth-middleware");
 const {Messages, Channels, sequelize, Sequelize} = require("../models");
 const Joi = require("joi");
 
-// const postIdSchema = Joi.number().min(1).required();
 const postIdSchema = Joi.object({
     postId: Joi.number().min(1).required(),
 });
@@ -32,6 +31,8 @@ router.route('/chat')
                 ON u.userId = c.userId 
                 WHERE c.postId = ${postId} 
                     AND c.userId = ${userId}`
+            // postId, message
+            // postId , userId, nickname, profileImg, createdAd
 
             const {nickname, profileImg} = await sequelize.query(query, {type: Sequelize.QueryTypes.SELECT})
                 .then((result) => {
@@ -45,6 +46,7 @@ router.route('/chat')
                 })
 
             console.log("req.app.get room/chat POST", postId);
+
             req.app.get("io").of("/chat").to(postId).emit("chat", {
                 messageId, userId, nickname, profileImg, message, updatedAt
             });
@@ -81,8 +83,8 @@ router.route('/:postId')
 
             await sequelize.query(query, {type: Sequelize.QueryTypes.SELECT})
                 .then((result) => {
-                    if (!Object.keys(result).length) throw Error('데이터를 가져올 수 없습니다.')
-                    // console.log(result);
+                    if (!Object.keys(result).length)
+                        throw Error('데이터를 가져올 수 없습니다.')
                     res.send(result)
                 })
         } catch (error) {

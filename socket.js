@@ -1,8 +1,13 @@
 const SocketIO = require("socket.io")
 
 module.exports = (server, app) => {
-    let result = Object() //모든 User한테 전달한 Object를 설정한다.
-    let socketIdObject = Object() //접속한 Socket이 사용하는 UserId를 설정한다.
+    // let result = {} //모든 User한테 전달한 Object를 설정한다.
+    let result = {}
+    result[2] = {lat: 37.5671461, lng: 126.9309533}
+    result[3] = {lat: 37.5679144, lng: 126.9344071}
+    result[6] = {lat: 37.5663129, lng: 126.9316755}
+
+    let socketIdObject = {} //접속한 Socket이 사용하는 UserId를 설정한다.
     const io = SocketIO(server, {path: "/socket.io", cors: {origins: '*:*'}})
 
     app.set('io', io);
@@ -22,7 +27,6 @@ module.exports = (server, app) => {
                 delete result[socketIdObject[socket.id]]
                 delete socketIdObject[socket.id]
             }
-
             console.log("Location Socket Client Disconnect", ip, socket.id);
             clearInterval(socket.interval);
         })
@@ -34,6 +38,8 @@ module.exports = (server, app) => {
         // TODO 보내주는 User가 인증받은 User인지 어떻게 확인할 수 있지?
         socket.on("latlng", (LocationData) => {
             try {
+
+                // TODO 코드 선언 구조분해 줄이기
                 const {userId, lat, lng} = LocationData;
                 socketIdObject[socket.id] = userId
 

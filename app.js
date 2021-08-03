@@ -29,9 +29,10 @@ app.use(cors({
 
 app.use(
     session({
-        resave: false,
+        resave: false, // Session 재저장 여부
         saveUninitialized: false,
-        secret: process.env.COOKIE_SECRET,
+        secret: process.env.COOKIE_SECRET, // Session 암호화 Key
+        rolling: true, // 로그인 상태에서 페이지 이동 시마다 Session값 변경 여부
         cookie: {
             httpOnly: true,
             secure: false,
@@ -39,45 +40,47 @@ app.use(
     })
 );
 
-
 app.use("/api", router)
 
 
-app.get('/', (req, res) => {
-    res.render("maps");
-});
-
-app.get('/multimarker', (req, res) => {
-    res.render("maps_multiMarker");
-});
-
-app.get('/multiimagemarker', (req, res) => {
-    res.render("maps_multiImageMarker");
-});
-
-app.get('/multimarkercontrol', (req, res) => {
-    res.render("maps_multiMarkerControl");
-});
-
-app.get('/multimarkerevent1', (req, res) => {
-    res.render("maps_multiMarkerEvent_1");
-});
-
-app.get('/multimarkerevent2', (req, res) => {
-    res.render("maps_multiMarkerEvent_2");
-});
-
-app.get('/socketmaps', (req, res) => {
-    res.render("socket_maps")
-});
-
-app.get('/room', (req, res) => {
-    res.render("main_room")
-});
-
-app.get('/chat/:postId', (req, res) => {
-    res.render("chat", {postId: req.params.postId})
-});
+// app.get('/', (req, res) => {
+//     res.render("maps");
+// });
+//
+// app.get('/multimarker', (req, res) => {
+//     res.render("maps_multiMarker");
+// });
+//
+// app.get('/multiimagemarker', (req, res) => {
+//     res.render("maps_multiImageMarker");
+// });
+//
+// app.get('/multimarkercontrol', (req, res) => {
+//     res.render("maps_multiMarkerControl");
+// });
+//
+// app.get('/multimarkerevent1', (req, res) => {
+//     res.render("maps_multiMarkerEvent_1");
+// });
+//
+// app.get('/multimarkerevent2', (req, res) => {
+//     res.render("maps_multiMarkerEvent_2");
+// });
+//
+// app.get('/socketmaps', (req, res) => {
+//     res.render("socket_maps")
+// });
+//
+// app.get('/room', (req, res) => {
+//     res.render("main_room")
+// });
+// app.get('/room/my', (req, res) => {
+//     res.render("main_room_my")
+// });
+//
+// app.get('/chat/:postId', (req, res) => {
+//     res.render("chat", {postId: req.params.postId})
+// });
 
 
 const server = http.listen(port, () => {

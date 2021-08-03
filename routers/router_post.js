@@ -55,7 +55,7 @@ router.route("/")
 
             await sequelize.query(query, {type: Sequelize.QueryTypes.SELECT})
                 .then((result) => {
-                    let tag = Array();
+                    let tag = [];
                     if (result[0].tag)
                         for (const Item of result[0].tag.split(', '))
                             tag.push(Item)
@@ -96,7 +96,7 @@ router.route("/")
                 tag,
             } = await postSchema.validateAsync(req.body);
 
-            const tagArray = Array();
+            const tagArray = [];
 
             const postId = await Posts.create({
                 userId,
@@ -171,7 +171,7 @@ router.route("/")
             });
 
 
-            let tagArray = Array();
+            let tagArray = [];
             for (const t of tag) {
                 tagArray.push({postId, tag: t});
             }
@@ -212,7 +212,7 @@ router.route("/")
 router.route('/posts')
     .get(authmiddlewareAll, async (req, res) => {
         try {
-            let result = Array()
+            let result = []
             const {start, limit} = await startLimitSchema.validateAsync(
                 Object.keys(req.query).length ? req.query : req.body
             )
@@ -253,32 +253,40 @@ router.route('/posts')
 router.route('/posts/my')
     .get(authmiddleware, async (req, res) => {
         try {
-            let result = Array()
+            let result = []
+            const {userId} = res.locals.user
             const {start, limit} = await startLimitSchema.validateAsync(
                 Object.keys(req.query).length ? req.query : req.body
             )
 
-            const query = ``
-            // await sequelize.query(query, {type: Sequelize.QueryTypes.SELECT})
-            //     .then((searchList) => {
-            //         for (const search of searchList) {
-            //             result.push({
-            //                 postId: search.postId,
-            //                 title: search.title,
-            //                 postImg: search.postImg,
-            //                 currentMember: search.currentMember,
-            //                 maxMember: search.maxMember,
-            //                 startDate: search.startDate,
-            //                 endDate: search.endDate,
-            //                 place: search.place,
-            //             })
-            //         }
-            res.send(result)
-            // })
+            const query = `
+                SELECT p.postId, p.title, p.postImg, COUNT(*) AS currentMember, p.maxMember, p.startDate, p.endDate, p.place
+                FROM Posts AS p
+                JOIN Channels AS c
+                ON c.postId = p.postId
+                WHERE c.userId = ${userId}
+                GROUP BY c.postId
+                LIMIT ${start}, ${limit}`
+            await sequelize.query(query, {type: Sequelize.QueryTypes.SELECT})
+                .then((searchList) => {
+                    for (const search of searchList) {
+                        result.push({
+                            postId: search.postId,
+                            title: search.title,
+                            postImg: search.postImg,
+                            currentMember: search.currentMember,
+                            maxMember: search.maxMember,
+                            startDate: search.startDate,
+                            endDate: search.endDate,
+                            place: search.place,
+                        })
+                    }
+                    res.send(result)
+                })
         } catch (error) {
             console.log(`${req.method} ${req.baseUrl} : ${error.message}`);
             res.status(412).send({
-                errorMessage: "게시글 리스트를 정상적으로 가져올 수 없습니다.",
+                errorMessage: "내 모임 리스트를 정상적으로 가져올 수 없습니다.",
             });
         }
     })
