@@ -1,9 +1,127 @@
 const express = require("express");
 const router = express.Router();
+const authmiddleware = require("../middleware/auth-middleware");
+const { Friends, sequelize, Sequelize } = require("../models");
+const Joi = require("joi");
 
-router.route('/')
-    .post((req, res) => {
+const friendlistSchema = Joi.object({
+    start: Joi.number().required(),
+    limit: Joi.number().required(),
+});
 
+const userIdSchema = Joi.object({
+    userId: Joi.number().required(),
+});
+
+router
+    .route("/")
+    .get(authmiddleware, async (req, res) => {
+        try {
+            const { userId } = res.locals.user;
+            const { start, limit } = await friendlistSchema.validateAsync(
+                req.body
+            );
+
+            const query = `
+            SELECT userId, profileImg, nickname, statusMessage
+            FROM Users
+	        WHERE userId IN (SELECT giveUserId FROM Friends WHERE receiveUserId= ${userId}) 
+                OR userId IN (SELECT receiveUserId FROM Friends WHERE giveUserId = ${userId})
+            LIMIT ${start}, ${limit}`;
+
+            await sequelize
+                .query(query, {
+                    type: Sequelize.QueryTypes.SELECT,
+                })
+                .then((result) => {
+                    if (!result.length) {
+                        res.status(412).send({
+                            errorMessage:
+                                "친구 목록을 조회하는데 실패했습니다.",
+                        });
+                    }
+                    res.send({ result });
+                });
+        } catch (error) {
+            console.log(error);
+            res.status(412).send({
+                errorMessage: "입력 형식이 맞지 않습니다.",
+            });
+        }
     })
 
-module.exports = router
+    .post(authmiddleware, async (req, res) => {
+        try {
+            const myUserId = res.locals.user.userId;
+            const { userId } = await userIdSchema.validateAsync(req.body);
+
+            if (myUserId === userId) {
+                res.status(412).send({
+                    errorMessage:
+                        "로그인된 유저와 친구 요청을 하는 userId는 같을 수 없습니다.",
+                });
+                return;
+            }
+
+            // giveUserId와 receiveUserId를 검색해서 해당하는 값이 없으면 인서트문을 실행
+            const query = `
+                INSERT INTO Friends(giveUserId, receiveUserId) 
+                select ${userId}, ${myUserId}
+                WHERE NOT EXISTS 
+                (SELECT giveUserId
+                FROM Friends
+                WHERE (giveUserId = ${userId} AND receiveUserId = ${myUserId}) OR (giveUserId = ${myUserId} AND receiveUserId = ${userId}))
+            `;
+
+            await sequelize
+                .query(query, {
+                    type: Sequelize.QueryTypes.INSERT,
+                })
+                .then((result) => {
+                    if (result[0] == 0) {
+                        res.status(412).send({
+                            errorMessage: "데이터가 중복됩니다.",
+                        });
+                    }
+                    res.send();
+                });
+        } catch (error) {
+            console.log(error);
+            res.status(412).send({
+                errorMessage: "데이터 생성에 실패했습니다.",
+            });
+        }
+    });
+
+router.route("/request").get(authmiddleware, async (req, res) => {
+    try {
+        const { userId } = res.locals.user;
+        const { start, limit } = await friendlistSchema.validateAsync(req.body);
+
+        const query = `
+            SELECT userId, profileImg, nickname, statusMessage
+            FROM Users
+	        WHERE userId IN (SELECT giveUserId FROM Friends WHERE receiveUserId= ${userId})
+            LIMIT ${start}, ${limit}`;
+
+        await sequelize
+            .query(query, {
+                type: Sequelize.QueryTypes.SELECT,
+            })
+            .then((result) => {
+                if (!result.length) {
+                    res.status(412).send({
+                        errorMessage: "친구 목록을 조회하는데 실패했습니다.",
+                    });
+                }
+                res.send({ result });
+            });
+    } catch (error) {
+        console.log(error);
+        res.status(412).send({
+            errorMessage: "입력 형식이 맞지 않습니다.",
+        });
+    }
+});
+
+module.exports = router;
