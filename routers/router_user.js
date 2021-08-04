@@ -88,7 +88,7 @@ router.route('/me')
         try {
             const {userId} = res.locals.user
             const query = `
-                SELECT u.userId, u.email, u.name, u.nickname, u.profileImg, u.statusMessage,
+                SELECT u.userId, u.email, u.name, u.nickname, u.profileImg, u.statusMessage, u.rating,
                 (SELECT GROUP_CONCAT(likeItem ORDER BY likeItem ASC SEPARATOR ', ')
                     FROM Likes 
                     WHERE userId = u.userId
@@ -108,6 +108,7 @@ router.route('/me')
                         nickname: result[0].nickname,
                         profileImg: result[0].profileImg,
                         statusMessage: result[0].statusMessage,
+                        rating: result[0].rating,
                         likeItem
                     })
                 })

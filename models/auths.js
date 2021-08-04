@@ -14,7 +14,7 @@ module.exports = (sequelize, DataTypes) => {
         }
     };
     Auths.init({
-        userId: {
+        authId: {
             type: DataTypes.INTEGER,
             primaryKey: true,
             required: true,

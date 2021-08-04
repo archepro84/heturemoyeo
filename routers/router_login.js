@@ -3,6 +3,7 @@ const {Users} = require("../models");
 const jwt = require("jsonwebtoken");
 const Joi = require("joi");
 const loginCheckMiddleware = require("../middleware/login-check-middleware");
+const crypto = require("crypto");
 const router = express.Router();
 
 const loginSchema = Joi.object({
@@ -20,8 +21,10 @@ router.route("/")
     .post(loginCheckMiddleware, async (req, res) => {
         try {
             const {email, password} = await loginSchema.validateAsync(req.body);
+            const cryptoPass = crypto.createHash('sha512').update(password).digest('base64')
+
             const user = await Users.findOne({
-                where: {email, password},
+                where: {email, password: cryptoPass},
             }).then((user) => {
                 if (!user) {
                     throw Error("이메일 또는 패스워드가 잘못되었습니다.")

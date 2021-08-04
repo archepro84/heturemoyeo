@@ -42,16 +42,24 @@ const startLimitSchema = Joi.object({
 router.route("/")
     .get(authmiddleware, async (req, res) => {
         try {
-            const {postId} = await postIdSchema.validateAsync(req.body);
+            const {postId} = await postIdSchema.validateAsync(
+                Object.keys(req.query).length ? req.query : req.body
+            );
 
             const query = `
-                SELECT title, postImg, content, maxMember, startDate, endDate, place, bring,
+                SELECT p.title, p.postImg, p.content, u.nickname, u.rating, u.statusMessage, COUNT(*) AS currentMember,
+                p.maxMember, p.startDate, p.endDate, p.place, p.bring,
                 (SELECT GROUP_CONCAT(tag ORDER BY tag ASC SEPARATOR ', ')
                     FROM Tags
                     WHERE postId = p.postId
                     GROUP BY postId) AS tag
                 FROM Posts AS p 
-                WHERE postId = ${postId}`
+                JOIN Users AS u
+                ON p.userId = u.userId
+                JOIN Channels AS c
+                ON p.postId = c.postId 
+                WHERE p.postId = ${postId}
+                GROUP BY c.postId`
 
             await sequelize.query(query, {type: Sequelize.QueryTypes.SELECT})
                 .then((result) => {
@@ -64,6 +72,10 @@ router.route("/")
                         title: result[0].title,
                         postImg: result[0].postImg,
                         content: result[0].content,
+                        nickname: result[0].nickname,
+                        rating: result[0].rating,
+                        statusMessage: result[0].statusMessage,
+                        currentMember: result[0].currentMember,
                         maxMember: result[0].maxMember,
                         startDate: result[0].startDate,
                         endDate: result[0].endDate,
