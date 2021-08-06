@@ -78,7 +78,7 @@ router.route('/:postId')
                     AND ${userId} IN (SELECT userId 
                         FROM Channels 
                         WHERE postId = ${postId})
-                ORDER BY m.messageId ASC
+                ORDER BY m.messageId DESC
                 LIMIT ${start}, ${limit}`
 
             await sequelize.query(query, {type: Sequelize.QueryTypes.SELECT})

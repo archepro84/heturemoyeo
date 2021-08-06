@@ -7,7 +7,7 @@ const Joi = require("joi");
 
 const postSchema = Joi.object({
     title: Joi.string().min(1).max(100).allow(null, "").required(),
-    postImg: Joi.string().allow(null).required(),
+    postImg: Joi.string().allow(null, '').required(),
     content: Joi.string().max(1000),
     maxMember: Joi.number().max(255).required(),
     startDate: Joi.date().required(),
@@ -20,7 +20,7 @@ const postSchema = Joi.object({
 const postPutSchema = Joi.object({
     postId: Joi.number().min(1).required(),
     title: Joi.string().min(1).max(100).allow(null, "").required(),
-    postImg: Joi.string().allow(null).required(),
+    postImg: Joi.string().allow(null, '').required(),
     content: Joi.string().max(1000),
     maxMember: Joi.number().max(255).required(),
     startDate: Joi.date().required(),

@@ -25,7 +25,7 @@ router.route("/")
             SELECT userId, profileImg, nickname, statusMessage
             FROM Users
 	        WHERE userId IN (SELECT giveUserId FROM Friends WHERE receiveUserId= ${userId}) 
-                OR userId IN (SELECT receiveUserId FROM Friends WHERE giveUserId = ${userId})
+                AND userId IN (SELECT receiveUserId FROM Friends WHERE giveUserId = ${userId})
             LIMIT ${start}, ${limit}`;
 
             await sequelize

@@ -3,6 +3,7 @@ const router = express.Router();
 const Joi = require('joi')
 const {Users, Likes, sequelize, Sequelize} = require("../models")
 const authmiddleware = require("../middleware/auth-middleware")
+const crypto = require("crypto");
 
 const userIdSchema = Joi.number().min(1).required();
 const statusMessageSchema = Joi.object({
@@ -58,8 +59,11 @@ router.route('/')
                 newpassword = password;
             }
 
-            const updateCount = await Users.update({nickname, password: newpassword, profileImg},
-                {where: {userId, password}})
+            const cryptoPass = crypto.createHash('sha512').update(password).digest('base64')
+            const cryptoNewPass = crypto.createHash('sha512').update(newpassword).digest('base64')
+
+            const updateCount = await Users.update({nickname, password: cryptoNewPass, profileImg},
+                {where: {userId, password: cryptoPass}})
 
             if (updateCount < 1) throw Error("변경된 데이터가 존재하지 않습니다.")
 
