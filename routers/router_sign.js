@@ -126,7 +126,7 @@ router.route("/email")
 
 // 닉네임 중복확인
 router.route("/nickname")
-    .post(logincheckmiddleware, async (req, res) => {
+    .post(async (req, res) => {
         try {
             const nickname = await nicknameSchema.validateAsync(req.body.nickname)
             const nick = await Users.findOne({

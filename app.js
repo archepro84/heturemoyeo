@@ -6,6 +6,8 @@ const cookieparser = require("cookie-parser")
 const nunjucks = require("nunjucks");
 const socketIO = require("./socket");
 const session = require("express-session");
+const morgan = require("morgan")
+
 require('dotenv').config();
 const port = 4001;
 
@@ -23,9 +25,11 @@ app.use(express.json())
 app.use(cookieparser())
 app.use(cors({
     // 맨 뒤에 .shop/중에서 /를 삭제해야 사용할 수 있다.
-    origin: "http://localhost:3000",
+    origin: ["http://localhost:3000", "http://heturemoyeo.s3-website.ap-northeast-2.amazonaws.com/"],
     credentials: true
 }))
+app.use(morgan("combined"));
+
 
 app.use(
     session({
@@ -42,45 +46,20 @@ app.use(
 
 app.use("/api", router)
 
+app.get('/socketmaps', (req, res) => {
+    res.render("socket_maps")
+});
 
-// app.get('/', (req, res) => {
-//     res.render("maps");
-// });
-//
-// app.get('/multimarker', (req, res) => {
-//     res.render("maps_multiMarker");
-// });
-//
-// app.get('/multiimagemarker', (req, res) => {
-//     res.render("maps_multiImageMarker");
-// });
-//
-// app.get('/multimarkercontrol', (req, res) => {
-//     res.render("maps_multiMarkerControl");
-// });
-//
-// app.get('/multimarkerevent1', (req, res) => {
-//     res.render("maps_multiMarkerEvent_1");
-// });
-//
-// app.get('/multimarkerevent2', (req, res) => {
-//     res.render("maps_multiMarkerEvent_2");
-// });
-//
-// app.get('/socketmaps', (req, res) => {
-//     res.render("socket_maps")
-// });
-//
-// app.get('/room', (req, res) => {
-//     res.render("main_room")
-// });
-// app.get('/room/my', (req, res) => {
-//     res.render("main_room_my")
-// });
-//
-// app.get('/chat/:postId', (req, res) => {
-//     res.render("chat", {postId: req.params.postId})
-// });
+app.get('/room', (req, res) => {
+    res.render("main_room")
+});
+app.get('/room/my', (req, res) => {
+    res.render("main_room_my")
+});
+
+app.get('/chat/:postId', (req, res) => {
+    res.render("chat", {postId: req.params.postId})
+});
 
 
 const server = http.listen(port, () => {
