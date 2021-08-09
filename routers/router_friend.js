@@ -2,22 +2,13 @@ const express = require("express");
 const router = express.Router();
 const authmiddleware = require("../middleware/auth-middleware");
 const {Friends, sequelize, Sequelize} = require("../models");
-const Joi = require("joi");
-
-const friendlistSchema = Joi.object({
-    start: Joi.number().min(0).required(),
-    limit: Joi.number().min(1).required(),
-});
-
-const userIdSchema = Joi.object({
-    userId: Joi.number().min(1).required(),
-});
+const {startLimitSchema, userIdSchema} = require("./joi_Schema")
 
 router.route("/")
     .get(authmiddleware, async (req, res) => {
         try {
             const {userId} = res.locals.user;
-            const {start, limit} = await friendlistSchema.validateAsync(
+            const {start, limit} = await startLimitSchema.validateAsync(
                 Object.keys(req.query).length ? req.query : req.body
             );
 
@@ -37,7 +28,7 @@ router.route("/")
                                 "친구 목록을 조회하는데 실패했습니다.",
                         });
                     }
-                    res.send({result});
+                    res.status(200).send({result});
                 });
         } catch (error) {
             console.log(`${req.method} ${req.originalUrl} : ${error.message}`);
@@ -79,7 +70,7 @@ router.route("/")
                         });
                         return;
                     }
-                    res.send();
+                    res.status(200).send();
                 });
         } catch (error) {
             console.log(`${req.method} ${req.originalUrl} : ${error.message}`);
@@ -93,7 +84,7 @@ router.route("/request")
     .get(authmiddleware, async (req, res) => {
         try {
             const {userId} = res.locals.user;
-            const {start, limit} = await friendlistSchema.validateAsync(req.body);
+            const {start, limit} = await startLimitSchema.validateAsync(req.body);
 
             const query = `
             SELECT userId, profileImg, nickname, statusMessage
@@ -110,7 +101,7 @@ router.route("/request")
                         });
                         return;
                     }
-                    res.send({result});
+                    res.status(200).send({result});
                 });
         } catch (error) {
             console.log(`${req.method} ${req.originalUrl} : ${error.message}`);

@@ -1,9 +1,8 @@
 const express = require("express");
 const router = express.Router();
-const authmiddleware = require("../middleware/auth-middleware");
 const logincheckmiddleware = require("../middleware/login-check-middleware");
 const {Users, Auths, Messages, Channels, sequelize, Sequelize} = require("../models");
-const Joi = require("joi");
+const {emailSchema, authDataSchema, newPassSchema} = require("./joi_Schema");
 const AWS = require("aws-sdk");
 const nodemailer = require("nodemailer");
 const crypto = require("crypto");
@@ -16,37 +15,6 @@ function RandomCode(n) {
         str += Math.floor(Math.random() * 10)
     return str
 }
-
-const emailSchema = Joi.object({
-    email: Joi.string()
-        .pattern(new RegExp(
-            "^[0-9a-zA-Z]([-_.]?[0-9a-zA-Z])*@[0-9a-zA-Z]([-_.]?[0-9a-zA-Z])*.[a-zA-Z]{2,3}$"
-        ))
-        .required(),
-})
-const authDataSchema = Joi.object({
-    email: Joi.string()
-        .pattern(new RegExp(
-            "^[0-9a-zA-Z]([-_.]?[0-9a-zA-Z])*@[0-9a-zA-Z]([-_.]?[0-9a-zA-Z])*.[a-zA-Z]{2,3}$"
-        ))
-        .required(),
-    authData: Joi.string().min(6).max(6).required(),
-})
-
-const newPassSchema = Joi.object({
-    authId: Joi.number().min(1).required(),
-    email: Joi.string()
-        .pattern(new RegExp(
-            "^[0-9a-zA-Z]([-_.]?[0-9a-zA-Z])*@[0-9a-zA-Z]([-_.]?[0-9a-zA-Z])*.[a-zA-Z]{2,3}$"
-        ))
-        .required(),
-    password: Joi.string()
-        .pattern(/^(?=.*[a-zA-Z0-9])((?=.*\d)|(?=.*\W)).{6,20}$/)
-        .required(),
-    confirm: Joi.string()
-        .pattern(/^(?=.*[a-zA-Z0-9])((?=.*\d)|(?=.*\W)).{6,20}$/)
-        .required(),
-})
 
 
 router.route('/password/email')
@@ -90,7 +58,7 @@ router.route('/password/email')
                     type: Sequelize.QueryTypes.PROCEDURE //현재 사용하고 있는 Query의 형식을 정의한다.
                 })
 
-            res.send()
+            res.status(200).send()
         } catch (error) {
             console.log(`${req.method} ${req.originalUrl} : ${error.message}`);
             res.status(400).send({errorMessage: "인증 메일을 보낼 수 없습니다."});

@@ -16,7 +16,7 @@ module.exports = async (req, res, next) => {
             })
         next()
     } catch (error) {
-        console.log(`${req.method} ${req.baseUrl} : ${error.message}`);
+        console.log(`${req.method} ${req.originalUrl} : ${error.message}`);
         res.status(401).send(
             {errorMessage: "사용자 인증에 실패하였습니다."}
         )

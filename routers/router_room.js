@@ -2,20 +2,8 @@ const express = require("express");
 const router = express.Router();
 const authmiddleware = require("../middleware/auth-middleware");
 const {Messages, Channels, sequelize, Sequelize} = require("../models");
-const Joi = require("joi");
+const {postIdSchema, startLimitSchema, chatSchema} = require("./joi_Schema")
 
-const postIdSchema = Joi.object({
-    postId: Joi.number().min(1).required(),
-});
-
-const startLimitSchema = Joi.object({
-    start: Joi.number().min(0).required(),
-    limit: Joi.number().min(1).required()
-})
-const chatSchema = Joi.object({
-    postId: Joi.number().min(1).required(),
-    message: Joi.string().max(255).required(),
-})
 
 router.route('/chat')
     .post(authmiddleware, async (req, res) => {
@@ -51,7 +39,7 @@ router.route('/chat')
                 messageId, userId, nickname, profileImg, message, updatedAt
             });
 
-            res.send()
+            res.status(200).send()
         } catch (error) {
             console.log(`${req.method} ${req.originalUrl} : ${error.message}`);
             res.status(400).send({
@@ -69,7 +57,7 @@ router.route('/:postId')
                 Object.keys(req.query).length ? req.query : req.body
             )
 
-            // TODO 회원이 아닌 경우 축출 하도록 설정
+            // FIXME 회원이 아닌 경우 축출 하도록 설정
 
             const query = `
                 SELECT m.messageId, m.userId, u.nickname, u.profileImg, m.message, m.updatedAt 
@@ -87,7 +75,7 @@ router.route('/:postId')
                 .then((result) => {
                     // if (!Object.keys(result).length)
                     //     throw Error('데이터를 가져올 수 없습니다.')
-                    res.send(result)
+                    res.status(200).send(result)
                 })
         } catch (error) {
             console.log(`${req.method} ${req.originalUrl} : ${error.message}`);

@@ -1,58 +1,11 @@
 const express = require("express");
 const router = express.Router();
-const Joi = require("joi");
 const logincheckmiddleware = require("../middleware/login-check-middleware");
+const authmiddleware = require("../middleware/auth-middleware");
 const {Users, Likes} = require("../models");
-const {Op} = require("sequelize");
 const crypto = require("crypto");
+const {signSchema, emailSchema, confirmSchema, signDeleteSchema, nicknameSchema} = require("./joi_Schema")
 
-// 회원가입시 해당 조건.
-const signSchema = Joi.object({
-    email: Joi.string()
-        .pattern(
-            new RegExp(
-                "^[0-9a-zA-Z]([-_.]?[0-9a-zA-Z])*@[0-9a-zA-Z]([-_.]?[0-9a-zA-Z])*.[a-zA-Z]{2,3}$"
-            )
-        )
-        .required(),
-    name: Joi.string()
-        .pattern(new RegExp("^[ㄱ-ㅎ|ㅏ-ㅣ|가-힣\\s|0-9a-zA-z]{3,10}$"))
-        .required(),
-
-    nickname: Joi.string()
-        .pattern(new RegExp("^[ㄱ-ㅎ|ㅏ-ㅣ|가-힣\\s|0-9a-zA-z]{3,20}$"))
-        .required(),
-
-    password: Joi.string()
-        .pattern(new RegExp("^(?=.*[a-zA-Z0-9])((?=.*\\d)|(?=.*\\W)).{6,20}$"))
-        .required(),
-
-    confirm: Joi.string().pattern(
-        new RegExp("^(?=.*[a-zA-Z0-9])((?=.*\\d)|(?=.*\\W)).{6,20}$")
-    ),
-
-    profileImg: Joi.string().max(5000).allow(null, ""),
-
-    statusMessage: Joi.string().min(2).max(250),
-
-    likeItem: Joi.array().required(),
-});
-
-const emailSchema = Joi.string()
-    .pattern(new RegExp("^[0-9a-zA-Z]([-_.]?[0-9a-zA-Z])*@[0-9a-zA-Z]([-_.]?[0-9a-zA-Z])*.[a-zA-Z]{2,3}$"))
-    .required()
-
-const nicknameSchema = Joi.string()
-    .pattern(new RegExp("^[ㄱ-ㅎ|ㅏ-ㅣ|가-힣\\s|0-9a-zA-z]{3,20}$"))
-    .required()
-const confirmSchema = Joi.object({
-    password: Joi.string()
-        .pattern(new RegExp("^(?=.*[a-zA-Z0-9])((?=.*\\d)|(?=.*\\W)).{6,20}$"))
-        .required(),
-    confirm: Joi.string()
-        .pattern(new RegExp("^(?=.*[a-zA-Z0-9])((?=.*\\d)|(?=.*\\W)).{6,20}$"))
-        .required(),
-})
 
 // 전체적인 회원가입.
 router.route("/")
@@ -93,11 +46,33 @@ router.route("/")
 
             await Likes.bulkCreate(result);
 
-            res.send();
+            res.status(200).send();
         } catch (error) {
             console.log(`${req.method} ${req.originalUrl} : ${error.message}`);
             res.status(401).send({
                 errorMessage: "회원가입에 실패하였습니다.",
+            });
+        }
+    })
+    .delete(authmiddleware, async (req, res) => {
+        try {
+            const {email, password,} = await signDeleteSchema.validateAsync(req.body);
+            const cryptoPass = crypto.createHash('sha512').update(password).digest('base64')
+
+            const deleteCount = await Users.destroy({where: {email, password: cryptoPass}})
+
+            if (!deleteCount) {
+                res.status(401).send({
+                    errorMessage: "회원 탈퇴에 실패 하였습니다.",
+                });
+                return;
+            }
+
+            res.status(200).send();
+        } catch (error) {
+            console.log(`${req.method} ${req.originalUrl} : ${error.message}`);
+            res.status(401).send({
+                errorMessage: "회원 탈퇴에 실패하였습니다.",
             });
         }
     });
@@ -106,7 +81,7 @@ router.route("/")
 router.route("/email")
     .post(logincheckmiddleware, async (req, res) => {
         try {
-            const email = await emailSchema.validateAsync(req.body.email)
+            const {email} = await emailSchema.validateAsync(req.body)
 
             const user = await Users.findOne({
                 where: {email}
@@ -117,7 +92,7 @@ router.route("/email")
                 });
                 return;
             }
-            res.send();
+            res.status(200).send();
         } catch (error) {
             console.log(`${req.method} ${req.originalUrl} : ${error.message}`);
             res.status(401).send({errorMessage: "이메일 검사에 실패하였습니다."});
@@ -128,7 +103,7 @@ router.route("/email")
 router.route("/nickname")
     .post(async (req, res) => {
         try {
-            const nickname = await nicknameSchema.validateAsync(req.body.nickname)
+            const {nickname} = await nicknameSchema.validateAsync(req.body)
             const nick = await Users.findOne({
                 where: {nickname},
             });
@@ -140,7 +115,7 @@ router.route("/nickname")
                 return;
             }
 
-            res.send();
+            res.status(200).send();
         } catch (error) {
             console.log(`${req.method} ${req.originalUrl} : ${error.message}`);
             res.status(401).send({errorMessage: "닉네임 검사에 실패하였습니다."});
@@ -160,7 +135,7 @@ router.route("/password")
                 return;
             }
 
-            res.send();
+            res.status(200).send();
         } catch (error) {
             console.log(`${req.method} ${req.originalUrl} : ${error.message}`);
             res.status(401).send({errorMessage: "비밀번호 검사에 일치하지 않았습니다."});

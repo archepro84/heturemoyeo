@@ -1,41 +1,9 @@
 const express = require("express");
 const router = express.Router();
-const Joi = require('joi')
 const {Users, Likes, sequelize, Sequelize} = require("../models")
 const authmiddleware = require("../middleware/auth-middleware")
 const crypto = require("crypto");
-
-const userIdSchema = Joi.number().min(1).required();
-const statusMessageSchema = Joi.object({
-    statusMessage: Joi.string().allow(null, '').required()
-});
-
-
-// 회원가입시 해당 조건.
-const userModifySchema = Joi.object({
-    nickname: Joi.string()
-        .pattern(new RegExp("^[ㄱ-ㅎ|ㅏ-ㅣ|가-힣\\s|0-9a-zA-z]{3,20}$"))
-        .required(),
-
-    password: Joi.string()
-        .pattern(/^(?=.*[a-zA-Z0-9])((?=.*\d)|(?=.*\W)).{6,20}$/)
-        .required(),
-
-    newpassword: Joi.string()
-        .pattern(/^(?=.*[a-zA-Z0-9])((?=.*\d)|(?=.*\W)).{6,20}$/)
-        .allow(null, '')
-        .required(),
-
-    confirm: Joi.string()
-        .pattern(/^(?=.*[a-zA-Z0-9])((?=.*\d)|(?=.*\W)).{6,20}$/)
-        // .pattern(new RegExp("^(?=.*[a-zA-Z0-9])((?=.*\\d)|(?=.*\\W)).{6,20}$"))
-        .allow(null, '')
-        .required(),
-
-    profileImg: Joi.string().max(5000).allow(null, ''),
-
-    likeItem: Joi.array().required(),
-});
+const {userIdNumberSchema, statusMessageSchema, userModifySchema} = require("./joi_Schema")
 
 
 router.route('/')
@@ -77,7 +45,7 @@ router.route('/')
 
             await Likes.bulkCreate(result)
 
-            res.send()
+            res.status(200).send()
         } catch (error) {
             console.log(`${req.method} ${req.originalUrl} : ${error.message}`);
             res.status(401).send(
@@ -105,7 +73,7 @@ router.route('/me')
                     if (result[0].likeItem)
                         for (const Item of result[0].likeItem.split(', '))
                             likeItem.push(Item)
-                    res.send({
+                    res.status(200).send({
                         userId: result[0].userId,
                         email: result[0].email,
                         name: result[0].name,
@@ -128,7 +96,7 @@ router.route('/me')
 router.route("/target/all")
     .get(authmiddleware, async (req, res) => {
         try {
-            const userId = await userIdSchema.validateAsync(
+            const userId = await userIdNumberSchema.validateAsync(
                 Object.keys(req.query).length ? req.query.userId : req.body.userId
             );
             const {rating, statusMessage} = await Users.findByPk(userId)
@@ -142,7 +110,7 @@ router.route("/target/all")
                     }
                     return user["dataValues"];
                 });
-            res.send({
+            res.status(200).send({
                 nickname: null,
                 rating,
                 profileImg: null,
@@ -164,7 +132,7 @@ router.route('/target/friend')
     .get(authmiddleware, async (req, res) => {
         try {
             const userId = res.locals.user.userId;
-            const targetUserId = await userIdSchema.validateAsync(
+            const targetUserId = await userIdNumberSchema.validateAsync(
                 Object.keys(req.query).length ? req.query.userId : req.body.userId
             );
 
@@ -197,7 +165,7 @@ router.route('/target/friend')
                     if (result[0].likeItem)
                         for (const Item of result[0].likeItem.split(', '))
                             likeItem.push(Item)
-                    res.send({
+                    res.status(200).send({
                         nickname: result[0].nickname,
                         rating: result[0].rating,
                         profileImg: result[0].profileImg,
@@ -221,7 +189,7 @@ router.route('/target/post')
     .get(authmiddleware, async (req, res) => {
         try {
             const userId = res.locals.user.userId;
-            const targetUserId = await userIdSchema.validateAsync(
+            const targetUserId = await userIdNumberSchema.validateAsync(
                 Object.keys(req.query).length ? req.query.userId : req.body.userId
             );
             if (userId == targetUserId) {
@@ -266,7 +234,7 @@ router.route('/target/post')
                     if (result[0].likeItem)
                         for (const Item of result[0].likeItem.split(', '))
                             likeItem.push(Item)
-                    res.send({
+                    res.status(200).send({
                         nickname: result[0].nickname,
                         rating: result[0].rating,
                         profileImg: result[0].profileImg,
@@ -298,7 +266,7 @@ router.route("/status")
                 }
             ).then((statusMsg) => {
                 if (statusMsg < 1) throw Error("정보를 찾을 수 없습니다.")
-                res.send();
+                res.status(200).send();
             });
         } catch (error) {
             res.status(401).send({errorMessage: "정보를 찾을 수 없습니다."});
@@ -341,7 +309,7 @@ router.route('/myusers')
                     if (result[0].scheduleUsers)
                         for (const Item of result[0].scheduleUsers.split(', '))
                             scheduleUsers.push(Item)
-                    res.send({friendUsers, scheduleUsers})
+                    res.status(200).send({friendUsers, scheduleUsers})
                 })
         } catch (error) {
             console.log(`${req.method} ${req.originalUrl} : ${error.message}`);

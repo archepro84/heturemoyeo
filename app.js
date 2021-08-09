@@ -6,6 +6,8 @@ const cookieparser = require("cookie-parser")
 const nunjucks = require("nunjucks");
 const socketIO = require("./socket");
 const session = require("express-session");
+const swaggerUi = require("swagger-ui-express");
+const swaggerFile = require("./swagger-output.json");
 const morgan = require("morgan")
 
 require('dotenv').config();
@@ -30,7 +32,7 @@ app.use(cors({
 }))
 // app.use(morgan("combined"));
 app.use(express.static('public'));
-
+app.use("/swagger", swaggerUi.serve, swaggerUi.setup(swaggerFile));
 
 
 app.use(
@@ -47,37 +49,35 @@ app.use(
 );
 
 app.use("/api", router)
-
-app.get('/maps', (req, res) => {
-    res.render("maps")
-});
-app.get('/mapskeywordsearch', (req, res) => {
-    res.render("maps_keywordSearch")
-});
-app.get('/locationaddress', (req, res) => {
-    res.render("maps_LocationAddress")
-});
-
-app.get('/socketmaps', (req, res) => {
-    res.render("socket_maps")
-});
-
-app.get('/room', (req, res) => {
-    res.render("main_room")
-});
-app.get('/room/my', (req, res) => {
-    res.render("main_room_my")
-});
-
-app.get('/chat/:postId', (req, res) => {
-    res.render("chat", {postId: req.params.postId})
-});
-
+//
+// app.get('/maps', (req, res) => {
+//     res.render("maps")
+// });
+// app.get('/mapskeywordsearch', (req, res) => {
+//     res.render("maps_keywordSearch")
+// });
+// app.get('/locationaddress', (req, res) => {
+//     res.render("maps_LocationAddress")
+// });
+//
+// app.get('/socketmaps', (req, res) => {
+//     res.render("socket_maps")
+// });
+//
+// app.get('/room', (req, res) => {
+//     res.render("main_room")
+// });
+// app.get('/room/my', (req, res) => {
+//     res.render("main_room_my")
+// });
+//
+// app.get('/chat/:postId', (req, res) => {
+//     res.render("chat", {postId: req.params.postId})
+// });
 
 const server = http.listen(port, () => {
     console.log(`localhost:  http://localhost:${port}`);
 })
-
 
 socketIO(server, app);
 

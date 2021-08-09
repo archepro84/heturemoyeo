@@ -3,41 +3,7 @@ const router = express.Router();
 const authmiddleware = require("../middleware/auth-middleware");
 const authmiddlewareAll = require("../middleware/auth-middlewareAll")
 const {Posts, Tags, sequelize, Sequelize} = require("../models");
-const Joi = require("joi");
-
-const postSchema = Joi.object({
-    title: Joi.string().min(1).max(100).allow(null, "").required(),
-    postImg: Joi.string().allow(null, '').required(),
-    content: Joi.string().max(1000),
-    maxMember: Joi.number().max(255).required(),
-    startDate: Joi.date().required(),
-    endDate: Joi.date().required(),
-    place: Joi.string(),
-    bring: Joi.string(),
-    tag: Joi.array().required(),
-});
-
-const postPutSchema = Joi.object({
-    postId: Joi.number().min(1).required(),
-    title: Joi.string().min(1).max(100).allow(null, "").required(),
-    postImg: Joi.string().allow(null, '').required(),
-    content: Joi.string().max(1000),
-    maxMember: Joi.number().max(255).required(),
-    startDate: Joi.date().required(),
-    endDate: Joi.date().required(),
-    place: Joi.string(),
-    bring: Joi.string(),
-    tag: Joi.array().required(),
-});
-
-const postIdSchema = Joi.object({
-    postId: Joi.number().min(1).required(),
-});
-
-const startLimitSchema = Joi.object({
-    start: Joi.number().min(0).required(),
-    limit: Joi.number().min(1).required()
-})
+const {postIdSchema, postSchema, postPutSchema, startLimitSchema} = require("./joi_Schema")
 
 router.route("/")
     .get(authmiddleware, async (req, res) => {
@@ -68,7 +34,7 @@ router.route("/")
                         for (const Item of result[0].tag.split(', '))
                             tag.push(Item)
 
-                    res.send({
+                    res.status(200).send({
                         title: result[0].title,
                         postImg: result[0].postImg,
                         content: result[0].content,
@@ -148,7 +114,7 @@ router.route("/")
                 postId, title, postImg, currentMember: 1, maxMember, startDate, endDate, place
             });
 
-            res.send();
+            res.status(200).send();
         } catch (error) {
             console.log(`${req.method} ${req.originalUrl} : ${error.message}`);
             res.status(412).send({errorMessage: "게시글 작성에 실패했습니다."});
@@ -198,7 +164,7 @@ router.route("/")
             }
             await Tags.bulkCreate(tagArray);
 
-            res.send();
+            res.status(200).send();
         } catch (error) {
             console.log(`${req.method} ${req.originalUrl} : ${error.message}`);
             res.status(412)
@@ -221,7 +187,7 @@ router.route("/")
             });
             req.app.get("io").of("/room").emit("removeRoom", {postId})
 
-            res.send();
+            res.status(200).send();
         } catch (error) {
             console.log(`${req.method} ${req.originalUrl} : ${error.message}`);
             res.status(412).send(
@@ -261,7 +227,7 @@ router.route('/posts')
                             place: search.place,
                         })
                     }
-                    res.send(result)
+                    res.status(200).send(result)
                 })
         } catch (error) {
             console.log(`${req.method} ${req.originalUrl} : ${error.message}`);
@@ -302,7 +268,7 @@ router.route('/posts/my')
                             place: search.place,
                         })
                     }
-                    res.send(result)
+                    res.status(200).send(result)
                 })
         } catch (error) {
             console.log(`${req.method} ${req.originalUrl} : ${error.message}`);

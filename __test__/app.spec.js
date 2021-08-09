@@ -1,70 +1,166 @@
-const app = require("./app");
+const app = require("../app");
 const supertest = require("supertest");
-const { test, expect } = require("@jest/globals");
+const {test, expect} = require("@jest/globals");
+const clearData = require("./clearData")
 
-test("/api/user/me 경로에 요청했을 떄 status code가 200이어야 한다.", async () => {
+test("POST /api/user/me 경로에 요청했을 떄 Authorization 헤더가 있을 경우 성공 (200)", async () => {
     const res = await supertest(app)
         .post("/api/user/me")
-        .set(
-            "authorization",
-            "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjYsImlhdCI6MTYyODA3NTc5N30.S7YxSEYFbPDem5x1nerjJZI3jYTfj2-cso-Fti-_vmE"
-        )
+        .set("authorization", clearData.Authorization,)
         .send();
     expect(res.status).toEqual(200);
 });
-
-test("/api/user/me 경로에 요청했을 떄 status code가 400이여야 한다.", async () => {
+test("POST /api/user/me 경로에 요청했을 떄 Authorization 헤더가 없을 경우 실패 (401)", async () => {
     const res = await supertest(app).post("/api/user/me").send();
     expect(res.status).toEqual(401);
 });
 
-test("로그인 할 때 입력할 이메일 주소에 '@' 문자가 1개만 있어야 이메일 형식이다.", async () => {
-    const res = await supertest(app).post("/api/login").send({
-        email: "qwert@gmail.com",
-        password: "qwer!@#",
-    });
-    expect(res.status).toEqual(200);
+
+test("POST /api/login 이미 로그인된 사용자는 로그인 실패(401)", async () => {
+    const res = await supertest(app)
+        .post("/api/login")
+        .set("authorization", clearData.Authorization,)
+        .send({
+            email: clearData.Email,
+            password: clearData.Password,
+        });
+    expect(res.status).toEqual(401);
 });
-test("로그인 할때 입력할 이메일 주소에 '@@' 문자가 2개 이상 이면 실패 ", async () => {
+test("POST /api/login 입력할 이메일 주소에 '@@' 문자가 2개 이상 이면 실패(401)", async () => {
     const res = await supertest(app).post("/api/login").send({
         email: "rhkstlr@@@gmail.com",
-        password: "qwert!@#$",
+        password: clearData.Password,
     });
     expect(res.status).toEqual(401);
 });
-test("로그인 할 떄 이메일 주소에 '@'문자가 없으면 이메일 형식이 아닌다.", async () => {
+test("POST /api/login 이메일 주소에 '@'문자가 없으면 로그인 실패(401)", async () => {
     const res = await supertest(app).post("/api/login").send({
         email: "rhkstlrgmail.com",
-        password: "qwert!@#$",
+        password: clearData.Password,
     });
     expect(res.status).toEqual(401);
 });
-test("로그인시 비밀번호가 6자 이하이면 로그인 실패", async () => {
+test("POST /api/login 이메일 주소에 특수문자가 존재하면 실패(401)", async () => {
+    let res = await supertest(app).post("/api/login").send({
+        email: "dddd!q@gmail.com",
+        password: clearData.Password,
+    });
+    expect(res.status).toEqual(401);
+
+    res = await supertest(app).post("/api/login").send({
+        email: "ddddq@gm!ail.com",
+        password: clearData.Password,
+    });
+    expect(res.status).toEqual(401);
+});
+test("POST /api/login 이메일 주소에 '@' 문자가 1개만 있어야 로그인 성공(200)", async () => {
     const res = await supertest(app).post("/api/login").send({
-        email: "rhkstlr@gmail.com",
-        password: "qwe!@#",
-    });
-    expect(res.status).toEqual(401);
-});
-test("회원가입시 같은 이메일이 있을 시 회원가입 실패", async () => {
-    const res = await supertest(app).post("/api/sign/email").send({
-        email: "rhkstlr@gmail.com",
-    });
-    expect(res.status).toEqual(401);
-});
-test("회원가입시 같은 닉네임이 있을 시 회원가입 실패", async () => {
-    const res = await supertest(app).post("/api/sign/password").send({
-        nickname: "nickname",
-    });
-    expect(res.status).toEqual(401);
-});
-test("회원가입시 비밀번호와 비밀번화 확인이 같아야 회원가입을 할 수 있습니다. ", async () => {
-    const res = await supertest(app).post("/api/sign/password").send({
-        password: "qwert!@#$",
-        confirm: "qwert!@#$",
+        email: clearData.Email,
+        password: clearData.Password,
     });
     expect(res.status).toEqual(200);
 });
+test("POST /api/login 비밀번호가 5자 이하이면 실패(401)", async () => {
+    const res = await supertest(app).post("/api/login").send({
+        email: clearData.Email,
+        password: "!@#4q",
+    });
+    expect(res.status).toEqual(401);
+});
+test("POST /api/login 비밀번호가 21자 이상이면 실패(401)", async () => {
+    const res = await supertest(app).post("/api/login").send({
+        email: clearData.Email,
+        password: "!@#4qwer!@#4qwer!@#4qs",
+    });
+    expect(res.status).toEqual(401);
+});
+test("POST /api/login 비밀번호에 특수문자가 포함되어 있지 않을 경우 실패(401)", async () => {
+    const res = await supertest(app).post("/api/login").send({
+        email: clearData.Email,
+        password: "1234qwer",
+    });
+    expect(res.status).toEqual(401);
+});
+test("POST /api/login 비밀번호가 6 ~ 20글자에 포함될 경우 로그인 성공(200)", async () => {
+    const res = await supertest(app).post("/api/login").send({
+        email: clearData.Email,
+        password: clearData.Password,
+    });
+    expect(res.status).toEqual(200);
+});
+
+
+test("POST /api/sign/email 이미 로그인된 사용자는 실패(401)", async () => {
+    const res = await supertest(app)
+        .post("/api/sign/email")
+        .set("authorization", clearData.Authorization,)
+        .send({email: clearData.SignEmail,});
+    expect(res.status).toEqual(401);
+});
+test("POST /api/sign/email 같은 이메일이 있을 시 회원가입 실패(401)", async () => {
+    const res = await supertest(app)
+        .post("/api/sign/email")
+        .send({email: clearData.Email,});
+    expect(res.status).toEqual(401);
+});
+test("POST /api/sign/email 입력할 이메일 주소에 '@@' 문자가 2개 이상 이면 실패(401)", async () => {
+    const res = await supertest(app)
+        .post("/api/sign/email")
+        .send({email: "rhkstlr@@@gmail.com",});
+    expect(res.status).toEqual(401);
+});
+test("POST /api/sign/email 이메일 주소에 '@'문자가 없으면 실패(401)", async () => {
+    const res = await supertest(app)
+        .post("/api/sign/email")
+        .send({email: "rhkstlrgmail.com",});
+    expect(res.status).toEqual(401);
+});
+test("POST /api/sign/email 이메일 주소에 특수문자가 존재하면 실패(401)", async () => {
+    let res = await supertest(app)
+        .post("/api/sign/email")
+        .send({email: "dddd!q@gmail.com",});
+    expect(res.status).toEqual(401);
+
+    res = await supertest(app)
+        .post("/api/sign/email")
+        .send({email: "ddddq@gm!ail.com",});
+    expect(res.status).toEqual(401);
+});
+test("POST /api/sign/email 이메일 주소에 '@' 문자가 1개만 있어야 성공(200)", async () => {
+    const res = await supertest(app)
+        .post("/api/sign/email")
+        .send({email: clearData.SignEmail,});
+    expect(res.status).toEqual(200);
+});
+test("POST /api/sign/email 이메일이 없을 시 성공(200)", async () => {
+    const res = await supertest(app)
+        .post("/api/sign/email")
+        .send({email: clearData.SignEmail,});
+    expect(res.status).toEqual(200);
+});
+
+
+test("회원가입시 같은 닉네임이 있을 시 회원가입 실패", async () => {
+    const res = await supertest(app).post("/api/sign/nickname").send({
+        nickname: clearData.Nickname,
+    });
+    expect(res.status).toEqual(401);
+});
+test("회원가입시 같은 닉네임이 없을 시 회원가입 성공", async () => {
+    const res = await supertest(app).post("/api/sign/nickname").send({
+        nickname: "AzWxxssaeRRw3QAa",
+    });
+    expect(res.status).toEqual(200);
+});
+test("회원가입시 비밀번호와 비밀번호 확인이 같아야 회원가입을 할 수 있습니다. ", async () => {
+    const res = await supertest(app).post("/api/sign/password").send({
+        password: clearData.Password,
+        confirm: clearData.Password,
+    });
+    expect(res.status).toEqual(200);
+});
+
+
 // test("회원가입시 해당 조건들이 들어 있어야 회원가입이 이루어 진다.", async () => {
 //     const res = await supertest(app)
 //         .post("/api/sign/")
@@ -132,6 +228,7 @@ test("회원가입시 비밀번호와 비밀번화 확인이 같아야 회원가
 //     });
 //     expect(res.status).toEqual(200);
 // });
+
 test("메인페이지의 유저정보확인 및 토근이 잘 이루어 졌으면 status 200이어야 한다.", async () => {
     const res = await supertest(app)
         .get("/api/user/target/all")

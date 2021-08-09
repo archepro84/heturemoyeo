@@ -1,27 +1,15 @@
 const express = require("express");
 const router = express.Router();
 const authmiddleware = require("../middleware/auth-middleware");
-const authmiddlewareAll = require("../middleware/auth-middlewareAll")
-const {Users, Posts, Tags, sequelize, Sequelize} = require("../models");
+const {Users, sequelize, Sequelize} = require("../models");
 const {Op} = require('sequelize');
-const Joi = require("joi");
+const {keywordSchema, searchPostSchema} = require("./joi_Schema")
 
-
-// FIXME SQL Injection 처리 필요
-const keywordSchma = Joi.object({
-    keyword: Joi.string().required()
-})
-const searchPostSchema = Joi.object({
-    keyword: Joi.string().required().allow(null),
-    searchDate: Joi.date().allow(null),
-    start: Joi.number().min(0).required(),
-    limit: Joi.number().min(1).required(),
-})
 
 router.route('/user')
     .get(authmiddleware, async (req, res) => {
         try {
-            const {keyword} = await keywordSchma.validateAsync(
+            const {keyword} = await keywordSchema.validateAsync(
                 Object.keys(req.query).length ? req.query : req.body
             )
 
@@ -32,7 +20,7 @@ router.route('/user')
                 }
             })
                 .then((result) => {
-                    res.send({
+                    res.status(200).send({
                         userId: result['dataValues'].userId,
                         profileImg: result['dataValues'].profileImg,
                         nickname: result['dataValues'].nickname,
@@ -55,9 +43,6 @@ router.route('/post')
             )
             let query;
             let result = [];
-
-
-            console.log(keyword, searchDate, start, limit);
 
             if (searchDate) {
                 const createdAt = `${searchDate.getUTCFullYear()}-${searchDate.getUTCMonth() + 1}-${searchDate.getUTCDate()} ${searchDate.getUTCHours()}:00:00`;
@@ -105,7 +90,7 @@ router.route('/post')
                             place: search.place,
                         })
                     }
-                    res.send(result)
+                    res.status(200).send(result)
                 })
         } catch (error) {
             console.log(`${req.method} ${req.originalUrl} : ${error.message}`);
