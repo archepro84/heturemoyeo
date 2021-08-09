@@ -36,7 +36,7 @@ router.route("/")
             res.cookie("authorization", token);
             res.send({token});
         } catch (error) {
-            console.log(`${req.method} ${req.baseUrl} : ${error.message}`);
+            console.log(`${req.method} ${req.originalUrl} : ${error.message}`);
             res.status(401).send({
                 errorMessage: "요청한 데이터가 올바르지 않습니다.",
             });

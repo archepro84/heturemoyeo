@@ -28,7 +28,9 @@ app.use(cors({
     origin: ["http://localhost:3000", "http://heturemoyeo.s3-website.ap-northeast-2.amazonaws.com/"],
     credentials: true
 }))
-app.use(morgan("combined"));
+// app.use(morgan("combined"));
+app.use(express.static('public'));
+
 
 
 app.use(
@@ -45,6 +47,16 @@ app.use(
 );
 
 app.use("/api", router)
+
+app.get('/maps', (req, res) => {
+    res.render("maps")
+});
+app.get('/mapskeywordsearch', (req, res) => {
+    res.render("maps_keywordSearch")
+});
+app.get('/locationaddress', (req, res) => {
+    res.render("maps_LocationAddress")
+});
 
 app.get('/socketmaps', (req, res) => {
     res.render("socket_maps")

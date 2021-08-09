@@ -40,7 +40,7 @@ router.route("/")
                     res.send({result});
                 });
         } catch (error) {
-            console.log(`${req.method} ${req.baseUrl} : ${error.message}`);
+            console.log(`${req.method} ${req.originalUrl} : ${error.message}`);
             res.status(412).send({
                 errorMessage: "입력 형식이 맞지 않습니다.",
             });
@@ -82,7 +82,7 @@ router.route("/")
                     res.send();
                 });
         } catch (error) {
-            console.log(`${req.method} ${req.baseUrl} : ${error.message}`);
+            console.log(`${req.method} ${req.originalUrl} : ${error.message}`);
             res.status(412).send({
                 errorMessage: "데이터 생성에 실패했습니다.",
             });
@@ -113,7 +113,7 @@ router.route("/request")
                     res.send({result});
                 });
         } catch (error) {
-            console.log(`${req.method} ${req.baseUrl} : ${error.message}`);
+            console.log(`${req.method} ${req.originalUrl} : ${error.message}`);
             res.status(412).send({
                 errorMessage: "입력 형식이 맞지 않습니다.",
             });

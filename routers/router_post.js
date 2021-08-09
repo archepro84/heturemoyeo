@@ -86,7 +86,7 @@ router.route("/")
                 })
 
         } catch (error) {
-            console.log(`${req.method} ${req.baseUrl} : ${error.message}`);
+            console.log(`${req.method} ${req.originalUrl} : ${error.message}`);
             res.status(401).send({
                 errorMessage: "postId의 형식이 잘못됐습니다.",
             });
@@ -124,6 +124,15 @@ router.route("/")
                 return post.null;
             });
 
+            if (startDate > endDate) {
+                res.status(412).send({
+                    errorMessage: "모임 시간이 잘못 설정되었습니다."
+                })
+                return;
+            }
+
+            // TODO endDate가 더 startDate보다 커야한다.
+
             if (Object.keys(tag).length) {
                 for (const t of tag) {
                     tagArray.push({postId, tag: t});
@@ -141,7 +150,7 @@ router.route("/")
 
             res.send();
         } catch (error) {
-            console.log(`${req.method} ${req.baseUrl} : ${error.message}`);
+            console.log(`${req.method} ${req.originalUrl} : ${error.message}`);
             res.status(412).send({errorMessage: "게시글 작성에 실패했습니다."});
         }
     })
@@ -191,7 +200,7 @@ router.route("/")
 
             res.send();
         } catch (error) {
-            console.log(`${req.method} ${req.baseUrl} : ${error.message}`);
+            console.log(`${req.method} ${req.originalUrl} : ${error.message}`);
             res.status(412)
                 .send({errorMessage: "데이터를 수정하는데 실패했습니다."});
         }
@@ -214,7 +223,7 @@ router.route("/")
 
             res.send();
         } catch (error) {
-            console.log(`${req.method} ${req.baseUrl} : ${error.message}`);
+            console.log(`${req.method} ${req.originalUrl} : ${error.message}`);
             res.status(412).send(
                 {errorMessage: "데이터가 삭제되지 않았습니다."}
             );
@@ -255,7 +264,7 @@ router.route('/posts')
                     res.send(result)
                 })
         } catch (error) {
-            console.log(`${req.method} ${req.baseUrl} : ${error.message}`);
+            console.log(`${req.method} ${req.originalUrl} : ${error.message}`);
             res.status(412).send({
                 errorMessage: "게시글 리스트를 정상적으로 가져올 수 없습니다.",
             });
@@ -296,7 +305,7 @@ router.route('/posts/my')
                     res.send(result)
                 })
         } catch (error) {
-            console.log(`${req.method} ${req.baseUrl} : ${error.message}`);
+            console.log(`${req.method} ${req.originalUrl} : ${error.message}`);
             res.status(412).send({
                 errorMessage: "내 모임 리스트를 정상적으로 가져올 수 없습니다.",
             });

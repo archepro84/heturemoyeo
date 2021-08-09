@@ -92,7 +92,7 @@ router.route('/password/email')
 
             res.send()
         } catch (error) {
-            console.log(`${req.method} ${req.baseUrl} : ${error.message}`);
+            console.log(`${req.method} ${req.originalUrl} : ${error.message}`);
             res.status(400).send({errorMessage: "인증 메일을 보낼 수 없습니다."});
         }
     })
@@ -127,7 +127,7 @@ router.route('/password/auth')
             res.status(200).send({authId})
         } catch (error) {
             // 상위 컨텍스트로 에러를 전파하는게 아니라 클라이언트로 에러를 응답해야 하는 레이어이다.
-            console.log(`${req.method} ${req.baseUrl} : ${error.message}`);
+            console.log(`${req.method} ${req.originalUrl} : ${error.message}`);
             res.status(400).send({errorMessage: "메일 인증에 실패 하였습니다."});
         }
     })
@@ -178,7 +178,7 @@ router.route('/password/newpass')
             res.status(201).send()
         } catch (error) {
             // 상위 컨텍스트로 에러를 전파하는게 아니라 클라이언트로 에러를 응답해야 하는 레이어이다.
-            console.log(`${req.method} ${req.baseUrl} : ${error.message}`);
+            console.log(`${req.method} ${req.originalUrl} : ${error.message}`);
             res.status(400).send({errorMessage: "비밀번호 변경에 실패 하였습니다."});
         }
     })

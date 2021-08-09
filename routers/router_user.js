@@ -79,7 +79,7 @@ router.route('/')
 
             res.send()
         } catch (error) {
-            console.log(`${req.method} ${req.baseUrl} : ${error.message}`);
+            console.log(`${req.method} ${req.originalUrl} : ${error.message}`);
             res.status(401).send(
                 {errorMessage: "정보를 찾을 수 없습니다."}
             )
@@ -117,7 +117,7 @@ router.route('/me')
                     })
                 })
         } catch (error) {
-            console.log(`${req.method} ${req.baseUrl} : ${error.message}`);
+            console.log(`${req.method} ${req.originalUrl} : ${error.message}`);
             res.status(401).send(
                 {errorMessage: "정보를 찾을 수 없습니다."}
             )
@@ -153,7 +153,7 @@ router.route("/target/all")
                 isFriend: null,
             });
         } catch (error) {
-            console.log(`${req.method} ${req.baseUrl} : ${error.message}`);
+            console.log(`${req.method} ${req.originalUrl} : ${error.message}`);
             res.status(412).send(
                 {errorMessage: "유저 속성값을 불러오는데 실패했습니다."});
         }
@@ -209,7 +209,7 @@ router.route('/target/friend')
                     })
                 })
         } catch (error) {
-            console.log(`${req.method} ${req.baseUrl} : ${error.message}`);
+            console.log(`${req.method} ${req.originalUrl} : ${error.message}`);
             res.status(401).send(
                 {errorMessage: "정보를 찾을 수 없습니다."}
             )
@@ -344,7 +344,7 @@ router.route('/myusers')
                     res.send({friendUsers, scheduleUsers})
                 })
         } catch (error) {
-            console.log(`${req.method} ${req.baseUrl} : ${error.message}`);
+            console.log(`${req.method} ${req.originalUrl} : ${error.message}`);
             res.status(400).send({errorMessage: "정보를 찾을 수 없습니다."});
         }
     })

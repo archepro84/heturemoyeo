@@ -53,7 +53,7 @@ router.route('/chat')
 
             res.send()
         } catch (error) {
-            console.log(`${req.method} ${req.baseUrl} : ${error.message}`);
+            console.log(`${req.method} ${req.originalUrl} : ${error.message}`);
             res.status(400).send({
                 errorMessage: "채팅 전송에 실패 하였습니다.",
             });
@@ -69,6 +69,8 @@ router.route('/:postId')
                 Object.keys(req.query).length ? req.query : req.body
             )
 
+            // TODO 회원이 아닌 경우 축출 하도록 설정
+
             const query = `
                 SELECT m.messageId, m.userId, u.nickname, u.profileImg, m.message, m.updatedAt 
                 FROM Messages AS m
@@ -83,14 +85,71 @@ router.route('/:postId')
 
             await sequelize.query(query, {type: Sequelize.QueryTypes.SELECT})
                 .then((result) => {
-                    if (!Object.keys(result).length)
-                        throw Error('데이터를 가져올 수 없습니다.')
+                    // if (!Object.keys(result).length)
+                    //     throw Error('데이터를 가져올 수 없습니다.')
                     res.send(result)
                 })
         } catch (error) {
-            console.log(`${req.method} ${req.baseUrl} : ${error.message}`);
+            console.log(`${req.method} ${req.originalUrl} : ${error.message}`);
             res.status(400).send({
                 errorMessage: "데이터를 가져올 수 없습니다.",
+            });
+        }
+    })
+
+router.route('/join')
+    .post(authmiddleware, async (req, res) => {
+        try {
+            const userId = res.locals.user.userId;
+            const {postId} = await postIdSchema.validateAsync(req.body);
+
+            const findData = await Channels.findOne({
+                attributes: ['userId'],
+                where: {postId, userId}
+            })
+            if (findData) {
+                res.status(406).send({
+                    errorMessage: "모임에 참여 중이거나 해당하는 모임이 존재하지 않습니다."
+                })
+                return;
+            }
+
+            await Channels.create({postId, userId})
+
+            res.status(200).send()
+        } catch (error) {
+            console.log(`${req.method} ${req.originalUrl} : ${error.message}`);
+            res.status(400).send({
+                errorMessage: "모임에 입장할 수 없습니다.",
+            });
+        }
+    })
+
+router.route('/exit')
+    .post(authmiddleware, async (req, res) => {
+        try {
+            const userId = res.locals.user.userId;
+            const {postId} = await postIdSchema.validateAsync(req.body);
+
+            const findData = await Channels.findOne({
+                attributes: ['userId'],
+                where: {postId, userId}
+            })
+
+            if (!findData) {
+                res.status(406).send({
+                    errorMessage: "모임에 참가하고 있지 않습니다."
+                })
+                return;
+            }
+
+            await Channels.destroy({where: {postId, userId}})
+
+            res.status(200).send()
+        } catch (error) {
+            console.log(`${req.method} ${req.originalUrl} : ${error.message}`);
+            res.status(400).send({
+                errorMessage: "모임 퇴장에 실패 하였습니다.",
             });
         }
     })

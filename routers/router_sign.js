@@ -95,7 +95,7 @@ router.route("/")
 
             res.send();
         } catch (error) {
-            console.log(`${req.method} ${req.baseUrl} : ${error.message}`);
+            console.log(`${req.method} ${req.originalUrl} : ${error.message}`);
             res.status(401).send({
                 errorMessage: "회원가입에 실패하였습니다.",
             });
@@ -119,7 +119,7 @@ router.route("/email")
             }
             res.send();
         } catch (error) {
-            console.log(`${req.method} ${req.baseUrl} : ${error.message}`);
+            console.log(`${req.method} ${req.originalUrl} : ${error.message}`);
             res.status(401).send({errorMessage: "이메일 검사에 실패하였습니다."});
         }
     });
@@ -142,7 +142,7 @@ router.route("/nickname")
 
             res.send();
         } catch (error) {
-            console.log(`${req.method} ${req.baseUrl} : ${error.message}`);
+            console.log(`${req.method} ${req.originalUrl} : ${error.message}`);
             res.status(401).send({errorMessage: "닉네임 검사에 실패하였습니다."});
         }
     });
@@ -162,7 +162,7 @@ router.route("/password")
 
             res.send();
         } catch (error) {
-            console.log(`${req.method} ${req.baseUrl} : ${error.message}`);
+            console.log(`${req.method} ${req.originalUrl} : ${error.message}`);
             res.status(401).send({errorMessage: "비밀번호 검사에 일치하지 않았습니다."});
         }
     });
