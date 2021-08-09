@@ -25,7 +25,7 @@ module.exports = (sequelize, DataTypes) => {
             unique: true
         },
         authData: {
-            type: DataTypes.STRING(20),
+            type: DataTypes.STRING(255),
             required: true,
         },
         isAuth: {

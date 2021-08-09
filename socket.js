@@ -60,7 +60,6 @@ module.exports = (server, app) => {
         }, 1000);
     });
 
-
     room.on("connect", (socket) => {
         const req = socket.request;
         const ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
@@ -77,13 +76,17 @@ module.exports = (server, app) => {
     })
 
     chat.on("connect", (socket) => {
+        // Request
         const req = socket.request;
+        //접속한 유저의 IP를 가져옴
         const ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
+
         // get Query로 들어온 postId 값을 roomId로 지정한다.
         // TODO join을 할 때 같은 값이라도 type이 다를 경우 전달이 되지 않는다.
         const postId = Number(socket.handshake.query.postId);
-        // TODO postId 데이터가 존재하지 않을경우 Conenct를 종료하도록 설정한다. / Nan 나중에 해결
+        // socket.handshake.query : req.params
 
+        // TODO postId 데이터가 존재하지 않을경우 Conenct를 종료하도록 설정한다. / Nan 나중에 해결
         console.log('chat Socket Connect', ip, postId);
 
         //postId를 기준으로 socket 방을 join 한다.

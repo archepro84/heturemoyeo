@@ -15,9 +15,7 @@ router.route('/user')
 
             await Users.findOne({
                 attributes: ['userId', 'profileImg', 'nickname', 'statusMessage'],
-                where: {
-                    [Op.or]: [{email: keyword}, {nickname: keyword}],
-                }
+                where: {[Op.or]: [{email: keyword}, {nickname: keyword}],}
             })
                 .then((result) => {
                     res.status(200).send({

@@ -82,9 +82,15 @@ test("POST /api/login 비밀번호에 특수문자가 포함되어 있지 않을
     expect(res.status).toEqual(401);
 });
 test("POST /api/login 비밀번호가 6 ~ 20글자에 포함될 경우 로그인 성공(200)", async () => {
-    const res = await supertest(app).post("/api/login").send({
+    let res = await supertest(app).post("/api/login").send({
         email: clearData.Email,
         password: clearData.Password,
+    });
+    expect(res.status).toEqual(200);
+
+    res = await supertest(app).post("/api/login").send({
+        email: "dqdq@naver.com",
+        password: "!@#qwer44q",
     });
     expect(res.status).toEqual(200);
 });
@@ -229,7 +235,7 @@ test("회원가입시 비밀번호와 비밀번호 확인이 같아야 회원가
 //     expect(res.status).toEqual(200);
 // });
 
-test("메인페이지의 유저정보확인 및 토근이 잘 이루어 졌으면 status 200이어야 한다.", async () => {
+test("메인페이지의 유저정보확인 및 토큰이 잘 이루어 졌으면 status 200이어야 한다.", async () => {
     const res = await supertest(app)
         .get("/api/user/target/all")
         .set(

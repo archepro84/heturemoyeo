@@ -20,7 +20,7 @@ router.route('/')
             } = await userModifySchema.validateAsync(req.body)
 
             if (newpassword != confirm) {
-                res.status(401).send({errorMessage: "비밀번호가 동일하지 않습니다."})
+                res.status(412).send({errorMessage: "비밀번호가 일치하지 않습니다."})
                 return;
             } else if (newpassword == '' && confirm == '') {
                 // 패스워드도 변경안함
@@ -33,7 +33,9 @@ router.route('/')
             const updateCount = await Users.update({nickname, password: cryptoNewPass, profileImg},
                 {where: {userId, password: cryptoPass}})
 
-            if (updateCount < 1) throw Error("변경된 데이터가 존재하지 않습니다.")
+            if (updateCount < 1) {
+                res.status(412).send({errorMessage: "변경된 데이터가 존재하지 않습니다."})
+            }
 
             let result = [];
             for (const x of likeItem) {
@@ -45,10 +47,10 @@ router.route('/')
 
             await Likes.bulkCreate(result)
 
-            res.status(200).send()
+            res.status(201).send()
         } catch (error) {
             console.log(`${req.method} ${req.originalUrl} : ${error.message}`);
-            res.status(401).send(
+            res.status(400).send(
                 {errorMessage: "정보를 찾을 수 없습니다."}
             )
         }
@@ -99,17 +101,17 @@ router.route("/target/all")
             const userId = await userIdNumberSchema.validateAsync(
                 Object.keys(req.query).length ? req.query.userId : req.body.userId
             );
-            const {rating, statusMessage} = await Users.findByPk(userId)
-                .then((user) => {
-                    if (!user) {
-                        throw Error("유저 정보를 찾을 수 없습니다.")
-                        // res.status(412).send({
-                        //   errorMessage: "유저 정보를 찾을 수 없습니다.",
-                        // });
-                        // return;
-                    }
-                    return user["dataValues"];
+            const userInfoData = await Users.findByPk(userId)
+
+            if (!userInfoData) {
+                res.status(412).send({
+                    errorMessage: "유저 정보를 찾을 수 없습니다.",
                 });
+                return;
+            }
+
+            const {rating, statusMessage} = userInfoData["dataValues"];
+
             res.status(200).send({
                 nickname: null,
                 rating,
@@ -122,8 +124,9 @@ router.route("/target/all")
             });
         } catch (error) {
             console.log(`${req.method} ${req.originalUrl} : ${error.message}`);
-            res.status(412).send(
-                {errorMessage: "유저 속성값을 불러오는데 실패했습니다."});
+            res.status(400).send({
+                errorMessage: "유저 속성값을 불러오는데 실패했습니다."
+            });
         }
     });
 
@@ -178,7 +181,7 @@ router.route('/target/friend')
                 })
         } catch (error) {
             console.log(`${req.method} ${req.originalUrl} : ${error.message}`);
-            res.status(401).send(
+            res.status(400).send(
                 {errorMessage: "정보를 찾을 수 없습니다."}
             )
         }
@@ -246,7 +249,7 @@ router.route('/target/post')
                     })
                 })
         } catch (error) {
-            res.status(401).send(
+            res.status(400).send(
                 {errorMessage: "정보를 찾을 수 없습니다."}
             )
         }
@@ -261,15 +264,13 @@ router.route("/status")
 
             await Users.update(
                 {statusMessage},
-                {
-                    where: {userId},
-                }
+                {where: {userId},}
             ).then((statusMsg) => {
                 if (statusMsg < 1) throw Error("정보를 찾을 수 없습니다.")
-                res.status(200).send();
+                res.status(201).send();
             });
         } catch (error) {
-            res.status(401).send({errorMessage: "정보를 찾을 수 없습니다."});
+            res.status(400).send({errorMessage: "정보를 찾을 수 없습니다."});
         }
     });
 
@@ -282,21 +283,21 @@ router.route('/myusers')
             const query = `
                 SELECT 
                 (SELECT GROUP_CONCAT(r.receiveUserId ORDER BY r.receiveUserId ASC SEPARATOR ', ') 
-                FROM (SELECT receiveUserId
-                    FROM Friends
-                    WHERE giveUserId = ${userId}) AS r
-                WHERE r.receiveUserId IN (SELECT giveUserId
-                    FROM Friends
-                    WHERE receiveUserId = ${userId})) AS friendUsers,
+                    FROM (SELECT receiveUserId
+                        FROM Friends
+                        WHERE giveUserId = ${userId}) AS r
+                    WHERE r.receiveUserId IN (SELECT giveUserId
+                        FROM Friends
+                        WHERE receiveUserId = ${userId})) AS friendUsers,
                     
                 (SELECT GROUP_CONCAT(u.userId ORDER BY u.userId ASC SEPARATOR ', ')
-                FROM (SELECT DISTINCT userId 
-                    FROM Channels 
-                    WHERE postId IN (SELECT postId 
+                    FROM (SELECT DISTINCT userId 
                         FROM Channels 
-                        WHERE userId = ${userId})
+                        WHERE postId IN (SELECT postId 
+                            FROM Channels 
+                            WHERE userId = ${userId})
                         AND userId != ${userId}
-                    ORDER BY userId ASC ) AS u)  AS scheduleUsers`
+                        ORDER BY userId ASC ) AS u)  AS scheduleUsers`
 
             await sequelize.query(query, {type: Sequelize.QueryTypes.SELECT})
                 .then((result) => {
@@ -313,7 +314,7 @@ router.route('/myusers')
                 })
         } catch (error) {
             console.log(`${req.method} ${req.originalUrl} : ${error.message}`);
-            res.status(400).send({errorMessage: "정보를 찾을 수 없습니다."});
+            res.status(400).send({errorMessage: "친구 및 일정 정보를 찾을 수 없습니다."});
         }
     })
 

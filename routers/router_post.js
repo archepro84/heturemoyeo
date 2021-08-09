@@ -53,7 +53,7 @@ router.route("/")
 
         } catch (error) {
             console.log(`${req.method} ${req.originalUrl} : ${error.message}`);
-            res.status(401).send({
+            res.status(400).send({
                 errorMessage: "postId의 형식이 잘못됐습니다.",
             });
         }
@@ -97,8 +97,6 @@ router.route("/")
                 return;
             }
 
-            // TODO endDate가 더 startDate보다 커야한다.
-
             if (Object.keys(tag).length) {
                 for (const t of tag) {
                     tagArray.push({postId, tag: t});
@@ -107,17 +105,17 @@ router.route("/")
             }
 
             // req.app.get("io") : Socket.IO에서 전달한 IO객체를 불러온다
-            // .of("/room") : "/check" 네임스페이스에 접속한다.
-            //// .to(req.params.id) : req.params.id에 해당하는 방에 접속한다.
+            // .of("/room") : "/room" 네임스페이스에 접속한다.
+            // // .to(req.params.id) : req.params.id에 해당하는 방에 접속한다.
             //.emit("newRoom", {}) : newRoom이라는 이벤트명으로 {} 객체를 전달한다.
             req.app.get("io").of("/room").emit("newRoom", {
                 postId, title, postImg, currentMember: 1, maxMember, startDate, endDate, place
             });
 
-            res.status(200).send();
+            res.status(201).send();
         } catch (error) {
             console.log(`${req.method} ${req.originalUrl} : ${error.message}`);
-            res.status(412).send({errorMessage: "게시글 작성에 실패했습니다."});
+            res.status(400).send({errorMessage: "게시글 작성에 실패했습니다."});
         }
     })
 
@@ -138,8 +136,7 @@ router.route("/")
                 tag,
             } = await postPutSchema.validateAsync(req.body);
 
-
-            await Posts.update(
+            const updateCount = await Posts.update(
                 {
                     title,
                     postImg,
@@ -153,10 +150,14 @@ router.route("/")
                 {
                     where: {userId, postId},
                 }
-            ).then((updateCount) => {
-                if (updateCount < 1) throw Error("데이터가 변경되지 않았습니다.")
-            });
+            )
 
+            if (updateCount < 1) {
+                res.status(412).send({
+                    errorMessage: "모임 정보가 변경되지 않았습니다.",
+                })
+                return;
+            }
 
             let tagArray = [];
             for (const t of tag) {
@@ -164,11 +165,10 @@ router.route("/")
             }
             await Tags.bulkCreate(tagArray);
 
-            res.status(200).send();
+            res.status(201).send();
         } catch (error) {
             console.log(`${req.method} ${req.originalUrl} : ${error.message}`);
-            res.status(412)
-                .send({errorMessage: "데이터를 수정하는데 실패했습니다."});
+            res.status(400).send({errorMessage: "모임 정보를 수정하는데 실패했습니다."});
         }
     })
 
@@ -177,21 +177,25 @@ router.route("/")
             const {userId} = res.locals.user;
             const {postId} = await postIdSchema.validateAsync(req.body);
 
-            await Posts.destroy({
+            const deleteCount = await Posts.destroy({
                 where: {
                     postId,
                     userId,
                 },
-            }).then((deleteCount) => {
-                if (deleteCount < 1) throw Error("삭제된 데이터가 없습니다.")
-            });
+            })
+
+            if (deleteCount < 1) {
+                res.status(412).send({errorMessage: "모임이 삭제되지 않았습니다."})
+                return;
+            }
+
             req.app.get("io").of("/room").emit("removeRoom", {postId})
 
-            res.status(200).send();
+            res.status(201).send();
         } catch (error) {
             console.log(`${req.method} ${req.originalUrl} : ${error.message}`);
-            res.status(412).send(
-                {errorMessage: "데이터가 삭제되지 않았습니다."}
+            res.status(400).send(
+                {errorMessage: "모임 삭제가 실패하였습니다."}
             );
         }
     });
@@ -231,7 +235,7 @@ router.route('/posts')
                 })
         } catch (error) {
             console.log(`${req.method} ${req.originalUrl} : ${error.message}`);
-            res.status(412).send({
+            res.status(400).send({
                 errorMessage: "게시글 리스트를 정상적으로 가져올 수 없습니다.",
             });
         }
@@ -272,7 +276,7 @@ router.route('/posts/my')
                 })
         } catch (error) {
             console.log(`${req.method} ${req.originalUrl} : ${error.message}`);
-            res.status(412).send({
+            res.status(400).send({
                 errorMessage: "내 모임 리스트를 정상적으로 가져올 수 없습니다.",
             });
         }

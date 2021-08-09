@@ -13,7 +13,7 @@ module.exports = {
                 allowNull: false,
             },
             authData: {
-                type: Sequelize.STRING(20),
+                type: Sequelize.STRING(255),
                 allowNull: false,
             },
             isAuth: {
@@ -36,7 +36,7 @@ module.exports = {
                 CREATE PROCEDURE SP_Auths_INSERT
                 (
                  IN auth_email varchar(255),
-                 IN auth_authData varchar(20) 
+                 IN auth_authData varchar(255) 
                 )
                 BEGIN
                     IF EXISTS (SELECT email FROM Auths WHERE email = auth_email) THEN

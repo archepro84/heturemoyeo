@@ -24,16 +24,16 @@ router.route("/")
                 .then((result) => {
                     if (!result.length) {
                         res.status(412).send({
-                            errorMessage:
-                                "친구 목록을 조회하는데 실패했습니다.",
+                            errorMessage: "친구 목록을 조회하는데 실패했습니다.",
                         });
+                        return;
                     }
                     res.status(200).send({result});
                 });
         } catch (error) {
             console.log(`${req.method} ${req.originalUrl} : ${error.message}`);
-            res.status(412).send({
-                errorMessage: "입력 형식이 맞지 않습니다.",
+            res.status(400).send({
+                errorMessage: "친구 리스트를 가져올 수 없습니다.",
             });
         }
     })
@@ -54,12 +54,10 @@ router.route("/")
             // giveUserId와 receiveUserId를 검색해서 해당하는 값이 없으면 인서트문을 실행
             const query = `
                 INSERT INTO Friends(giveUserId, receiveUserId) 
-                select ${myUserId}, ${userId}
-                WHERE NOT EXISTS 
-                (SELECT giveUserId
-                FROM Friends
-                WHERE (giveUserId = ${myUserId} AND receiveUserId = ${userId}))
-            `;
+                SELECT ${myUserId}, ${userId}
+                WHERE NOT EXISTS (SELECT giveUserId
+                    FROM Friends
+                    WHERE (giveUserId = ${myUserId} AND receiveUserId = ${userId}))`;
 
             await sequelize
                 .query(query, {type: Sequelize.QueryTypes.INSERT,})
@@ -70,12 +68,12 @@ router.route("/")
                         });
                         return;
                     }
-                    res.status(200).send();
+                    res.status(201).send();
                 });
         } catch (error) {
             console.log(`${req.method} ${req.originalUrl} : ${error.message}`);
-            res.status(412).send({
-                errorMessage: "데이터 생성에 실패했습니다.",
+            res.status(400).send({
+                errorMessage: "친구 요청에 실패하였습니다.",
             });
         }
     });
@@ -105,8 +103,8 @@ router.route("/request")
                 });
         } catch (error) {
             console.log(`${req.method} ${req.originalUrl} : ${error.message}`);
-            res.status(412).send({
-                errorMessage: "입력 형식이 맞지 않습니다.",
+            res.status(400).send({
+                errorMessage: "친구 요청 목록을 조회하는데 실패하였습니다.",
             });
         }
     });

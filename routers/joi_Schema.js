@@ -35,10 +35,6 @@ const joiSchema = {
             .pattern(/^(?=.*[a-zA-Z0-9])((?=.*\d)|(?=.*\W)).{6,20}$/)
             .required(),
     }),
-    // friendListSchema: Joi.object({
-    //     start: Joi.number().min(0).required(),
-    //     limit: Joi.number().min(1).required(),
-    // }),
     loginSchema: Joi.object({
         email: Joi.string()
             .pattern(/^[0-9a-zA-Z]([-_.]?[0-9a-zA-Z])*@[0-9a-zA-Z]([-_.]?[0-9a-zA-Z])*.[a-zA-Z]{2,3}$/i)
@@ -84,9 +80,7 @@ const joiSchema = {
         start: Joi.number().min(0).required(),
         limit: Joi.number().min(1).required(),
     }),
-
-
-// 회원가입시 해당 조건.
+    // 회원가입시 해당 조건.
     signSchema: Joi.object({
         email: Joi.string()
             .pattern(new RegExp("^[0-9a-zA-Z]([-_.]?[0-9a-zA-Z])*@[0-9a-zA-Z]([-_.]?[0-9a-zA-Z])*.[a-zA-Z]{2,3}$"))
@@ -135,16 +129,13 @@ const joiSchema = {
         nickname: Joi.string()
             .pattern(new RegExp("^[ㄱ-ㅎ|ㅏ-ㅣ|가-힣\\s|0-9a-zA-z]{3,20}$"))
             .required(),
-
         password: Joi.string()
             .pattern(/^(?=.*[a-zA-Z0-9])((?=.*\d)|(?=.*\W)).{6,20}$/)
             .required(),
-
         newpassword: Joi.string()
             .pattern(/^(?=.*[a-zA-Z0-9])((?=.*\d)|(?=.*\W)).{6,20}$/)
             .allow(null, '')
             .required(),
-
         confirm: Joi.string()
             .pattern(/^(?=.*[a-zA-Z0-9])((?=.*\d)|(?=.*\W)).{6,20}$/)
             // .pattern(new RegExp("^(?=.*[a-zA-Z0-9])((?=.*\\d)|(?=.*\\W)).{6,20}$"))

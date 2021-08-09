@@ -1,21 +1,50 @@
-const request = require("supertest");
-const app = require("../app");
+const schema = require("../routers/joi_Schema")
+const clearData = require("./clearData")
 
-// user api 테스트
-test("회원정보 수정(닉네임,프로필, 이미지, 태그 변경)", async () => {
-    const response = await request(app)
-        .put("/api/user")
-        .set(
-            "authorization",
-            "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsImlhdCI6MTYyODEzMDgwN30.fizpZlhmxstJcUgPweHLNTfUQarVO6T97HBCGwShaU4"
-        )
-        .send({
-            nickname: "pink",
-            password: "!@#4qwer",
-            newpassword: "",
-            confirm: "",
-            profileImg: "testUrl",
-            likeItem: ["game", "board", "kukuku"],
-        });
-    expect(response.status).toEqual(200);
+
+test("userIdSchema : userId가 number 형식이 아닐 경우 실패", async () => {
+    await expect(schema.userIdSchema.validateAsync({userId: "hello"})).rejects.toThrowError();
+    await expect(schema.userIdSchema.validateAsync({userId: 'a'})).rejects.toThrowError();
+    await expect(schema.userIdSchema.validateAsync({userId: []})).rejects.toThrowError();
+    await expect(schema.userIdSchema.validateAsync({userId: {}})).rejects.toThrowError();
+    await expect(schema.userIdSchema.validateAsync({userId: true})).rejects.toThrowError();
 });
+test("userIdSchema : userId가 1보다 작을 경우 실패", async () => {
+    await expect(schema.userIdSchema.validateAsync({userId: 0})).rejects.toThrowError();
+    await expect(schema.userIdSchema.validateAsync({userId: -1})).rejects.toThrowError();
+});
+test("userIdSchema : userId가 비었거나 없을 경우 실패", async () => {
+    await expect(schema.userIdSchema.validateAsync({})).rejects.toThrowError();
+    await expect(schema.userIdSchema.validateAsync({userId: null})).rejects.toThrowError();
+});
+test("userIdSchema : userId가 성공", async () => {
+    await expect(schema.userIdSchema.validateAsync({userId: 1})) // 성공
+});
+
+
+test("userModifySchema : nickname이 3글자 미만일 경우 실패 ", async () => {
+    await expect(schema.userModifySchema.validateAsync({
+        nickname: "qq",
+        password: clearData.SchemaPassword,
+        newpassword: clearData.SchemaPassword,
+        confirm: clearData.SchemaPassword,
+        profileImg: clearData.SchemaProfileImg,
+        likeItem: clearData.SchemaLikeItem,
+    }))
+        .rejects.toThrowError()
+
+    await expect(schema.userModifySchema.validateAsync({
+        nickname: "q",
+        password: clearData.SchemaPassword,
+        newpassword: clearData.SchemaPassword,
+        confirm: clearData.SchemaPassword,
+        profileImg: clearData.SchemaProfileImg,
+        likeItem: clearData.SchemaLikeItem,
+    }))
+        .rejects.toThrowError()
+});
+
+
+
+
+

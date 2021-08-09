@@ -29,7 +29,10 @@ router.route('/password/email')
 
             // TODO 인증메일 재 전송 시간을 어떻게 체크하지?
             const authData = RandomCode(6);
+
+            // Nodemailer를 활용해 메일을 보낸다.
             let transporter = nodemailer.createTransport({
+                // 사용자 계정을이용해 AWS SES에 접속한다.
                 SES: new AWS.SES({
                     apiVersion: '2010-12-01',
                     accessKeyId: process.env.AWS_ACCESS_KEY_ID,
@@ -47,17 +50,20 @@ router.route('/password/email')
                 if (error) {
                     throw Error(error);
                 }
+                //From, To의 주체를 출력한다.
                 console.log(info.envelope);
             });
 
+            const cryptoAuthData = crypto.createHash('sha512')
+                .update(authData)
+                .digest('base64')
 
             // Sequelize에서 PROCEDURE를 사용하는 방법
             await sequelize.query('CALL SP_Auths_INSERT(:email, :authData)',
                 {
-                    replacements: {email, authData}, // :email, :authData에 데이터를 넣어준다.
+                    replacements: {email, authData: cryptoAuthData}, // :email, :authData에 데이터를 넣어준다.
                     type: Sequelize.QueryTypes.PROCEDURE //현재 사용하고 있는 Query의 형식을 정의한다.
                 })
-
             res.status(200).send()
         } catch (error) {
             console.log(`${req.method} ${req.originalUrl} : ${error.message}`);
@@ -71,17 +77,23 @@ router.route('/password/auth')
         try {
             const {email, authData} = await authDataSchema.validateAsync(req.body);
             const nowTime = new Date();
-            const authDelay = 60 * 5 * (10 ** 3); // 5분
+            const authDelay = 5 * 60 * (10 ** 3); // 5분
+
+            const cryptoAuthData = crypto.createHash('sha512')
+                .update(authData)
+                .digest('base64')
 
             // 구조분해 할당을 줄이고, 변수를 바로 사용할 수 있도록 하자.
-            const {authId, updatedAt} = await Auths.findOne({
-                where: {email, authData},
+            const authsData = await Auths.findOne({
+                where: {email, authData: cryptoAuthData},
             })
-                .then((result) => {
-                    return result['dataValues']
-                })
+            if (!authsData) {
+                res.status(412).send({errorMessage: "인증번호 검사에 실패 하였습니다."})
+                return;
+            }
+            const {authId, updatedAt} = authsData['dataValues']
 
-            // TODO 에러 처리를 밖에서 해야할까? 내부에서 throw Error로 처리하는게 좋을까?
+
             if (nowTime - updatedAt > authDelay) {
                 res.status(408).send({errorMessage: "메일 인증 시간을 초과 하였습니다."})
                 return;
@@ -89,9 +101,8 @@ router.route('/password/auth')
 
             await Auths.update(
                 {isAuth: 1},
-                {where: {email, authData}}
+                {where: {email, authData: cryptoAuthData}}
             )
-
             res.status(200).send({authId})
         } catch (error) {
             // 상위 컨텍스트로 에러를 전파하는게 아니라 클라이언트로 에러를 응답해야 하는 레이어이다.
@@ -101,13 +112,12 @@ router.route('/password/auth')
     })
 
 
-// FIXME 비밀번호 찾기 테이블과 이메일 인증 테이블을 Auths 하나로 사용하는게 맞는가?
 router.route('/password/newpass')
     .post(logincheckmiddleware, async (req, res) => {
         try {
             const {authId, email, password, confirm} = await newPassSchema.validateAsync(req.body);
             const nowTime = new Date();
-            const newPassDelay = 60 * 30 * (10 ** 3); // 30분
+            const newPassDelay = 30 * 60 * (10 ** 3); // 30분
 
             if (password != confirm) {
                 res.status(412).send({errorMessage: "패스워드가 동일하지 않습니다."})
@@ -123,12 +133,13 @@ router.route('/password/newpass')
                 AND a.email = "${email}"
                 AND a.isAuth = 1`
 
-            const {userId, updatedAt} = await sequelize.query(query, {type: Sequelize.QueryTypes.SELECT,})
-                .then((result) => {
-                    return result[0]
-                })
+            const newpassData = await sequelize.query(query, {type: Sequelize.QueryTypes.SELECT,})
+            if (!Object.keys(newpassData).length) {
+                res.status(412).send({errorMessage: "인증 번호가 일치하지 않습니다."})
+                return;
+            }
+            const {userId, updatedAt} = newpassData[0]
 
-            // TODO 에러 처리를 밖에서 해야할까? 내부에서 throw Error로 처리하는게 좋을까?
             if (nowTime - updatedAt > newPassDelay) {
                 res.status(408).send({errorMessage: "메일 인증 시간을 초과 하였습니다."})
                 return;
@@ -136,6 +147,7 @@ router.route('/password/newpass')
 
             const cryptoPass = crypto.createHash('sha512').update(password).digest('base64')
 
+            //안전하게 변경하기위해 userId를 WHERE절에 추가합니다.
             await Users.update(
                 {password: cryptoPass},
                 {where: {userId, email}}

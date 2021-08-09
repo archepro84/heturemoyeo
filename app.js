@@ -7,14 +7,25 @@ const nunjucks = require("nunjucks");
 const socketIO = require("./socket");
 const session = require("express-session");
 const swaggerUi = require("swagger-ui-express");
-const swaggerFile = require("./swagger-output.json");
+const swaggerFile = require("./swagger/swagger-output.json");
 const morgan = require("morgan")
 
 require('dotenv').config();
 const port = 4001;
-
 const app = express()
+
+
+// const Https = require("https");
+// const fs = require("fs")
+// const domainName = 'astraios.shop'
+// const options = { // letsencrypt로 받은 인증서 경로를 입력
+//     ca: fs.readFileSync(`/etc/letsencrypt/live/${domainName}/fullchain.pem`),
+//     key: fs.readFileSync(`/etc/letsencrypt/live/${domainName}/privkey.pem`),
+//     cert: fs.readFileSync(`/etc/letsencrypt/live/${domainName}/cert.pem`),
+// };
+// Https.createServer(options, app).listen(443);
 const http = Http.createServer(app)
+
 
 app.set('view engine', 'html');
 nunjucks.configure('views', {
@@ -49,31 +60,31 @@ app.use(
 );
 
 app.use("/api", router)
-//
-// app.get('/maps', (req, res) => {
-//     res.render("maps")
-// });
-// app.get('/mapskeywordsearch', (req, res) => {
-//     res.render("maps_keywordSearch")
-// });
-// app.get('/locationaddress', (req, res) => {
-//     res.render("maps_LocationAddress")
-// });
-//
-// app.get('/socketmaps', (req, res) => {
-//     res.render("socket_maps")
-// });
-//
-// app.get('/room', (req, res) => {
-//     res.render("main_room")
-// });
-// app.get('/room/my', (req, res) => {
-//     res.render("main_room_my")
-// });
-//
-// app.get('/chat/:postId', (req, res) => {
-//     res.render("chat", {postId: req.params.postId})
-// });
+
+app.get('/maps', (req, res) => {
+    res.render("maps")
+});
+app.get('/mapskeywordsearch', (req, res) => {
+    res.render("maps_keywordSearch")
+});
+app.get('/locationaddress', (req, res) => {
+    res.render("maps_LocationAddress")
+});
+
+app.get('/socketmaps', (req, res) => {
+    res.render("socket_maps")
+});
+
+app.get('/room', (req, res) => {
+    res.render("main_room")
+});
+app.get('/room/my', (req, res) => {
+    res.render("main_room_my")
+});
+
+app.get('/chat/:postId', (req, res) => {
+    res.render("chat", {postId: req.params.postId})
+});
 
 const server = http.listen(port, () => {
     console.log(`localhost:  http://localhost:${port}`);

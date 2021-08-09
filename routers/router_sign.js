@@ -31,7 +31,7 @@ router.route("/")
                 statusMessage,
             }).then((user) => {
                 if (!user) {
-                    res.status(401).send({
+                    res.status(412).send({
                         errorMessage: "회원정보를 생성하는데 실패하였습니다.",
                     });
                     return;
@@ -46,10 +46,10 @@ router.route("/")
 
             await Likes.bulkCreate(result);
 
-            res.status(200).send();
+            res.status(201).send();
         } catch (error) {
             console.log(`${req.method} ${req.originalUrl} : ${error.message}`);
-            res.status(401).send({
+            res.status(400).send({
                 errorMessage: "회원가입에 실패하였습니다.",
             });
         }
@@ -87,7 +87,7 @@ router.route("/email")
                 where: {email}
             });
             if (user) {
-                res.status(401).send({
+                res.status(412).send({
                     errorMessage: "동일한 이메일이 존재합니다. 다시 입력해주세요.",
                 });
                 return;
@@ -95,7 +95,7 @@ router.route("/email")
             res.status(200).send();
         } catch (error) {
             console.log(`${req.method} ${req.originalUrl} : ${error.message}`);
-            res.status(401).send({errorMessage: "이메일 검사에 실패하였습니다."});
+            res.status(400).send({errorMessage: "이메일 검사에 실패하였습니다."});
         }
     });
 
@@ -109,7 +109,7 @@ router.route("/nickname")
             });
 
             if (nick) {
-                res.status(401).send({
+                res.status(412).send({
                     errorMessage: "동일한 닉네임이 존재합니다. 다시 입력해주세요.",
                 });
                 return;
@@ -118,7 +118,7 @@ router.route("/nickname")
             res.status(200).send();
         } catch (error) {
             console.log(`${req.method} ${req.originalUrl} : ${error.message}`);
-            res.status(401).send({errorMessage: "닉네임 검사에 실패하였습니다."});
+            res.status(400).send({errorMessage: "닉네임 검사에 실패하였습니다."});
         }
     });
 
@@ -129,7 +129,7 @@ router.route("/password")
             const {password, confirm} = await confirmSchema.validateAsync(req.body);
 
             if (password !== confirm) {
-                res.status(401).send({
+                res.status(412).send({
                     errorMessage: "비밀번호가 일치하지 않습니다.",
                 });
                 return;
@@ -138,7 +138,7 @@ router.route("/password")
             res.status(200).send();
         } catch (error) {
             console.log(`${req.method} ${req.originalUrl} : ${error.message}`);
-            res.status(401).send({errorMessage: "비밀번호 검사에 일치하지 않았습니다."});
+            res.status(400).send({errorMessage: "비밀번호 검사에 일치하지 않았습니다."});
         }
     });
 
