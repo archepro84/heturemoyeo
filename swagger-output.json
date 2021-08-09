@@ -1,0 +1,869 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "title": "My API",
+        "description": "Description",
+        "version": "1.0.0"
+    },
+    "host": "localhost:4001",
+    "basePath": "/",
+    "tags": [],
+    "schemes": ["http"],
+    "consumes": [],
+    "produces": [],
+    "paths": {
+        "/maps": {
+            "get": {
+                "tags": [],
+                "description": "",
+                "parameters": [],
+                "responses": {}
+            }
+        },
+        "/mapskeywordsearch": {
+            "get": {
+                "tags": [],
+                "description": "",
+                "parameters": [],
+                "responses": {}
+            }
+        },
+        "/locationaddress": {
+            "get": {
+                "tags": [],
+                "description": "",
+                "parameters": [],
+                "responses": {}
+            }
+        },
+        "/socketmaps": {
+            "get": {
+                "tags": [],
+                "description": "",
+                "parameters": [],
+                "responses": {}
+            }
+        },
+        "/room": {
+            "get": {
+                "tags": [],
+                "description": "",
+                "parameters": [],
+                "responses": {}
+            }
+        },
+        "/room/my": {
+            "get": {
+                "tags": [],
+                "description": "",
+                "parameters": [],
+                "responses": {}
+            }
+        },
+        "/chat/{postId}": {
+            "get": {
+                "tags": [],
+                "description": "",
+                "parameters": [
+                    {
+                        "name": "postId",
+                        "in": "path",
+                        "required": true,
+                        "type": "string"
+                    }
+                ],
+                "responses": {}
+            }
+        },
+        "/api/user/": {
+            "put": {
+                "tags": ["유저정보 변경"],
+                "description": "",
+                "parameters": [
+                    {
+                        "name": "users",
+                        "in": "body",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "nickname": {
+                                    "example": "닉네임"
+                                },
+                                "password": {
+                                    "example": "기존 비밀번호"
+                                },
+                                "newpassword": {
+                                    "example": ""
+                                },
+                                "confirm": {
+                                    "example": ""
+                                },
+                                "profileImg": {
+                                    "example": ".Img"
+                                },
+                                "likeItem": {
+                                    "example": ["카테고리"]
+                                }
+                            }
+                        }
+                    }
+                ],
+                "responses": {
+                    "401": {
+                        "description": "Unauthorized"
+                    }
+                }
+            }
+        },
+        "/api/user/me": {
+            "post": {
+                "tags": ["사용자 인증"],
+                "description": "",
+                "parameters": [],
+                "responses": {
+                    "401": {
+                        "description": "Unauthorized"
+                    }
+                }
+            }
+        },
+        "/api/user/target/all": {
+            "get": {
+                "tags": ["유저의 정보 확인"],
+                "description": "",
+                "parameters": [
+                    {
+                        "name": "userId",
+                        "in": "query",
+                        "type": "string"
+                    }
+                ],
+                "responses": {
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "412": {
+                        "description": "Precondition Failed"
+                    }
+                }
+            }
+        },
+        "/api/user/target/friend": {
+            "get": {
+                "tags": ["등록된 친구 확인"],
+                "description": "",
+                "parameters": [
+                    {
+                        "name": "userId",
+                        "in": "query",
+                        "type": "string"
+                    }
+                ],
+                "responses": {
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "412": {
+                        "description": "Precondition Failed"
+                    }
+                }
+            }
+        },
+        "/api/user/target/post": {
+            "get": {
+                "tags": ["일정이 같은 사람 유저정보 확인"],
+                "description": "",
+                "parameters": [
+                    {
+                        "name": "userId",
+                        "in": "query",
+                        "type": "string"
+                    }
+                ],
+                "responses": {
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "412": {
+                        "description": "Precondition Failed"
+                    }
+                }
+            }
+        },
+        "/api/user/status": {
+            "put": {
+                "tags": ["게시글 수정"],
+                "description": "",
+                "parameters": [
+                    {
+                        "name": "statusMsg",
+                        "in": "body",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "statusMessage": {
+                                    "example": "any"
+                                }
+                            }
+                        }
+                    }
+                ],
+                "responses": {
+                    "401": {
+                        "description": "Unauthorized"
+                    }
+                }
+            }
+        },
+        "/api/user/myusers": {
+            "get": {
+                "tags": [],
+                "description": "",
+                "parameters": [],
+                "responses": {
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    }
+                }
+            }
+        },
+        "/api/post/": {
+            "get": {
+                "tags": ["모임 상세 페이지"],
+                "description": "",
+                "parameters": [
+                    {
+                        "name": "postId",
+                        "in": "body",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "postId": {
+                                    "example": "3"
+                                }
+                            }
+                        }
+                    }
+                ],
+                "responses": {
+                    "401": {
+                        "description": "Unauthorized"
+                    }
+                }
+            },
+            "post": {
+                "tags": ["모임 구하기 작성"],
+                "description": "",
+                "parameters": [
+                    {
+                        "name": "posting",
+                        "in": "body",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "title": {
+                                    "example": "글 제목"
+                                },
+                                "postImg": {
+                                    "example": ".Img"
+                                },
+                                "content": {
+                                    "example": "글 작성란"
+                                },
+                                "maxMember": {
+                                    "example": "3"
+                                },
+                                "startDate": {
+                                    "example": 10000
+                                },
+                                "endDate": {
+                                    "example": 10000
+                                },
+                                "place": {
+                                    "example": "만날 장소"
+                                },
+                                "bring": {
+                                    "example": "뿜빠이"
+                                },
+                                "tag": {
+                                    "example": ["방탈출", "수첩", "연필"]
+                                }
+                            }
+                        }
+                    }
+                ],
+                "responses": {
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "412": {
+                        "description": "Precondition Failed"
+                    }
+                }
+            },
+            "put": {
+                "tags": ["모임 수정하기"],
+                "description": "",
+                "parameters": [
+                    {
+                        "name": "posting",
+                        "in": "body",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "postId": {
+                                    "example": "3"
+                                },
+                                "title": {
+                                    "example": "글 제목"
+                                },
+                                "postImg": {
+                                    "example": ".Img"
+                                },
+                                "content": {
+                                    "example": "글 작성란"
+                                },
+                                "maxMember": {
+                                    "example": "3"
+                                },
+                                "startDate": {
+                                    "example": 10000
+                                },
+                                "endDate": {
+                                    "example": 10000
+                                },
+                                "place": {
+                                    "example": "만날 장소"
+                                },
+                                "bring": {
+                                    "example": "뿜빠이"
+                                },
+                                "tag": {
+                                    "example": ["방탈출", "수첩", "연필"]
+                                }
+                            }
+                        }
+                    }
+                ],
+                "responses": {
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "412": {
+                        "description": "Precondition Failed"
+                    }
+                }
+            },
+            "delete": {
+                "tags": ["모임 삭제"],
+                "description": "",
+                "parameters": [
+                    {
+                        "name": "postId",
+                        "in": "body",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "postId": {
+                                    "example": " "
+                                }
+                            }
+                        }
+                    }
+                ],
+                "responses": {
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "412": {
+                        "description": "Precondition Failed"
+                    }
+                }
+            }
+        },
+        "/api/post/posts": {
+            "get": {
+                "tags": ["전체 모임 리스트"],
+                "description": "",
+                "parameters": [
+                    {
+                        "name": "start",
+                        "in": "query",
+                        "type": "string"
+                    },
+                    {
+                        "name": "limit",
+                        "in": "query",
+                        "type": "string"
+                    }
+                ],
+                "responses": {
+                    "412": {
+                        "description": "Precondition Failed"
+                    }
+                }
+            }
+        },
+        "/api/post/posts/my": {
+            "get": {
+                "tags": [],
+                "description": "",
+                "parameters": [],
+                "responses": {
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "412": {
+                        "description": "Precondition Failed"
+                    }
+                }
+            }
+        },
+        "/api/sign/": {
+            "post": {
+                "tags": ["회원가입"],
+                "description": "",
+                "parameters": [
+                    {
+                        "name": "users",
+                        "in": "body",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "email": {
+                                    "example": "dddd@gmail.com"
+                                },
+                                "name": {
+                                    "example": "gwan"
+                                },
+                                "nickname": {
+                                    "example": "nick"
+                                },
+                                "password": {
+                                    "example": "qwer!@#"
+                                },
+                                "confirm": {
+                                    "example": "qwer!@#"
+                                },
+                                "profileImg": {
+                                    "example": ".png"
+                                },
+                                "statusMessage": {
+                                    "example": "i like game"
+                                },
+                                "likeItem": {
+                                    "example": ["game"]
+                                }
+                            }
+                        }
+                    }
+                ],
+                "responses": {
+                    "401": {
+                        "description": "Unauthorized"
+                    }
+                }
+            }
+        },
+        "/api/sign/email": {
+            "post": {
+                "tags": ["이메일 중복확인"],
+                "description": "",
+                "parameters": [
+                    {
+                        "name": "obj",
+                        "in": "body",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "email": {
+                                    "example": "any"
+                                }
+                            }
+                        }
+                    }
+                ],
+                "responses": {
+                    "401": {
+                        "description": "Unauthorized"
+                    }
+                }
+            }
+        },
+        "/api/sign/nickname": {
+            "post": {
+                "tags": ["닉네임 중복확인"],
+                "description": "",
+                "parameters": [
+                    {
+                        "name": "obj",
+                        "in": "body",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "nickname": {
+                                    "example": "any"
+                                }
+                            }
+                        }
+                    }
+                ],
+                "responses": {
+                    "401": {
+                        "description": "Unauthorized"
+                    }
+                }
+            }
+        },
+        "/api/sign/password": {
+            "post": {
+                "tags": ["비밀번호 확인"],
+                "description": "",
+                "parameters": [
+                    {
+                        "name": "password",
+                        "in": "body",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "password": {
+                                    "example": "any"
+                                },
+                                "confirm": {
+                                    "example": "any"
+                                }
+                            }
+                        }
+                    }
+                ],
+                "responses": {
+                    "401": {
+                        "description": "Unauthorized"
+                    }
+                }
+            }
+        },
+        "/api/search/user": {
+            "get": {
+                "tags": ["전체 유저 검색"],
+                "description": "",
+                "parameters": [
+                    {
+                        "name": "keyword",
+                        "in": "query",
+                        "type": "string"
+                    }
+                ],
+                "responses": {
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    }
+                }
+            }
+        },
+        "/api/search/post": {
+            "get": {
+                "tags": [],
+                "description": "",
+                "parameters": [],
+                "responses": {
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    }
+                }
+            }
+        },
+        "/api/login/": {
+            "post": {
+                "tags": ["로그인"],
+                "description": "",
+                "parameters": [
+                    {
+                        "name": "login",
+                        "in": "body",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "email": {
+                                    "example": "qwert@gmail.com"
+                                },
+                                "password": {
+                                    "example": "qwer!@#"
+                                }
+                            }
+                        }
+                    }
+                ],
+                "responses": {
+                    "401": {
+                        "description": "Unauthorized"
+                    }
+                }
+            }
+        },
+        "/api/login/test": {
+            "post": {
+                "tags": ["토큰확인"],
+                "description": "",
+                "parameters": [
+                    {
+                        "name": "token",
+                        "in": "body",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "userId": {
+                                    "example": ""
+                                }
+                            }
+                        }
+                    }
+                ],
+                "responses": {}
+            }
+        },
+        "/api/find/password/email": {
+            "post": {
+                "tags": ["이메일 전송"],
+                "description": "",
+                "parameters": [
+                    {
+                        "name": "email",
+                        "in": "body",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "email": {
+                                    "example": ""
+                                }
+                            }
+                        }
+                    }
+                ],
+                "responses": {
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "412": {
+                        "description": "Precondition Failed"
+                    }
+                }
+            }
+        },
+        "/api/find/password/auth": {
+            "post": {
+                "tags": [],
+                "description": "",
+                "parameters": [],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "408": {
+                        "description": "Request Timeout"
+                    }
+                }
+            }
+        },
+        "/api/find/password/newpass": {
+            "post": {
+                "tags": [],
+                "description": "",
+                "parameters": [],
+                "responses": {
+                    "201": {
+                        "description": "Created"
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "408": {
+                        "description": "Request Timeout"
+                    },
+                    "412": {
+                        "description": "Precondition Failed"
+                    }
+                }
+            }
+        },
+        "/api/friend/": {
+            "get": {
+                "tags": ["친구 리스트"],
+                "description": "",
+                "parameters": [
+                    {
+                        "name": "start",
+                        "in": "query",
+                        "type": "string"
+                    },
+                    {
+                        "name": "limit",
+                        "in": "query",
+                        "type": "string"
+                    }
+                ],
+                "responses": {
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "412": {
+                        "description": "Precondition Failed"
+                    }
+                }
+            },
+            "post": {
+                "tags": ["친구 요청 및 수락"],
+                "description": "",
+                "parameters": [
+                    {
+                        "name": "userId",
+                        "in": "body",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "userId": {
+                                    "example": ""
+                                }
+                            }
+                        }
+                    }
+                ],
+                "responses": {
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "412": {
+                        "description": "Precondition Failed"
+                    }
+                }
+            }
+        },
+        "/api/friend/request": {
+            "get": {
+                "tags": ["친구 받은 요청 리스트"],
+                "description": "",
+                "parameters": [
+                    {
+                        "name": "start",
+                        "in": "query",
+                        "type": "string"
+                    },
+                    {
+                        "name": "limit",
+                        "in": "query",
+                        "type": "string"
+                    }
+                ],
+                "responses": {
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "412": {
+                        "description": "Precondition Failed"
+                    }
+                }
+            }
+        },
+        "/api/room/chat": {
+            "post": {
+                "tags": [],
+                "description": "",
+                "parameters": [],
+                "responses": {
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    }
+                }
+            }
+        },
+        "/api/room/{postId}": {
+            "get": {
+                "tags": [],
+                "description": "",
+                "parameters": [
+                    {
+                        "name": "postId",
+                        "in": "path",
+                        "required": true,
+                        "type": "string"
+                    }
+                ],
+                "responses": {
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    }
+                }
+            }
+        },
+        "/api/room/join": {
+            "post": {
+                "tags": [],
+                "description": "",
+                "parameters": [],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "406": {
+                        "description": "Not Acceptable"
+                    }
+                }
+            }
+        },
+        "/api/room/exit": {
+            "post": {
+                "tags": [],
+                "description": "",
+                "parameters": [],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "406": {
+                        "description": "Not Acceptable"
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {}
+}
