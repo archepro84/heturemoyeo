@@ -48,6 +48,9 @@ module.exports = (sequelize, DataTypes) => {
         place: {
             type: DataTypes.STRING,
         },
+        location: {
+            type: DataTypes.GEOMETRY('POINT', 4326)
+        },
         bring: {
             type: DataTypes.STRING,
         },

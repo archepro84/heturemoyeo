@@ -44,13 +44,15 @@ const joiSchema = {
             .required(),
     }),
     postSchema: Joi.object({
-        title: Joi.string().min(1).max(100).allow(null, "").required(),
+        title: Joi.string().min(1).max(100).required(),
         postImg: Joi.string().allow(null, '').required(),
         content: Joi.string().max(1000),
         maxMember: Joi.number().max(255).required(),
         startDate: Joi.date().required(),
         endDate: Joi.date().required(),
         place: Joi.string(),
+        lat: Joi.number().min(-90).max(90).allow(null),
+        lng: Joi.number().min(-180).max(180).allow(null),
         bring: Joi.string(),
         tag: Joi.array().required(),
     }),
@@ -63,6 +65,8 @@ const joiSchema = {
         startDate: Joi.date().required(),
         endDate: Joi.date().required(),
         place: Joi.string(),
+        lat: Joi.number().min(-90).max(90).allow(null),
+        lng: Joi.number().min(-180).max(180).allow(null),
         bring: Joi.string(),
         tag: Joi.array().required(),
     }),
@@ -80,7 +84,6 @@ const joiSchema = {
         start: Joi.number().min(0).required(),
         limit: Joi.number().min(1).required(),
     }),
-    // 회원가입시 해당 조건.
     signSchema: Joi.object({
         email: Joi.string()
             .pattern(new RegExp("^[0-9a-zA-Z]([-_.]?[0-9a-zA-Z])*@[0-9a-zA-Z]([-_.]?[0-9a-zA-Z])*.[a-zA-Z]{2,3}$"))
@@ -124,7 +127,6 @@ const joiSchema = {
     statusMessageSchema: Joi.object({
         statusMessage: Joi.string().allow(null, '').required()
     }),
-    // 회원가입시 해당 조건.
     userModifySchema : Joi.object({
         nickname: Joi.string()
             .pattern(new RegExp("^[ㄱ-ㅎ|ㅏ-ㅣ|가-힣\\s|0-9a-zA-z]{3,20}$"))

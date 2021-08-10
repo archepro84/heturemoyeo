@@ -42,6 +42,9 @@ module.exports = {
             place: {
                 type: Sequelize.STRING
             },
+            location: {
+                type: Sequelize.GEOMETRY('POINT', 4326)
+            },
             bring: {
                 type: Sequelize.STRING
             },
