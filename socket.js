@@ -1,16 +1,18 @@
 const SocketIO = require("socket.io")
+const socketAuthMiddleWare = require("./middleware/socket-auth-middleware")
+const {Posts, sequelize, Sequelize} = require("./models")
 
 module.exports = (server, app) => {
-    // let result = {} //모든 User한테 전달한 Object를 설정한다.
-    let result = {}
-    result[2] = {lat: 37.5671461, lng: 126.9309533}
-    result[3] = {lat: 37.5679144, lng: 126.9344071}
+    // let userLocation = {} //모든 User한테 전달한 Object를 설정한다.
+    let userLocation = {}
+    userLocation[2] = {lat: 37.5671461, lng: 126.9309533}
+    userLocation[3] = {lat: 37.5679144, lng: 126.9344071}
 
-    result[4] = {lat: 37.562110, lng: 126.941069}
-    result[5] = {lat: 37.564304,  lng: 126.933688}
-    result[6] = {lat: 37.561851, lng: 126.944231}
-    result[7] = {lat: 37.559209, lng: 126.939785}
-    result[8] = {lat: 37.5663129, lng: 126.9316755}
+    userLocation[4] = {lat: 37.562110, lng: 126.941069}
+    userLocation[5] = {lat: 37.564304, lng: 126.933688}
+    userLocation[6] = {lat: 37.561851, lng: 126.944231}
+    userLocation[7] = {lat: 37.559209, lng: 126.939785}
+    userLocation[8] = {lat: 37.5663129, lng: 126.9316755}
 
     let socketIdObject = {} //접속한 Socket이 사용하는 UserId를 설정한다.
     const io = SocketIO(server, {path: "/socket.io", cors: {origins: '*:*'}})
@@ -20,7 +22,9 @@ module.exports = (server, app) => {
     const room = io.of("/room");
     const chat = io.of("/chat");
 
-    location.on("connection", (socket) => {
+
+    location.use(socketAuthMiddleWare)
+    location.on("connection", async (socket) => {
         const req = socket.request;
         const ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
         console.log('Location Socket Connect / IP :', ip);
@@ -29,35 +33,52 @@ module.exports = (server, app) => {
         socket.on("disconnect", () => {
             if (socketIdObject[socket.id]) {
                 // TODO Javascript 의 Object Delete의 시간 복잡도는?
-                delete result[socketIdObject[socket.id]]
+                delete userLocation[socketIdObject[socket.id]]
                 delete socketIdObject[socket.id]
             }
             console.log("Location Socket Client Disconnect / IP :", ip);
             // console.log("Location Socket Cliend DisConnect / socket ID : ", socket.id);
             clearInterval(socket.interval);
+            // clearInterval(socket.postInterval);
         })
 
         socket.on("error", (error) => {
             console.error(error);
         })
 
-        // TODO 보내주는 User가 인증받은 User인지 어떻게 확인할 수 있지?
+        // FIXME 누군가 latlng로 디도스를 건다면? 자동으로 차단할 수 있도록 설정하자.
         socket.on("latlng", (LocationData) => {
             try {
-
-                // TODO 코드 선언 구조분해 줄이기
                 const {userId, lat, lng} = LocationData;
                 socketIdObject[socket.id] = userId
+                userLocation[userId] = {lat, lng};
 
-                result[userId] = {lat, lng};
             } catch (error) {
                 console.log(`${req.method} ${req.baseUrl} : ${error.message}`);
             }
         })
 
         socket.interval = setInterval(() => { // 3초마다 클라이언트로 메시지 전송
-            socket.emit("userLocation", result)
-        }, 1000);
+            socket.emit("userLocation", userLocation)
+        }, 3000);
+        socket.on("getPostList", async () => {
+            const postList = [];
+            await Posts.findAll({
+                attributes: ['postId', 'location'],
+                where: {location: {[Sequelize.Op.not]: null}}
+            })
+                .then((result) => {
+                    for (const x of result) {
+                        postList.push({
+                            postId: x['dataValues'].postId,
+                            lat: x['dataValues'].location.coordinates[0],
+                            lng: x['dataValues'].location.coordinates[1],
+                        })
+                    }
+                    socket.emit('postList', postList)
+                })
+        })
+
     });
 
     room.on("connect", (socket) => {

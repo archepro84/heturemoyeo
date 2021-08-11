@@ -14,7 +14,7 @@ router.route("/")
 
             const query = `
                 SELECT p.title, p.postImg, p.content, u.nickname, u.rating, u.statusMessage, COUNT(*) AS currentMember,
-                p.maxMember, p.startDate, p.endDate, p.place, p.bring,
+                p.maxMember, p.startDate, p.endDate, p.place, ST_Y(p.location) AS lat, ST_X(p.location) AS lng, p.bring,
                 (SELECT GROUP_CONCAT(tag ORDER BY tag ASC SEPARATOR ', ')
                     FROM Tags
                     WHERE postId = p.postId
@@ -46,6 +46,8 @@ router.route("/")
                         startDate: result[0].startDate,
                         endDate: result[0].endDate,
                         place: result[0].place,
+                        lat: result[0].lat,
+                        lng: result[0].lng,
                         bring: result[0].bring,
                         tag
                     })
@@ -61,6 +63,8 @@ router.route("/")
 
     .post(authmiddleware, async (req, res) => {
         try {
+            let location;
+            let tagArray = [];
             const {userId} = res.locals.user;
             let {
                 title,
@@ -70,11 +74,16 @@ router.route("/")
                 startDate,
                 endDate,
                 place,
+                lat,
+                lng,
                 bring,
                 tag,
             } = await postSchema.validateAsync(req.body);
 
-            const tagArray = [];
+            if (lat && lng)
+                location = {type: 'Point', coordinates: [lat, lng]}
+            else
+                location = null
 
             const postId = await Posts.create({
                 userId,
@@ -85,6 +94,7 @@ router.route("/")
                 startDate,
                 endDate,
                 place,
+                location,
                 bring,
             }).then((post) => {
                 return post.null;
@@ -121,8 +131,8 @@ router.route("/")
 
     .put(authmiddleware, async (req, res) => {
         try {
+            let location;
             const {userId} = res.locals.user;
-
             let {
                 postId,
                 title,
@@ -132,9 +142,16 @@ router.route("/")
                 startDate,
                 endDate,
                 place,
+                lat,
+                lng,
                 bring,
                 tag,
             } = await postPutSchema.validateAsync(req.body);
+
+            if (lat && lng)
+                location = {type: 'Point', coordinates: [lat, lng]}
+            else
+                location = null
 
             const updateCount = await Posts.update(
                 {
@@ -145,6 +162,7 @@ router.route("/")
                     startDate,
                     endDate,
                     place,
+                    location,
                     bring,
                 },
                 {
