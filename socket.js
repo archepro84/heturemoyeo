@@ -3,8 +3,8 @@ const socketAuthMiddleWare = require("./middleware/socket-auth-middleware")
 const {Posts, sequelize, Sequelize} = require("./models")
 
 module.exports = (server, app) => {
-    // let userLocation = {} //모든 User한테 전달한 Object를 설정한다.
-    let userLocation = {}
+    let userLocation = {} //모든 User한테 전달할 Object를 설정한다.
+    let loginUser = {} //접속한 UserId가 사용하는 Socket의 아이디를 설정한다.
     userLocation[2] = {lat: 37.5671461, lng: 126.9309533}
     userLocation[3] = {lat: 37.5679144, lng: 126.9344071}
 
@@ -14,7 +14,6 @@ module.exports = (server, app) => {
     userLocation[7] = {lat: 37.559209, lng: 126.939785}
     userLocation[8] = {lat: 37.5663129, lng: 126.9316755}
 
-    let socketIdObject = {} //접속한 Socket이 사용하는 UserId를 설정한다.
     const io = SocketIO(server, {path: "/socket.io", cors: {origins: '*:*'}})
 
     app.set('io', io);
@@ -29,38 +28,34 @@ module.exports = (server, app) => {
         const ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
         console.log('Location Socket Connect / IP :', ip);
 
-        // TODO 중복 로그인 발생시 모든 세션을 튕기도록 설정
-        socket.on("disconnect", () => {
-            if (socketIdObject[socket.id]) {
-                // TODO Javascript 의 Object Delete의 시간 복잡도는?
-                delete userLocation[socketIdObject[socket.id]]
-                delete socketIdObject[socket.id]
-            }
-            console.log("Location Socket Client Disconnect / IP :", ip);
-            // console.log("Location Socket Cliend DisConnect / socket ID : ", socket.id);
-            clearInterval(socket.interval);
-            // clearInterval(socket.postInterval);
-        })
+        if (loginUser[socket.userId]) {
+            console.log(`Duplicatie Socket Id : ${loginUser[socket.userId]}, ${socket.id}`);
 
-        socket.on("error", (error) => {
-            console.error(error);
-        })
+            // 이전에 접속한 유저에게 연결을 종료한다는 메시지를 보냅니다.
+            location.to(loginUser[socket.userId]).emit("closeEvent");
+            // 접속을 시도한 유저에게 연결을 종료한다는 메시지를 보냅니다.
+            location.to(socket.id).emit("closeEvent");
+
+            // 이전에 접속한 유저의 연결을 종료합니다.
+            await io.in(loginUser[socket.userId]).fetchSockets();
+
+            // 로그인 중인 유저 목록에서 접속중인 유저를 삭제합니다.
+            delete loginUser[socket.userId]
+
+            return;
+        }
+        loginUser[socket.userId] = socket.id
 
         // FIXME 누군가 latlng로 디도스를 건다면? 자동으로 차단할 수 있도록 설정하자.
         socket.on("latlng", (LocationData) => {
             try {
                 const {userId, lat, lng} = LocationData;
-                socketIdObject[socket.id] = userId
-                userLocation[userId] = {lat, lng};
-
+                userLocation[userId] = {lat, lng}; // TODO 이제는 userId를 미들웨어에서 가져온다.
             } catch (error) {
-                console.log(`${req.method} ${req.baseUrl} : ${error.message}`);
+                console.log(`${req.method} ${req.originalUrl} : ${error.message}`);
             }
         })
 
-        socket.interval = setInterval(() => { // 3초마다 클라이언트로 메시지 전송
-            socket.emit("userLocation", userLocation)
-        }, 3000);
         socket.on("getPostList", async () => {
             const postList = [];
             await Posts.findAll({
@@ -79,6 +74,26 @@ module.exports = (server, app) => {
                 })
         })
 
+        // 3초마다 클라이언트로 모든 유저의 위치 전송
+        socket.interval = setInterval(() => {
+            socket.emit("userLocation", userLocation)
+        }, 3000);
+
+
+        // TODO 중복 로그인 발생시 모든 세션을 튕기도록 설정
+        socket.on("disconnect", () => {
+            // TODO Javascript 의 Object Delete의 시간 복잡도는?
+            delete userLocation[socket.userId]
+            delete loginUser[socket.userId]
+
+            console.log("Location Socket Client Disconnect / IP :", ip, socket.userId);
+            // console.log("Location Socket Cliend DisConnect / socket ID : ", socket.id);
+            clearInterval(socket.interval);
+        })
+
+        socket.on("error", (error) => {
+            console.error(error);
+        })
     });
 
     room.on("connect", (socket) => {

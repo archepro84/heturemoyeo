@@ -2,7 +2,7 @@ const express = require("express");
 const router = express.Router();
 const authmiddleware = require("../middleware/auth-middleware");
 const authmiddlewareAll = require("../middleware/auth-middlewareAll")
-const {Posts, Tags, sequelize, Sequelize} = require("../models");
+const {Invites, Posts, Tags, sequelize, Sequelize} = require("../models");
 const {postIdSchema, postSchema, postPutSchema, startLimitSchema} = require("./joi_Schema")
 
 router.route("/")
@@ -299,5 +299,127 @@ router.route('/posts/my')
             });
         }
     })
+
+// TODO 위치 반경 이내에 있는 모임만 보이게 설정하자 (MySQL Geometry 함수)
+router.route('/posts/location')
+    .get(authmiddleware, async (req, res) => {
+        try {
+            const postList = [];
+
+            //Limit 을 사용하지 않음 / 이후 Geometry가 추가되기 때문
+            const query = `
+                SELECT p.postId, 
+                    COUNT(c.userId) AS currentMember,
+                    p.maxMember, ST_Y(p.location) AS lat, ST_X(p.location) AS lng  
+                FROM Posts AS p
+                JOIN Channels AS c
+                ON p.postId = c.postId
+                WHERE p.location IS NOT NULL 
+                GROUP BY c.postId
+                HAVING currentMember < maxMember`
+            await sequelize.query(query, {type: Sequelize.QueryTypes.SELECT})
+                .then((result) => {
+                    for (const x of result) {
+                        postList.push({
+                            postId: x.postId,
+                            lat: x.lat,
+                            lng: x.lng,
+                        })
+                    }
+                    res.status(200).send(postList)
+                })
+            // await Posts.findAll({
+            //     attributes: ['postId', 'location'],
+            //     where: {location: {[Sequelize.Op.not]: null}}
+            // })
+            //     .then((result) => {
+            //         for (const x of result) {
+            //             postList.push({
+            //                 postId: x['dataValues'].postId,
+            //                 lat: x['dataValues'].location.coordinates[0],
+            //                 lng: x['dataValues'].location.coordinates[1],
+            //             })
+            //         }
+            //         res.status(200).send(postList)
+            //     })
+        } catch (error) {
+            console.log(`${req.method} ${req.originalUrl} : ${error.message}`);
+            res.status(400).send({
+                errorMessage: "내 모임 리스트를 정상적으로 가져올 수 없습니다.",
+            });
+        }
+    })
+
+router.route('/posts/master')
+    .get(authmiddleware, async (req, res) => {
+        try {
+            const result = [];
+            const userId = res.locals.user.userId;
+            const {start, limit} = await startLimitSchema.validateAsync(
+                Object.keys(req.query).length ? req.query : req.body
+            )
+
+            const query = `
+                SELECT p.postId, p.title, p.postImg, COUNT(c.userId) AS currentMember, p.maxMember, p.startDate, p.endDate, p.place
+                FROM Posts AS p
+                JOIN Channels AS c
+                ON p.postId = c.postId
+                WHERE p.userId = ${userId}
+                GROUP BY c.postId
+                HAVING currentMember < maxMember
+                LIMIT ${start}, ${limit}`
+            await sequelize.query(query, {type: Sequelize.QueryTypes.SELECT})
+                .then((masterList) => {
+                    for (const x of masterList) {
+                        result.push({
+                            postId: x.postId,
+                            title: x.title,
+                            postImg: x.postImg,
+                            currentMember: x.currentMember,
+                            maxMember: x.maxMember,
+                            startDate: x.startDate,
+                            endDate: x.endDate,
+                            place: x.place,
+                        })
+                    }
+                    res.status(200).send(result)
+                })
+        } catch (error) {
+            console.log(`${req.method} ${req.originalUrl}
+        : ${error.message}
+            `);
+            res.status(400).send({
+                errorMessage: "내 모임 리스트를 정상적으로 가져올 수 없습니다.",
+            });
+        }
+    })
+router.route('/posts/invite')
+    .get(authmiddleware, async (req, res) => {
+        try {
+            const result = [];
+            const userId = res.locals.user.userId;
+
+            await Invites.findAll({
+                attributes: ['inviteId', 'giveUserId', 'postId'],
+                where: {receiveUserId: userId}
+            })
+                .then((inviteList) => {
+                    for (const x of inviteList) {
+                        result.push({
+                            inviteId: x['dataValues'].inviteId,
+                            userId: x['dataValues'].giveUserId,
+                            postId: x['dataValues'].postId,
+                        })
+                    }
+                    res.status(200).send(result)
+                })
+        } catch (error) {
+            console.log(`${req.method} ${req.originalUrl} : ${error.message}`);
+            res.status(400).send({
+                errorMessage: "초대된 모임 리스트를 정상적으로 가져올 수 없습니다.",
+            });
+        }
+    })
+
 
 module.exports = router;
