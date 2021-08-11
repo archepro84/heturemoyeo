@@ -1,21 +1,36 @@
-const request = require("supertest");
 const app = require("../app");
+const supertest = require("supertest");
+const { test, expect } = require("@jest/globals");
+const clearData = require("./clearData")
 
-// user api 테스트
-test("회원정보 수정(닉네임,프로필, 이미지, 태그 변경)", async () => {
-    const response = await request(app)
-        .put("/api/user")
-        .set(
-            "authorization",
-            "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsImlhdCI6MTYyODEzMDgwN30.fizpZlhmxstJcUgPweHLNTfUQarVO6T97HBCGwShaU4"
-        )
+// login API 테스트
+test("POST /api/login 이미 로그인된 사용자는 로그인 실패(401)", async () => {
+    const res = await supertest(app)
+        .post("/api/login")
+        .set("authorization", clearData.Authorization,)
         .send({
-            nickname: "pink",
-            password: "!@#4qwer",
-            newpassword: "",
-            confirm: "",
-            profileImg: "testUrl",
-            likeItem: ["game", "board", "kukuku"],
+            email: clearData.Email,
+            password: clearData.Password,
         });
-    expect(response.status).toEqual(200);
+    expect(res.status).toEqual(401);
+});
+test("POST /api/login 이메일 주소에 '@' 문자가 1개만 있어야 로그인 성공(200)", async () => {
+    const res = await supertest(app).post("/api/login").send({
+        email: clearData.Email,
+        password: clearData.Password,
+    });
+    expect(res.status).toEqual(200);
+});
+test("POST /api/login 비밀번호가 6 ~ 20글자에 포함될 경우 로그인 성공(200)", async () => {
+    let res = await supertest(app).post("/api/login").send({
+        email: clearData.Email,
+        password: clearData.Password,
+    });
+    expect(res.status).toEqual(200);
+
+    res = await supertest(app).post("/api/login").send({
+        email: "aaaa@email.com",
+        password: "qwer!@#",
+    });
+    expect(res.status).toEqual(200);
 });
