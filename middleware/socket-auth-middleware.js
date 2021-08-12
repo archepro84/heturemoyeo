@@ -12,16 +12,12 @@ module.exports = async (socket, next) => {
         const {userId} = jwt.verify(Authorization, process.env.SECRET_KEY);
         await Users.findByPk(userId)
             .then((user) => {
-                socket.user = {
-                    userId: user['dataValues'].userId,
-                    email: user['dataValues'].email,
-                    name: user['dataValues'].name,
-                    nickname: user['dataValues'].nickname,
-                }
+                socket.userId = user['dataValues'].userId
             })
         next()
     } catch (error) {
         console.error(`Socket Error ${socket.handshake.headers.referer} : ${error.message}`);
+        // TODO 클라이언트에게 연결이 실패했다는 것을 알려주는 기능 구현
         next(new Error(error.message))
     }
 }

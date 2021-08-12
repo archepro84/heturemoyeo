@@ -3,7 +3,7 @@ const {
     Model
 } = require('sequelize');
 module.exports = (sequelize, DataTypes) => {
-    class Messages extends Model {
+    class Invites extends Model {
         /**
          * Helper method for defining associations.
          * This method is not a part of Sequelize lifecycle.
@@ -13,36 +13,38 @@ module.exports = (sequelize, DataTypes) => {
             // define association here
         }
     };
-    Messages.init({
-        messageId: {
+    Invites.init({
+        inviteId: {
             type: DataTypes.INTEGER,
             primaryKey: true,
+            required: true,
+        },
+        giveUserId: {
+            type: DataTypes.INTEGER,
+            required: true,
+        },
+        receiveUserId: {
+            type: DataTypes.INTEGER,
             required: true,
         },
         postId: {
             type: DataTypes.INTEGER,
             required: true
         },
-        userId: {
-            type: DataTypes.INTEGER,
-        },
-        message: {
-            type: DataTypes.STRING,
-            required: true
-        }
     }, {
         sequelize,
-        modelName: 'Messages',
+        modelName: 'Invites',
     });
-    Messages.associate = function (models) {
-        models.Messages.hasMany(models.Posts, {
+    Invites.associate = function (models) {
+        models.Invites.hasMany(models.Users, {
+            foreignKey: 'userId',
+            onDelete: 'cascade',
+        })
+        models.Tags.hasMany(models.Posts, {
             foreignKey: 'postId',
             onDelete: 'cascade',
         })
-        models.Messages.hasMany(models.Users, {
-            foreignKey: 'userId',
-            onDelete: 'set null',
-        })
     }
-    return Messages;
+
+    return Invites;
 };

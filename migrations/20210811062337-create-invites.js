@@ -1,12 +1,30 @@
 'use strict';
 module.exports = {
     up: async (queryInterface, Sequelize) => {
-        await queryInterface.createTable('Messages', {
-            messageId: {
+        await queryInterface.createTable('Invites', {
+            inviteId: {
                 allowNull: false,
                 autoIncrement: true,
                 primaryKey: true,
                 type: Sequelize.INTEGER
+            },
+            giveUserId: {
+                type: Sequelize.INTEGER,
+                allowNull: false,
+                references: {
+                    model: 'Users',
+                    key: 'userId',
+                },
+                onDelete: 'cascade',
+            },
+            receiveUserId: {
+                type: Sequelize.INTEGER,
+                allowNull: false,
+                references: {
+                    model: 'Users',
+                    key: 'userId',
+                },
+                onDelete: 'cascade',
             },
             postId: {
                 type: Sequelize.INTEGER,
@@ -17,21 +35,11 @@ module.exports = {
                 },
                 onDelete: 'cascade',
             },
-            userId: {
-                type: Sequelize.INTEGER,
-                references: {
-                    model: 'Users',
-                    key: 'userId',
-                },
-                onDelete: 'set null',
-            },
-            message: {
-                type: Sequelize.STRING
-            },
             createdAt: {
                 allowNull: false,
                 type: Sequelize.DATE,
                 defaultValue: Sequelize.fn('now')
+
             },
             updatedAt: {
                 allowNull: false,
@@ -41,6 +49,6 @@ module.exports = {
         });
     },
     down: async (queryInterface, Sequelize) => {
-        await queryInterface.dropTable('Messages');
+        await queryInterface.dropTable('Invites');
     }
 };

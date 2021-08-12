@@ -9,19 +9,37 @@ const CLEAR_DATA = {
     Authorization:
         "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjYsImlhdCI6MTYyODA3NTc5N30.S7YxSEYFbPDem5x1nerjJZI3jYTfj2-cso-Fti-_vmE",
 
-    SignEmail: "qWsWa2Qes@gmail.com",
-    SignName: "q@sWa",
-    SignNickname: "qWsWa2Qes",
-    SignPassword: "!@#4qwer",
-    SignProfileImg: "https://t1.daumcdn.net/cfile/tistory/99AF903359A15D8A1E",
-    SignStatusMessage: "Hello My Name Is qWsWa2Qes",
+    SignEmail: "cccc@email.com",
+    SignName: "cccc",
+    SignNickname: "cccc",
+    SignPassword: "qwer!@#",
+    SignProfileImg: ".img",
+    SignStatusMessage: "Hello my gwan",
     SignLikeItem: ["Game", "Board", "Hello"],
     SignAuthorization:
         "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjE0LCJpYXQiOjE2Mjg0NzU4NDB9.fMumqz2PXSw7i7fzqBJVlZzxkLExjCwR85HdHZlOkm8",
+    SignAuthorization:
+        "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjIsImlhdCI6MTYyODU3ODE1MH0.Y5cNiUZuWgms8VIzXsxIMW2RHToqjORWOQzsoya7aRw",
+
+    PutPassword: "asdf!@#$",
+    PutImg: ".img",
+    PutlikeItem: ["beer", "soju"],
+
+    PostTitle: "방탈출",
+    PostPostImg: ".img",
+    PostContent: "방탈출 갈사람 구해요",
+    PostmaxMamber: 3,
+    PoststartDate: 2021 - 09 - 10,
+    PostendDate: 2021 - 09 - 11,
+    PostPlace: "서울",
+    PostLat: 37.56211,
+    PostIng: 126.941069,
+    PostBring: "3등분",
+    PostTag: ["방탈출", "수첩", "연필"],
 
     SchemaTitle: "안녕하세요 이것은 타이틀 입니다.",
     SchemaNickname: "QEswWad힣",
-    SchemaPassword: "!@#4qwer",
+    SchemaPassword: "asdf!@#",
     SchemaProfileImg: "https://t1.daumcdn.net/cfile/tistory/99AF903359A15D8A1E",
     SchemaLikeItem: ["Game", "Board", "Hello"],
 
@@ -49,5 +67,4 @@ const CLEAR_DATA = {
     Limit: 5,
 };
 
-
-module.exports = CLEAR_DATA
+module.exports = CLEAR_DATA;
