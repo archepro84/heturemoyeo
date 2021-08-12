@@ -20,7 +20,7 @@ module.exports = {
             userId: {
                 type: Sequelize.INTEGER,
                 references: {
-                    model: 'Channels',
+                    model: 'Users',
                     key: 'userId',
                 },
                 onDelete: 'set null',

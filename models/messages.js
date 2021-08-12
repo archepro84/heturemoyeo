@@ -39,7 +39,7 @@ module.exports = (sequelize, DataTypes) => {
             foreignKey: 'postId',
             onDelete: 'cascade',
         })
-        models.Messages.hasMany(models.Channels, {
+        models.Messages.hasMany(models.Users, {
             foreignKey: 'userId',
             onDelete: 'set null',
         })
