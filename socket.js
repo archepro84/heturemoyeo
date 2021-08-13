@@ -50,28 +50,10 @@ module.exports = (server, app) => {
         socket.on("latlng", (LocationData) => {
             try {
                 const {userId, lat, lng} = LocationData;
-                userLocation[userId] = {lat, lng}; // TODO 이제는 userId를 미들웨어에서 가져온다.
+                userLocation[userId] = {lat, lng};
             } catch (error) {
                 console.log(`${req.method} ${req.originalUrl} : ${error.message}`);
             }
-        })
-
-        socket.on("getPostList", async () => {
-            const postList = [];
-            await Posts.findAll({
-                attributes: ['postId', 'location'],
-                where: {location: {[Sequelize.Op.not]: null}}
-            })
-                .then((result) => {
-                    for (const x of result) {
-                        postList.push({
-                            postId: x['dataValues'].postId,
-                            lat: x['dataValues'].location.coordinates[0],
-                            lng: x['dataValues'].location.coordinates[1],
-                        })
-                    }
-                    socket.emit('postList', postList)
-                })
         })
 
         // 3초마다 클라이언트로 모든 유저의 위치 전송
@@ -80,9 +62,7 @@ module.exports = (server, app) => {
         }, 3000);
 
 
-        // TODO 중복 로그인 발생시 모든 세션을 튕기도록 설정
         socket.on("disconnect", () => {
-            // TODO Javascript 의 Object Delete의 시간 복잡도는?
             delete userLocation[socket.userId]
             delete loginUser[socket.userId]
 

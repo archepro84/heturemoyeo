@@ -24,8 +24,8 @@ router.route('/chat')
 
             if (!Object.keys(searchData).length) {
                 res.status(412).send({
-                    errorMessage: "채널에 접속되어 있지 않습니다.",
-                });
+                    errorMessage: "채널에 접속되어 있지 않습니다."
+                })
                 return;
             }
             const {nickname, profileImg} = searchData[0];
@@ -68,12 +68,13 @@ router.route('/:postId')
             const query = `
                 SELECT m.messageId, m.userId, u.nickname, u.profileImg, m.message, m.updatedAt 
                 FROM Messages AS m
-                JOIN Users AS u
+                LEFT JOIN Users AS u
                 ON m.userId = u.userId
                 WHERE m.postId = ${postId}
                     AND ${userId} IN (SELECT userId 
                         FROM Channels 
                         WHERE postId = ${postId})
+                    AND m.createdAt >= (SELECT createdAt FROM Channels WHERE userId = ${userId} AND postId = ${postId} LIMIT 1)
                 ORDER BY m.messageId DESC
                 LIMIT ${start}, ${limit}`
 
@@ -293,7 +294,7 @@ router.route('/invite')
             }
 
             await Invites.create({giveUserId, receiveUserId: userId, postId});
-            res.status(200).send()
+            res.status(201).send()
         } catch (error) {
             console.log(`${req.method} ${req.originalUrl} : ${error.message}`);
             res.status(400).send({

@@ -68,10 +68,10 @@ router.route("/")
                 return;
             }
 
-            res.status(200).send();
+            res.status(201).send();
         } catch (error) {
             console.log(`${req.method} ${req.originalUrl} : ${error.message}`);
-            res.status(401).send({
+            res.status(400).send({
                 errorMessage: "회원 탈퇴에 실패하였습니다.",
             });
         }

@@ -21,14 +21,13 @@ const joiSchema = {
             )
             .required(),
     }),
+    //
     authDataSchema: Joi.object({
         // 완료
         email: Joi.string()
-            .pattern(
-                /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
-            )
+            .pattern(/^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/)
             .required(),
-        authData: Joi.string().min(6).max(6).required(),
+        authData: Joi.string().min(6).max(6).replace(/[\'\"\`]/g, '').required(),
     }),
     newPassSchema: Joi.object({
         // 완료
@@ -47,14 +46,14 @@ const joiSchema = {
             .pattern(/^(?=.*[a-zA-Z0-9])((?=.*\d)|(?=.*\W)).{6,20}$/)
             .required(),
     }),
+    //
     loginSchema: Joi.object({  // 완료
         email: Joi.string()
-            .pattern(
-                /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
-            )
+            .pattern(/^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/)
             .required(),
         password: Joi.string()
             .pattern(/^(?=.*[a-zA-Z0-9])((?=.*\d)|(?=.*\W)).{6,20}$/)
+            .replace(/[\'\"\`]/g, '')
             .required(),
     }),
     postSchema: Joi.object({  // 완료
@@ -92,8 +91,9 @@ const joiSchema = {
     keywordSchema: Joi.object({   // 완료
         keyword: Joi.string().required(),
     }),
+    //
     searchPostSchema: Joi.object({    // 완료
-        keyword: Joi.string().required().allow(null),
+        keyword: Joi.string().required().allow(null).replace(/[\'\"\`]/g, ''),
         searchDate: Joi.date().allow(null),
         start: Joi.number().min(0).required(),
         limit: Joi.number().min(1).required(),
@@ -148,14 +148,14 @@ const joiSchema = {
             )
             .required(),
         password: Joi.string()
-            .pattern(
-                new RegExp("^(?=.*[a-zA-Z0-9])((?=.*\\d)|(?=.*\\W)).{6,20}$")
-            )
+            .pattern(new RegExp("^(?=.*[a-zA-Z0-9])((?=.*\\d)|(?=.*\\W)).{6,20}$"))
+            .replace(/[\'\"\`]/g, '')
             .required(),
     }),
     statusMessageSchema: Joi.object({
         statusMessage: Joi.string().allow(null, "").required(),
     }),
+    //
     // 회원가입시 해당 조건.
     userModifySchema: Joi.object({
         //완료
@@ -164,6 +164,7 @@ const joiSchema = {
             .required(),
         password: Joi.string()
             .pattern(/^(?=.*[a-zA-Z0-9])((?=.*\d)|(?=.*\W)).{6,20}$/)
+            .replace(/[\'\"\`]/g, '')
             .required(),
         newpassword: Joi.string()
             .pattern(/^(?=.*[a-zA-Z0-9])((?=.*\d)|(?=.*\W)).{6,20}$/)
@@ -179,6 +180,14 @@ const joiSchema = {
 
         likeItem: Joi.array().required(),
     }),
+    //2021-08-11 작업
+    userIdpostIdSchema: Joi.object({
+        userId: Joi.number().min(1).required(),
+        postId: Joi.number().min(1).required(),
+    }),
+    inviteIdSchema: Joi.object({
+        inviteId: Joi.number().min(1).required(),
+    })
 };
 
 module.exports = joiSchema
