@@ -2,6 +2,7 @@ const request = require("supertest");
 const app = require("../app");
 const clearData = require("./clearData")
 const { test, expect } = require("@jest/globals");
+// TODO SEEDER
 
 // friend API 테스트
 test("GET /api/friend 경로에 요청했을 떄 Authorization 헤더가 없을 경우 실패 (401)", async () => {

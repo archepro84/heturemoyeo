@@ -5,6 +5,48 @@ const {Invites, Messages, Channels, Posts, sequelize, Sequelize} = require("../m
 const {postIdSchema, startLimitSchema, chatSchema, userIdpostIdSchema, inviteIdSchema} = require("./joi_Schema")
 
 
+router.route('/:postId')
+    .get(authmiddleware, async (req, res) => {
+        try {
+            const userId = res.locals.user.userId;
+            const {postId} = await postIdSchema.validateAsync(req.params);
+            const {start, limit} = await startLimitSchema.validateAsync(
+                Object.keys(req.query).length ? req.query : req.body
+            )
+
+            const findChannel = await Channels.findOne({where: {postId, userId}})
+
+            if (!findChannel) {
+                res.status(412).send({errorMessage: "해당 방에 참여 하고 있지않습니다."})
+                return;
+            }
+
+            const query = `
+                SELECT m.messageId, m.userId, u.nickname, u.profileImg, m.message, m.updatedAt 
+                FROM Messages AS m
+                LEFT JOIN Users AS u
+                ON m.userId = u.userId
+                WHERE m.postId = ${postId}
+                    AND ${userId} IN (SELECT userId 
+                        FROM Channels 
+                        WHERE postId = ${postId})
+                    AND m.createdAt >= (SELECT createdAt FROM Channels WHERE userId = ${userId} AND postId = ${postId} LIMIT 1)
+                ORDER BY m.messageId DESC
+                LIMIT ${start}, ${limit}`
+
+            await sequelize.query(query, {type: Sequelize.QueryTypes.SELECT})
+                .then((result) => {
+                    res.status(200).send(result)
+                })
+
+        } catch (error) {
+            console.log(`${req.method} ${req.originalUrl} : ${error.message}`);
+            res.status(400).send({
+                errorMessage: "대화방을 불러올 수 없습니다.",
+            });
+        }
+    })
+
 router.route('/chat')
     .post(authmiddleware, async (req, res) => {
         try {
@@ -45,48 +87,6 @@ router.route('/chat')
             console.log(`${req.method} ${req.originalUrl} : ${error.message}`);
             res.status(400).send({
                 errorMessage: "채팅 전송에 실패 하였습니다.",
-            });
-        }
-    })
-
-router.route('/:postId')
-    .get(authmiddleware, async (req, res) => {
-        try {
-            const userId = res.locals.user.userId;
-            const {postId} = await postIdSchema.validateAsync(req.params);
-            const {start, limit} = await startLimitSchema.validateAsync(
-                Object.keys(req.query).length ? req.query : req.body
-            )
-
-            const findChannel = await Channels.findOne({where: {postId, userId}})
-
-            if (!findChannel) {
-                res.status(412).send({errorMessage: "해당 방에 참여 하고 있지않습니다."})
-                return;
-            }
-
-            const query = `
-                SELECT m.messageId, m.userId, u.nickname, u.profileImg, m.message, m.updatedAt 
-                FROM Messages AS m
-                LEFT JOIN Users AS u
-                ON m.userId = u.userId
-                WHERE m.postId = ${postId}
-                    AND ${userId} IN (SELECT userId 
-                        FROM Channels 
-                        WHERE postId = ${postId})
-                    AND m.createdAt >= (SELECT createdAt FROM Channels WHERE userId = ${userId} AND postId = ${postId} LIMIT 1)
-                ORDER BY m.messageId DESC
-                LIMIT ${start}, ${limit}`
-
-            await sequelize.query(query, {type: Sequelize.QueryTypes.SELECT})
-                .then((result) => {
-                    res.status(200).send(result)
-                })
-
-        } catch (error) {
-            console.log(`${req.method} ${req.originalUrl} : ${error.message}`);
-            res.status(400).send({
-                errorMessage: "대화방을 불러올 수 없습니다.",
             });
         }
     })
@@ -168,7 +168,6 @@ router.route('/exit')
             const userId = res.locals.user.userId;
             const {postId} = await postIdSchema.validateAsync(req.body);
 
-            // TODO Sequelize Posts.findOne으로 수정할 것
             const query = `
                 SELECT p.title, p.postImg, COUNT(c.userId) AS currentMember, p.maxMember,
                     p.startDate, p.endDate, p.place,
@@ -198,14 +197,6 @@ router.route('/exit')
                 })
                 return;
             }
-
-            // const findData = await Posts.findOne({
-            //     attributes: ['location',
-            //         [sequelize.literal(`CASE WHEN 1 = (SELECT DISTINCT 1 FROM Channels WHERE postId=${postId} AND userId=${userId}) THEN 'Y' ELSE 'N' END`), 'isExist'],
-            //     ],
-            //     where: {postId}
-            // })
-            // const {location, isExist} = findData['dataValues'];
 
             await Channels.destroy({where: {postId, userId}})
 

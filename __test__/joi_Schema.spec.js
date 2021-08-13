@@ -2910,7 +2910,6 @@ test("keywordSchema : keyword가 string이 아닐 경우", async () => {
         })
     ).rejects.toThrowError();
 });
-
 test("keywordSchema : 테스트 통과", async () => {
     await expect(
         schema.keywordSchema.validateAsync({
@@ -2988,7 +2987,6 @@ test("searchPostSchema : searchDate가 Date가 아닐 경우 (null 제외)", asy
         })
     ).rejects.toThrowError();
 });
-
 test("searchPostSchema : start가 0보다 작을 경우", async () => {
     await expect(
         schema.searchPostSchema.validateAsync({
@@ -3041,7 +3039,6 @@ test("searchPostSchema : start가 number가 아닐 경우", async () => {
         })
     ).rejects.toThrowError();
 });
-
 test("searchPostSchema : limit가 1보다 작을 경우", async () => {
     await expect(
         schema.searchPostSchema.validateAsync({
@@ -3094,7 +3091,6 @@ test("searchPostSchema : limit가 number가 아닐 경우", async () => {
         })
     ).rejects.toThrowError();
 });
-
 test("searchPostSchema : 테스트 코드 통과", async () => {
     await expect(
         schema.searchPostSchema.validateAsync({
@@ -3113,14 +3109,6 @@ test("searchPostSchema : 테스트 코드 통과", async () => {
         })
     );
 });
-
-
-
-
-
-
-
-
 
 
 // signSchema 테스트 코드
@@ -3382,7 +3370,6 @@ test("signSchema : name이 열글자가 넘을 때", async () => {
         })
     ).rejects.toThrowError();
 });
-
 test("signSchema : nickname이 string 형식이 아닐 경우", async () => {
     await expect(
         schema.signSchema.validateAsync({

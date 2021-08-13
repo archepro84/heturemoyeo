@@ -4,6 +4,7 @@ const { test, expect } = require("@jest/globals");
 const clearData = require("./clearData")
 
 // login API 테스트
+//TODO 412 DB의 비밀번호 틀렸을때 / 이메일이 없을 때
 test("POST /api/login 이미 로그인된 사용자는 로그인 실패(401)", async () => {
     const res = await supertest(app)
         .post("/api/login")

@@ -87,9 +87,8 @@ const joiSchema = {
         postId: Joi.number().min(1).required(),
         message: Joi.string().max(255).required(),
     }),
-    // FIXME SQL Injection 처리 필요
     keywordSchema: Joi.object({   // 완료
-        keyword: Joi.string().required(),
+        keyword: Joi.string().required().replace(/[\'\"\`]/g, ''),
     }),
     //
     searchPostSchema: Joi.object({    // 완료
@@ -156,7 +155,6 @@ const joiSchema = {
         statusMessage: Joi.string().allow(null, "").required(),
     }),
     //
-    // 회원가입시 해당 조건.
     userModifySchema: Joi.object({
         //완료
         nickname: Joi.string()

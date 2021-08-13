@@ -1,15 +1,16 @@
 const request = require("supertest");
 const app = require("../app");
 const clearData = require("./clearData")
-const { test, expect } = require("@jest/globals");
+const {test, expect} = require("@jest/globals");
+// TODO SEEDER
 
 // user API 테스트
 test("POST /api/user/me 경로에 요청했을 떄 Authorization 헤더가 없을 경우 실패 (401)", async () => {
-    const res = await supertest(app).post("/api/user/me").send();
+    const res = await request(app).post("/api/user/me").send();
     expect(res.status).toEqual(401);
 });
 test("POST /api/user/me 경로에 요청했을 떄 Authorization 헤더가 있을 경우 성공 (200)", async () => {
-    const res = await supertest(app)
+    const res = await request(app)
         .post("/api/user/me")
         .set("authorization", clearData.Authorization,)
         .send();
@@ -17,13 +18,12 @@ test("POST /api/user/me 경로에 요청했을 떄 Authorization 헤더가 있�
 });
 
 
-
 test("POST /api/user/target/all 경로에 요청했을 떄 Authorization 헤더가 없을 경우 실패 (401)", async () => {
-    const res = await supertest(app).post("/api/user/target/all").send();
+    const res = await request(app).post("/api/user/target/all").send();
     expect(res.status).toEqual(401);
 });
 test("GET /api/user/target/all 경로에 유저정보 확인 할 때 유저 정보가 없으면 실패 (412) ", async () => {
-    const res = await supertest(app)
+    const res = await request(app)
         .get("/api/user/target/all")
         .set(
             "authorization",
@@ -35,7 +35,7 @@ test("GET /api/user/target/all 경로에 유저정보 확인 할 때 유저 정�
     expect(res.status).toEqual(412);
 });
 test("GET /api/user/target/all 경로에 유저정보 확인 할 때 전혀 다른 id값을 가져오면 실패 (400) ", async () => {
-    const res = await supertest(app)
+    const res = await request(app)
         .get("/api/user/target/all")
         .set(
             "authorization",
@@ -47,7 +47,7 @@ test("GET /api/user/target/all 경로에 유저정보 확인 할 때 전혀 다�
     expect(res.status).toEqual(400);
 });
 test("GET /api/user/target/all 경로에 유저정보 확인 시 정확한 id값을 입력하면 성공 (200) ", async () => {
-    const res = await supertest(app)
+    const res = await request(app)
         .get("/api/user/target/all")
         .set(
             "authorization",
@@ -60,7 +60,6 @@ test("GET /api/user/target/all 경로에 유저정보 확인 시 정확한 id값
 });
 
 
-
 test("GET /api/user/target/friend 경로에 요청했을 떄 Authorization 헤더가 없을 경우 실패 (401)", async () => {
     const res = await request(app)
         .get("/api/user/target/friend")
@@ -68,7 +67,7 @@ test("GET /api/user/target/friend 경로에 요청했을 떄 Authorization 헤�
     expect(res.status).toEqual(401);
 });
 test("GET /api/user/target/friend 경로에 친구로 등록이 되어 있지 않으면 실패 (412)", async () => {
-    const res = await supertest(app)
+    const res = await request(app)
         .get("/api/user/target/friend")
         .set(
             "authorization",
@@ -80,7 +79,7 @@ test("GET /api/user/target/friend 경로에 친구로 등록이 되어 있지 �
     expect(res.status).toEqual(412);
 });
 test("GET /api/user/target/friend 경로에 전혀 다른 id값을 주면 실패 (400)", async () => {
-    const res = await supertest(app)
+    const res = await request(app)
         .get("/api/user/target/friend")
         .set(
             "authorization",
@@ -92,7 +91,7 @@ test("GET /api/user/target/friend 경로에 전혀 다른 id값을 주면 실패
     expect(res.status).toEqual(400);
 });
 test("GET /api/user/target/friend 경로에 친구로 등록이 되어 있으면 성공 (200)", async () => {
-    const res = await supertest(app)
+    const res = await request(app)
         .get("/api/user/target/friend")
         .set(
             "authorization",
@@ -103,7 +102,6 @@ test("GET /api/user/target/friend 경로에 친구로 등록이 되어 있으면
         });
     expect(res.status).toEqual(200);
 });
-
 
 
 test("GET /api/user/target/post 경로에 요청했을 떄 Authorization 헤더가 없을 경우 실패 (401)", async () => {
@@ -150,7 +148,6 @@ test("GET /api/user/target/post 경로에 일정이 같은 사람을 불러오�
 });
 
 
-
 test("PUT /api/user/status 경로에 요청했을 떄 Authorization 헤더가 없을 경우 실패 (401)", async () => {
     const res = await request(app)
         .put("/api/user/status")
@@ -181,7 +178,6 @@ test("PUT /api/user/status 경로에 알맞게 수정할 내용을 입력하였�
         });
     expect(res.status).toEqual(200);
 });
-
 
 
 test("PUT /api/user 경로에 요청했을 떄 Authorization 헤더가 없을 경우 실패 (401)", async () => {
@@ -321,7 +317,6 @@ test("PUT /api/user 경로에 올바르게 데이터가 들어가면 성공 (200
         });
     expect(res.status).toEqual(412);
 });
-
 
 
 test("GET /api/user/myusers 경로에 요청했을 떄 Authorization 헤더가 없을 경우 실패 (401)", async () => {

@@ -1,7 +1,8 @@
 const request = require("supertest");
 const app = require("../app");
 const clearData = require("./clearData")
-const { test, expect } = require("@jest/globals");
+const {test, expect} = require("@jest/globals");
+// TODO Seeder 이후 만들어야함
 
 // post api 테스트
 test("GET /api/post/posts 경로에 요청했을 떄 Authorization 헤더가 없을 경우 실패 (401)", async () => {
@@ -37,7 +38,6 @@ test("GET /api/post/posts 경로에 알맞게 정보를 입력하면 성공 (200
 });
 
 
-
 test("GET /api/post/posts/my 경로에 요청했을 떄 Authorization 헤더가 없을 경우 실패 (401)", async () => {
     const response = await request(app)
         .get("/api/post/posts/my")
@@ -69,7 +69,6 @@ test("GET /api/post/posts/my 경로에 알맞게 정보를 입력하면 성공 (
         });
     expect(response.status).toEqual(400);
 });
-
 
 
 test("POST /api/post 경로에 요청했을 떄 Authorization 헤더가 없을 경우 실패 (401)", async () => {
@@ -234,8 +233,6 @@ test("POST /api/post 경로에 데이터를 알맞게 작성하면 성공 (200) 
 });
 
 
-
-
 test("GET /api/post 경로에 요청했을 떄 Authorization 헤더가 없을 경우 실패 (401)", async () => {
     const response = await request(app)
         .get("/api/post")
@@ -266,7 +263,6 @@ test("GET /api/post 경로에 알맞는 정보를 입력하면 모임 상세페�
         });
     expect(response.status).toEqual(400);
 });
-
 
 
 test("PUT /api/post 경로에 요청했을 떄 Authorization 헤더가 없을 경우 실패 (401)", async () => {
@@ -300,8 +296,8 @@ test("PUT /api/post 경로에 모임이 존재 하지 않으면 실패 (412) ", 
             postImg: clearData.PostPostImg,
             content: clearData.PostContent,
             maxMember: 5,
-            startDate: 2021 - 03 - 21,
-            endDate: 2021 - 03 - 21,
+            startDate: new Date(),
+            endDate: new Date(),
             place: clearData.PostPlace,
             lat: 37.56211,
             lng: 126.941069,
@@ -323,8 +319,8 @@ test("PUT /api/post 경로에 postId가 존재하지 않으면 실패 (412) ", a
             postImg: clearData.PostPostImg,
             content: clearData.PostContent,
             maxMember: 5,
-            startDate: 2021 - 03 - 21,
-            endDate: 2021 - 03 - 21,
+            startDate: new Date(),
+            endDate: new Date(),
             place: clearData.PostPlace,
             lat: 37.56211,
             lng: 126.941069,
@@ -346,8 +342,8 @@ test("PUT /api/post 경로에 title에 아무 값도 주지 않으면 실패 (41
             postImg: clearData.PostPostImg,
             content: clearData.PostContent,
             maxMember: 5,
-            startDate: 2021 - 03 - 21,
-            endDate: 2021 - 03 - 21,
+            startDate: new Date(),
+            endDate: new Date(),
             place: clearData.PostPlace,
             lat: 37.56211,
             lng: 126.941069,
@@ -369,8 +365,8 @@ test("PUT /api/post 경로에 content에 아무 값도 주지 않으면 실패 (
             postImg: clearData.PostPostImg,
             content: "",
             maxMember: 5,
-            startDate: 2021 - 03 - 21,
-            endDate: 2021 - 03 - 21,
+            startDate: new Date(),
+            endDate: new Date(),
             place: clearData.PostPlace,
             lat: 37.56211,
             lng: 126.941069,
@@ -392,8 +388,8 @@ test("PUT /api/post 경로에 maxMember에 아무값도 주지 않으면 실패 
             postImg: clearData.PostPostImg,
             content: clearData.PostContent,
             maxMember: "",
-            startDate: 2021 - 03 - 21,
-            endDate: 2021 - 03 - 21,
+            startDate: new Date(),
+            endDate: new Date(),
             place: clearData.PostPlace,
             lat: 37.56211,
             lng: 126.941069,
@@ -416,7 +412,7 @@ test("PUT /api/post 경로에 시작 시간이 비어 있으면 실패 (412) ", 
             content: clearData.PostContent,
             maxMember: 5,
             startDate: "",
-            endDate: 2021 - 03 - 21,
+            endDate: new Date(),
             place: clearData.PostPlace,
             lat: 37.56211,
             lng: 126.941069,
@@ -438,7 +434,7 @@ test("PUT /api/post 경로에 끝나는 시간이 비어 있으면 실패 (412) 
             postImg: clearData.PostPostImg,
             content: clearData.PostContent,
             maxMember: 5,
-            startDate: 2021 - 03 - 21,
+            startDate: new Date(),
             endDate: "",
             place: clearData.PostPlace,
             lat: 37.56211,
@@ -461,8 +457,8 @@ test("PUT /api/post 경로에 bring이 비어 있으면 실패 (412) ", async ()
             postImg: clearData.PostPostImg,
             content: clearData.PostContent,
             maxMember: 5,
-            startDate: 2021 - 03 - 21,
-            endDate: 2021 - 03 - 21,
+            startDate: new Date(),
+            endDate: new Date(),
             place: clearData.PostPlace,
             lat: 37.56211,
             lng: 126.941069,
@@ -484,8 +480,8 @@ test("PUT /api/post 경로에 tag가 비어 있으면 실패 (412) ", async () =
             postImg: clearData.PostPostImg,
             content: clearData.PostContent,
             maxMember: 5,
-            startDate: 2021 - 03 - 21,
-            endDate: 2021 - 03 - 21,
+            startDate: new Date(),
+            endDate: new Date(),
             place: clearData.PostPlace,
             lat: 37.56211,
             lng: 126.941069,
@@ -507,8 +503,8 @@ test("PUT /api/post 경로에 값들이 제대로 작성이 되었으면 성공 
             postImg: clearData.PostPostImg,
             content: clearData.PostContent,
             maxMember: 5,
-            startDate: 2021 - 09 - 21,
-            endDate: 2021 - 09 - 22,
+            startDate: new Date(),
+            endDate: new Date(),
             place: clearData.PostPlace,
             lat: 37.56211,
             lng: 126.941069,
@@ -517,7 +513,6 @@ test("PUT /api/post 경로에 값들이 제대로 작성이 되었으면 성공 
         });
     expect(response.status).toEqual(200);
 });
-
 
 
 test("DELETE /api/post 경로에 요청했을 떄 Authorization 헤더가 없을 경우 실패 (401)", async () => {
