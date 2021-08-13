@@ -2,31 +2,43 @@ const Joi = require("joi")
 const joiSchema = {
     Joi,
     userIdSchema: Joi.object({
+        //완료
         userId: Joi.number().min(1).required(),
     }),
-    userIdNumberSchema: Joi.number().min(1).required(),
+    userIdNumberSchema: Joi.number().min(1).required(), //완료
     postIdSchema: Joi.object({
         postId: Joi.number().min(1).required(),
     }),
     startLimitSchema: Joi.object({
         start: Joi.number().min(0).required(),
-        limit: Joi.number().min(1).required()
+        limit: Joi.number().min(1).required(),
     }),
     emailSchema: Joi.object({
+        // 완료
         email: Joi.string()
-            .pattern(new RegExp("^[0-9a-zA-Z]([-_.]?[0-9a-zA-Z])*@[0-9a-zA-Z]([-_.]?[0-9a-zA-Z])*.[a-zA-Z]{2,3}$"))
+            .pattern(
+                /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
+            )
             .required(),
     }),
     authDataSchema: Joi.object({
+        // 완료
         email: Joi.string()
-            .pattern(new RegExp("^[0-9a-zA-Z]([-_.]?[0-9a-zA-Z])*@[0-9a-zA-Z]([-_.]?[0-9a-zA-Z])*.[a-zA-Z]{2,3}$"))
+            .pattern(
+                /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
+            )
             .required(),
         authData: Joi.string().min(6).max(6).required(),
     }),
     newPassSchema: Joi.object({
+        // 완료
         authId: Joi.number().min(1).required(),
         email: Joi.string()
-            .pattern(new RegExp("^[0-9a-zA-Z]([-_.]?[0-9a-zA-Z])*@[0-9a-zA-Z]([-_.]?[0-9a-zA-Z])*.[a-zA-Z]{2,3}$"))
+            .pattern(
+                new RegExp(
+                    "^[0-9a-zA-Z]([-_.]?[0-9a-zA-Z])*@[0-9a-zA-Z]([-_.]?[0-9a-zA-Z])*.[a-zA-Z]{2,3}$"
+                )
+            )
             .required(),
         password: Joi.string()
             .pattern(/^(?=.*[a-zA-Z0-9])((?=.*\d)|(?=.*\W)).{6,20}$/)
@@ -35,17 +47,19 @@ const joiSchema = {
             .pattern(/^(?=.*[a-zA-Z0-9])((?=.*\d)|(?=.*\W)).{6,20}$/)
             .required(),
     }),
-    loginSchema: Joi.object({
+    loginSchema: Joi.object({  // 완료
         email: Joi.string()
-            .pattern(/^[0-9a-zA-Z]([-_.]?[0-9a-zA-Z])*@[0-9a-zA-Z]([-_.]?[0-9a-zA-Z])*.[a-zA-Z]{2,3}$/i)
+            .pattern(
+                /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
+            )
             .required(),
         password: Joi.string()
             .pattern(/^(?=.*[a-zA-Z0-9])((?=.*\d)|(?=.*\W)).{6,20}$/)
             .required(),
     }),
-    postSchema: Joi.object({
-        title: Joi.string().min(1).max(100).required(),
-        postImg: Joi.string().allow(null, '').required(),
+    postSchema: Joi.object({  // 완료
+        title: Joi.string().max(100).allow(null, "").required(),
+        postImg: Joi.string().allow(null, "").required(),
         content: Joi.string().max(1000),
         maxMember: Joi.number().max(255).required(),
         startDate: Joi.date().required(),
@@ -56,10 +70,10 @@ const joiSchema = {
         bring: Joi.string(),
         tag: Joi.array().required(),
     }),
-    postPutSchema: Joi.object({
+    postPutSchema: Joi.object({  // 완료
         postId: Joi.number().min(1).required(),
         title: Joi.string().min(1).max(100).allow(null, "").required(),
-        postImg: Joi.string().allow(null, '').required(),
+        postImg: Joi.string().allow(null, "").required(),
         content: Joi.string().max(1000),
         maxMember: Joi.number().max(255).required(),
         startDate: Joi.date().required(),
@@ -70,23 +84,25 @@ const joiSchema = {
         bring: Joi.string(),
         tag: Joi.array().required(),
     }),
-    chatSchema: Joi.object({
+    chatSchema: Joi.object({   // 완료
         postId: Joi.number().min(1).required(),
         message: Joi.string().max(255).required(),
     }),
     // FIXME SQL Injection 처리 필요
-    keywordSchema: Joi.object({
-        keyword: Joi.string().required()
+    keywordSchema: Joi.object({   // 완료
+        keyword: Joi.string().required(),
     }),
-    searchPostSchema: Joi.object({
+    searchPostSchema: Joi.object({    // 완료
         keyword: Joi.string().required().allow(null),
         searchDate: Joi.date().allow(null),
         start: Joi.number().min(0).required(),
         limit: Joi.number().min(1).required(),
     }),
-    signSchema: Joi.object({
+    signSchema: Joi.object({    // 
         email: Joi.string()
-            .pattern(new RegExp("^[0-9a-zA-Z]([-_.]?[0-9a-zA-Z])*@[0-9a-zA-Z]([-_.]?[0-9a-zA-Z])*.[a-zA-Z]{2,3}$"))
+            .pattern(
+                /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
+            )
             .required(),
         name: Joi.string()
             .pattern(new RegExp("^[ㄱ-ㅎ|ㅏ-ㅣ|가-힣\\s|0-9a-zA-z]{3,10}$"))
@@ -95,39 +111,54 @@ const joiSchema = {
             .pattern(new RegExp("^[ㄱ-ㅎ|ㅏ-ㅣ|가-힣\\s|0-9a-zA-z]{3,20}$"))
             .required(),
         password: Joi.string()
-            .pattern(new RegExp("^(?=.*[a-zA-Z0-9])((?=.*\\d)|(?=.*\\W)).{6,20}$"))
+            .pattern(
+                new RegExp("^(?=.*[a-zA-Z0-9])((?=.*\\d)|(?=.*\\W)).{6,20}$")
+            )
             .required(),
-        confirm: Joi.string()
-            .pattern(new RegExp("^(?=.*[a-zA-Z0-9])((?=.*\\d)|(?=.*\\W)).{6,20}$")),
+        confirm: Joi.string().pattern(
+            new RegExp("^(?=.*[a-zA-Z0-9])((?=.*\\d)|(?=.*\\W)).{6,20}$")
+        ),
         profileImg: Joi.string().max(5000).allow(null, ""),
         statusMessage: Joi.string().min(2).max(250),
         likeItem: Joi.array().required(),
     }),
     nicknameSchema: Joi.object({
+        // 완료
         nickname: Joi.string()
             .pattern(new RegExp("^[ㄱ-ㅎ|ㅏ-ㅣ|가-힣\\s|0-9a-zA-z]{3,20}$"))
-            .required()
+            .required(),
     }),
     confirmSchema: Joi.object({
+        // 완료
         password: Joi.string()
-            .pattern(new RegExp("^(?=.*[a-zA-Z0-9])((?=.*\\d)|(?=.*\\W)).{6,20}$"))
+            .pattern(
+                new RegExp("^(?=.*[a-zA-Z0-9])((?=.*\\d)|(?=.*\\W)).{6,20}$")
+            )
             .required(),
         confirm: Joi.string()
-            .pattern(new RegExp("^(?=.*[a-zA-Z0-9])((?=.*\\d)|(?=.*\\W)).{6,20}$"))
+            .pattern(
+                new RegExp("^(?=.*[a-zA-Z0-9])((?=.*\\d)|(?=.*\\W)).{6,20}$")
+            )
             .required(),
     }),
     signDeleteSchema: Joi.object({
         email: Joi.string()
-            .pattern(new RegExp("^[0-9a-zA-Z]([-_.]?[0-9a-zA-Z])*@[0-9a-zA-Z]([-_.]?[0-9a-zA-Z])*.[a-zA-Z]{2,3}$"))
+            .pattern(
+                /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
+            )
             .required(),
         password: Joi.string()
-            .pattern(new RegExp("^(?=.*[a-zA-Z0-9])((?=.*\\d)|(?=.*\\W)).{6,20}$"))
+            .pattern(
+                new RegExp("^(?=.*[a-zA-Z0-9])((?=.*\\d)|(?=.*\\W)).{6,20}$")
+            )
             .required(),
     }),
     statusMessageSchema: Joi.object({
-        statusMessage: Joi.string().allow(null, '').required()
+        statusMessage: Joi.string().allow(null, "").required(),
     }),
-    userModifySchema : Joi.object({
+    // 회원가입시 해당 조건.
+    userModifySchema: Joi.object({
+        //완료
         nickname: Joi.string()
             .pattern(new RegExp("^[ㄱ-ㅎ|ㅏ-ㅣ|가-힣\\s|0-9a-zA-z]{3,20}$"))
             .required(),
@@ -136,18 +167,18 @@ const joiSchema = {
             .required(),
         newpassword: Joi.string()
             .pattern(/^(?=.*[a-zA-Z0-9])((?=.*\d)|(?=.*\W)).{6,20}$/)
-            .allow(null, '')
+            .allow(null, "")
             .required(),
         confirm: Joi.string()
             .pattern(/^(?=.*[a-zA-Z0-9])((?=.*\d)|(?=.*\W)).{6,20}$/)
             // .pattern(new RegExp("^(?=.*[a-zA-Z0-9])((?=.*\\d)|(?=.*\\W)).{6,20}$"))
-            .allow(null, '')
+            .allow(null, "")
             .required(),
 
-        profileImg: Joi.string().max(5000).allow(null, ''),
+        profileImg: Joi.string().max(5000).allow(null, ""),
 
         likeItem: Joi.array().required(),
     }),
-}
+};
 
 module.exports = joiSchema

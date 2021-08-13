@@ -24,8 +24,8 @@ router.route('/chat')
 
             if (!Object.keys(searchData).length) {
                 res.status(412).send({
-                    errorMessage: "채널에 접속되어 있지 않습니다."
-                })
+                    errorMessage: "채널에 접속되어 있지 않습니다.",
+                });
                 return;
             }
             const {nickname, profileImg} = searchData[0];
