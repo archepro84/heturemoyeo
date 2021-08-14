@@ -14,6 +14,25 @@ module.exports = (server, app) => {
     userLocation[7] = {lat: 37.559209, lng: 126.939785}
     userLocation[8] = {lat: 37.5663129, lng: 126.9316755}
 
+
+    let testCount = 1;
+
+    for (let x = 100; x < 105; x++) {
+        userLocation[x] = {lat: 37.56019047400245, lng: 126.943885 + (x * 0.00004)}
+    }
+    const testInterval = setInterval(() => {
+        for (const x in userLocation) {
+            if (x >= 100) {
+                userLocation[x] = {
+                    lat: 37.56019047400245 + (testCount * 0.000005),
+                    lng: 126.943885 + (x * 0.00004)
+                }
+            }
+        }
+        testCount++;
+    }, 500)
+
+
     const io = SocketIO(server, {path: "/socket.io", cors: {origins: '*:*'}})
 
     app.set('io', io);
@@ -59,7 +78,7 @@ module.exports = (server, app) => {
         // 3초마다 클라이언트로 모든 유저의 위치 전송
         socket.interval = setInterval(() => {
             socket.emit("userLocation", userLocation)
-        }, 3000);
+        }, 2000);
 
 
         socket.on("disconnect", () => {
