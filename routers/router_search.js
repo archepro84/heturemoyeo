@@ -48,7 +48,8 @@ router.route('/post')
                 const endAt = `${searchDateEnd.getUTCFullYear()}-${searchDateEnd.getUTCMonth() + 1}-${searchDateEnd.getUTCDate()} ${searchDateEnd.getUTCHours()}:00:00`;
 
                 query = `
-                    SELECT p.postId, p.title, p.postImg, p.content, COUNT(c.userId) AS currentMember, p.maxMember, p.startDate, p.endDate, p.place  
+                    SELECT p.postId, p.title, p.postImg, p.content, COUNT(c.userId) AS currentMember, p.maxMember, p.startDate, p.endDate, p.place,
+                        (SELECT GROUP_CONCAT(tag ORDER BY tag ASC SEPARATOR ', ') FROM Tags WHERE postId = p.postId GROUP BY postId) AS tagItem  
                     FROM Posts AS p
                     JOIN Channels AS c
                     ON p.postId = c.postId
@@ -62,7 +63,8 @@ router.route('/post')
                     LIMIT ${start}, ${limit}`
             } else {
                 query = `
-                    SELECT p.postId, p.title, p.postImg, p.content, COUNT(c.userId) AS currentMember, p.maxMember, p.startDate, p.endDate, p.place  
+                    SELECT p.postId, p.title, p.postImg, p.content, COUNT(c.userId) AS currentMember, p.maxMember, p.startDate, p.endDate, p.place,
+                        (SELECT GROUP_CONCAT(tag ORDER BY tag ASC SEPARATOR ', ') FROM Tags WHERE postId = p.postId GROUP BY postId) AS tagItem  
                     FROM Posts AS p
                     JOIN Channels AS c
                     ON p.postId = c.postId
@@ -77,6 +79,10 @@ router.route('/post')
             await sequelize.query(query, {type: Sequelize.QueryTypes.SELECT})
                 .then((searchList) => {
                     for (const search of searchList) {
+                        let tagItem = []
+                        if(search.tagItem)
+                            for(const Item of search.tagItem.split(', '))
+                                tagItem.push(Item)
                         result.push({
                             postId: search.postId,
                             title: search.title,
@@ -86,6 +92,7 @@ router.route('/post')
                             startDate: search.startDate,
                             endDate: search.endDate,
                             place: search.place,
+                            tagItem,
                         })
                     }
                     res.status(200).send(result)

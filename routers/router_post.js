@@ -227,7 +227,8 @@ router.route('/posts')
             )
 
             const query = `
-                SELECT p.postId, p.title, p.postImg, COUNT(*) AS currentMember, p.maxMember, p.startDate, p.endDate, p.place
+                SELECT p.postId, p.title, p.postImg, COUNT(*) AS currentMember, p.maxMember, p.startDate, p.endDate, p.place,
+                    (SELECT GROUP_CONCAT(tag ORDER BY tag ASC SEPARATOR ', ') FROM Tags WHERE postId = p.postId GROUP BY postId) AS tagItem
                 FROM Channels  AS c
                 JOIN Posts AS p
                 ON p.postId = c.postId
@@ -238,6 +239,10 @@ router.route('/posts')
             await sequelize.query(query, {type: Sequelize.QueryTypes.SELECT})
                 .then((searchList) => {
                     for (const search of searchList) {
+                        let tagItem = []
+                        if (search.tagItem)
+                            for (const Item of search.tagItem.split(', '))
+                                tagItem.push(Item)
                         result.push({
                             postId: search.postId,
                             title: search.title,
@@ -247,6 +252,7 @@ router.route('/posts')
                             startDate: search.startDate,
                             endDate: search.endDate,
                             place: search.place,
+                            tagItem,
                         })
                     }
                     res.status(200).send(result)
@@ -269,7 +275,8 @@ router.route('/posts/my')
             )
 
             const query = `
-                SELECT p.postId, p.title, p.postImg, COUNT(*) AS currentMember, p.maxMember, p.startDate, p.endDate, p.place
+                SELECT p.postId, p.title, p.postImg, COUNT(*) AS currentMember, p.maxMember, p.startDate, p.endDate, p.place,
+                    (SELECT GROUP_CONCAT(tag ORDER BY tag ASC SEPARATOR ', ') FROM Tags WHERE postId = p.postId GROUP BY postId) AS tagItem
                 FROM Posts AS p
                 JOIN Channels AS c
                 ON c.postId = p.postId
@@ -279,6 +286,10 @@ router.route('/posts/my')
             await sequelize.query(query, {type: Sequelize.QueryTypes.SELECT})
                 .then((searchList) => {
                     for (const search of searchList) {
+                        let tagItem = []
+                        if (search.tagItem)
+                            for (const Item of search.tagItem.split(', '))
+                                tagItem.push(Item)
                         result.push({
                             postId: search.postId,
                             title: search.title,
@@ -288,6 +299,7 @@ router.route('/posts/my')
                             startDate: search.startDate,
                             endDate: search.endDate,
                             place: search.place,
+                            tagItem,
                         })
                     }
                     res.status(200).send(result)
