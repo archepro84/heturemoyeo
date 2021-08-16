@@ -12,7 +12,10 @@ module.exports = async (socket, next) => {
         const {userId} = jwt.verify(Authorization, process.env.SECRET_KEY);
         await Users.findByPk(userId)
             .then((user) => {
-                socket.userId = user['dataValues'].userId
+                socket.user = {
+                    userId: user['dataValues'].userId,
+                    nickname: user['dataValues'].nickname,
+                }
             })
         next()
     } catch (error) {

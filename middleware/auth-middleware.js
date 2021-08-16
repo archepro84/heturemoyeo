@@ -8,7 +8,7 @@ const authorizationSchema = Joi.string().required()
 module.exports = async (req, res, next) => {
     try {
         const Authorization = await authorizationSchema.validateAsync(
-            req.cookies.authorization ? req.cookies.authorization : req.headers.authorization)
+            req.headers.authorization ? req.headers.authorization : req.cookies.authorization)
         const {userId} = jwt.verify(Authorization, process.env.SECRET_KEY);
         await Users.findByPk(userId)
             .then((user) => {
