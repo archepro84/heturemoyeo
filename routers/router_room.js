@@ -379,7 +379,7 @@ router.route('/invite/reject')
                 return;
             }
 
-            await Invites.destroy({where: {inviteId, receiveId: userId}})
+            await Invites.destroy({where: {inviteId, receiveUserId: userId}})
             res.status(201).send()
         } catch (error) {
             console.log(`${req.method} ${req.originalUrl} : ${error.message}`);

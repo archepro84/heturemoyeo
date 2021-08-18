@@ -4,6 +4,8 @@ const authmiddleware = require("../middleware/auth-middleware");
 const authmiddlewareAll = require("../middleware/auth-middlewareAll")
 const {Invites, Posts, Tags, sequelize, Sequelize} = require("../models");
 const {postIdSchema, postSchema, postPutSchema, startLimitSchema} = require("./joi_Schema")
+const startDateLimit = 8 * 24 * 60 * 60 * 1000;
+const endDateLimit = 14 * 24 * 60 * 60 * 1000;
 
 router.route("/")
     .get(authmiddleware, async (req, res) => {
@@ -65,6 +67,7 @@ router.route("/")
         try {
             let location;
             let tagArray = [];
+            const now = new Date();
             const {userId} = res.locals.user;
             let {
                 title,
@@ -100,7 +103,10 @@ router.route("/")
                 return post.null;
             });
 
-            if (startDate > endDate) {
+            if (startDate > endDate
+                || startDate < now.getTime()
+                || startDate >= now.getTime() + startDateLimit
+                || endDate >= now.getTime() + endDateLimit) {
                 res.status(412).send({
                     errorMessage: "모임 시간이 잘못 설정되었습니다."
                 })
@@ -132,6 +138,7 @@ router.route("/")
     .put(authmiddleware, async (req, res) => {
         try {
             let location;
+            const now = new Date();
             const {userId} = res.locals.user;
             let {
                 postId,
@@ -147,6 +154,16 @@ router.route("/")
                 bring,
                 tag,
             } = await postPutSchema.validateAsync(req.body);
+
+            if (startDate > endDate
+                || startDate < now.getTime()
+                || startDate >= now.getTime() + startDateLimit
+                || endDate >= now.getTime() + endDateLimit) {
+                res.status(412).send({
+                    errorMessage: "모임 시간이 잘못 설정되었습니다."
+                })
+                return;
+            }
 
             if (lat && lng)
                 location = {type: 'Point', coordinates: [lat, lng]}
@@ -314,7 +331,7 @@ router.route('/posts/my')
 
 // TODO 위치 반경 이내에 있는 모임만 보이게 설정하자 (MySQL Geometry 함수)
 router.route('/posts/location')
-    .get(authmiddleware, async (req, res) => {
+    .get(authmiddlewareAll, async (req, res) => {
         try {
             const postList = [];
 
