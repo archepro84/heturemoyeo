@@ -26,6 +26,10 @@ module.exports = {
                 },
                 onDelete: 'cascade'
             },
+            confirm: {
+                type: Sequelize.TINYINT.UNSIGNED,
+                allowNull: false,
+            },
             createdAt: {
                 allowNull: false,
                 type: Sequelize.DATE,

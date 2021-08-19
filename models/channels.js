@@ -26,7 +26,12 @@ module.exports = (sequelize, DataTypes) => {
         userId: {
             type: DataTypes.INTEGER,
             required: true,
-        }
+        },
+        confirm: {
+            type: DataTypes.TINYINT.UNSIGNED,
+            required: true,
+        },
+
     }, {
         sequelize,
         modelName: 'Channels',
