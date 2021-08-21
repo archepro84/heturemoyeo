@@ -8,8 +8,8 @@ module.exports = {
                 primaryKey: true,
                 type: Sequelize.INTEGER
             },
-            email: {
-                type: Sequelize.STRING,
+            phone: {
+                type: Sequelize.STRING(100),
                 allowNull: false,
             },
             authData: {
@@ -35,15 +35,15 @@ module.exports = {
             const SP_Auths_INSERT_QUERY = `
                 CREATE PROCEDURE SP_Auths_INSERT
                 (
-                 IN auth_email varchar(255),
+                 IN auth_phone varchar(100),
                  IN auth_authData varchar(255) 
                 )
                 BEGIN
-                    IF EXISTS (SELECT email FROM Auths WHERE email = auth_email) THEN
+                    IF EXISTS (SELECT phone FROM Auths WHERE phone = auth_phone) THEN
                         UPDATE Auths SET authData = auth_authData, updatedAt = NOW()
-                        WHERE email = auth_email;
+                        WHERE phone = auth_phone;
                     ELSE 
-                        INSERT INTO Auths (email, authData) VALUES (auth_email, auth_authData);
+                        INSERT INTO Auths (phone, authData) VALUES (auth_phone, auth_authData);
                     END IF;
                     
                 END`
