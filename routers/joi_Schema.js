@@ -1,4 +1,4 @@
-const Joi = require("joi")
+const Joi = require("joi");
 const joiSchema = {
     Joi,
     userIdSchema: Joi.object({
@@ -13,31 +13,29 @@ const joiSchema = {
         start: Joi.number().min(0).required(),
         limit: Joi.number().min(1).required(),
     }),
-    emailSchema: Joi.object({
+    phoneSchema: Joi.object({
         // 완료
-        email: Joi.string()
-            .pattern(
-                /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
-            )
+        phone: Joi.string()
+            .pattern(/(^02.{0}|^01.{1}|[0-9]{3})([0-9]+)([0-9]{4})/g)
             .required(),
     }),
     //
     authDataSchema: Joi.object({
         // 완료
-        email: Joi.string()
-            .pattern(/^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/)
+        phone: Joi.string()
+            .pattern(/(^02.{0}|^01.{1}|[0-9]{3})([0-9]+)([0-9]{4})/g)
             .required(),
-        authData: Joi.string().min(6).max(6).replace(/[\'\"\`]/g, '').required(),
+        authData: Joi.string()
+            .min(6)
+            .max(6)
+            .replace(/[\'\"\`]/g, "")
+            .required(),
     }),
     newPassSchema: Joi.object({
         // 완료
         authId: Joi.number().min(1).required(),
-        email: Joi.string()
-            .pattern(
-                new RegExp(
-                    "^[0-9a-zA-Z]([-_.]?[0-9a-zA-Z])*@[0-9a-zA-Z]([-_.]?[0-9a-zA-Z])*.[a-zA-Z]{2,3}$"
-                )
-            )
+        phone: Joi.string()
+            .pattern(/(^02.{0}|^01.{1}|[0-9]{3})([0-9]+)([0-9]{4})/g)
             .required(),
         password: Joi.string()
             .pattern(/^(?=.*[a-zA-Z0-9])((?=.*\d)|(?=.*\W)).{6,20}$/)
@@ -47,16 +45,18 @@ const joiSchema = {
             .required(),
     }),
     //
-    loginSchema: Joi.object({  // 완료
-        email: Joi.string()
-            .pattern(/^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/)
+    loginSchema: Joi.object({
+        // 완료
+        phone: Joi.string()
+            .pattern(/(^02.{0}|^01.{1}|[0-9]{3})([0-9]+)([0-9]{4})/g)
             .required(),
         password: Joi.string()
             .pattern(/^(?=.*[a-zA-Z0-9])((?=.*\d)|(?=.*\W)).{6,20}$/)
-            .replace(/[\'\"\`]/g, '')
+            .replace(/[\'\"\`]/g, "")
             .required(),
     }),
-    postSchema: Joi.object({  // 완료
+    postSchema: Joi.object({
+        // 완료
         title: Joi.string().max(100).allow(null, "").required(),
         postImg: Joi.string().allow(null, "").required(),
         content: Joi.string().max(1000),
@@ -69,7 +69,8 @@ const joiSchema = {
         bring: Joi.string(),
         tag: Joi.array().required(),
     }),
-    postPutSchema: Joi.object({  // 완료
+    postPutSchema: Joi.object({
+        // 완료
         postId: Joi.number().min(1).required(),
         title: Joi.string().min(1).max(100).allow(null, "").required(),
         postImg: Joi.string().allow(null, "").required(),
@@ -83,25 +84,32 @@ const joiSchema = {
         bring: Joi.string(),
         tag: Joi.array().required(),
     }),
-    chatSchema: Joi.object({   // 완료
+    chatSchema: Joi.object({
+        // 완료
         postId: Joi.number().min(1).required(),
         message: Joi.string().max(255).required(),
     }),
-    keywordSchema: Joi.object({   // 완료
-        keyword: Joi.string().required().replace(/[\'\"\`]/g, ''),
+    keywordSchema: Joi.object({
+        // 완료
+        keyword: Joi.string()
+            .required()
+            .replace(/[\'\"\`]/g, ""),
     }),
     //
-    searchPostSchema: Joi.object({    // 완료
-        keyword: Joi.string().required().allow(null).replace(/[\'\"\`]/g, ''),
+    searchPostSchema: Joi.object({
+        // 완료
+        keyword: Joi.string()
+            .required()
+            .allow(null)
+            .replace(/[\'\"\`]/g, ""),
         searchDate: Joi.date().allow(null),
         start: Joi.number().min(0).required(),
         limit: Joi.number().min(1).required(),
     }),
-    signSchema: Joi.object({    // 
-        email: Joi.string()
-            .pattern(
-                /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
-            )
+    signSchema: Joi.object({
+        //
+        phone: Joi.string()
+            .pattern(/(^02.{0}|^01.{1}|[0-9]{3})([0-9]+)([0-9]{4})/g)
             .required(),
         name: Joi.string()
             .pattern(new RegExp("^[ㄱ-ㅎ|ㅏ-ㅣ|가-힣\\s|0-9a-zA-z]{3,10}$"))
@@ -141,14 +149,14 @@ const joiSchema = {
             .required(),
     }),
     signDeleteSchema: Joi.object({
-        email: Joi.string()
-            .pattern(
-                /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
-            )
+        phone: Joi.string()
+            .pattern(/(^02.{0}|^01.{1}|[0-9]{3})([0-9]+)([0-9]{4})/g)
             .required(),
         password: Joi.string()
-            .pattern(new RegExp("^(?=.*[a-zA-Z0-9])((?=.*\\d)|(?=.*\\W)).{6,20}$"))
-            .replace(/[\'\"\`]/g, '')
+            .pattern(
+                new RegExp("^(?=.*[a-zA-Z0-9])((?=.*\\d)|(?=.*\\W)).{6,20}$")
+            )
+            .replace(/[\'\"\`]/g, "")
             .required(),
     }),
     statusMessageSchema: Joi.object({
@@ -162,7 +170,7 @@ const joiSchema = {
             .required(),
         password: Joi.string()
             .pattern(/^(?=.*[a-zA-Z0-9])((?=.*\d)|(?=.*\W)).{6,20}$/)
-            .replace(/[\'\"\`]/g, '')
+            .replace(/[\'\"\`]/g, "")
             .required(),
         newpassword: Joi.string()
             .pattern(/^(?=.*[a-zA-Z0-9])((?=.*\d)|(?=.*\W)).{6,20}$/)
@@ -185,7 +193,7 @@ const joiSchema = {
     }),
     inviteIdSchema: Joi.object({
         inviteId: Joi.number().min(1).required(),
-    })
+    }),
 };
 
-module.exports = joiSchema
+module.exports = joiSchema;
