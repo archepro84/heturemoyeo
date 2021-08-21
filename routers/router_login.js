@@ -9,15 +9,15 @@ const router = express.Router();
 router.route("/")
     .post(loginCheckMiddleware, async (req, res) => {
         try {
-            const {email, password} = await loginSchema.validateAsync(req.body);
+            const {phone, password} = await loginSchema.validateAsync(req.body);
             const cryptoPass = crypto.createHash('sha512').update(password).digest('base64')
 
             const user = await Users.findOne({
-                where: {email, password: cryptoPass},
+                where: {phone, password: cryptoPass},
             });
 
             if (!user) {
-                res.status(412).send({errorMessage: "이메일 또는 패스워드가 잘못되었습니다."})
+                res.status(412).send({errorMessage: "핸드폰 번호 또는 패스워드가 잘못되었습니다."})
                 return;
             }
 
