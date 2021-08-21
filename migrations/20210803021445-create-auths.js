@@ -45,7 +45,6 @@ module.exports = {
                     ELSE 
                         INSERT INTO Auths (phone, authData) VALUES (auth_phone, auth_authData);
                     END IF;
-                    
                 END`
             queryInterface.sequelize.query(SP_Auths_INSERT_QUERY)
         });

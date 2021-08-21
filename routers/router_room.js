@@ -1,9 +1,68 @@
 const express = require("express");
 const router = express.Router();
 const authmiddleware = require("../middleware/auth-middleware");
-const {Invites, Messages, Channels, Posts, sequelize, Sequelize} = require("../models");
+const {Users, Invites, Messages, Channels, Posts, sequelize, Sequelize} = require("../models");
 const {postIdSchema, startLimitSchema, chatSchema, userIdpostIdSchema, inviteIdSchema} = require("./joi_Schema")
 
+
+router.route('/info')
+    .get(authmiddleware, async (req, res) => {
+        try {
+            const userId = res.locals.user.userId;
+            const {postId} = await postIdSchema.validateAsync(
+                Object.keys(req.query).length ? req.query : req.body
+            );
+
+            const findChannel = await Channels.findOne({where: {postId, userId}})
+
+            if (!findChannel) {
+                res.status(412).send({errorMessage: "해당 방에 참여 하고 있지않습니다."})
+                return;
+            }
+
+
+            const findUsersList = await Channels.findAll({
+                distinct: true,
+                attributes: ['userId', 'confirm'],
+                where: {postId},
+            })
+            let userIdList = [];
+            let confirmList = {};
+            for (const x of findUsersList) {
+                const userId = x['dataValues'].userId;
+                userIdList.push(userId);
+                confirmList[userId] = x['dataValues'].confirm;
+            }
+
+            await Users.findAll({
+                attributes: ['userId', 'nickname', 'profileImg'],
+                where: {
+                    userId: {[Sequelize.Op.in]: userIdList}
+                }
+            })
+                .then((findUsers) => {
+                    let result = [];
+
+                    for (const x of findUsers) {
+                        result.push({
+                            userId: x['dataValues'].userId,
+                            nickname: x['dataValues'].nickname,
+                            profileImg: x['dataValues'].profileImg,
+                            confirm: confirmList[x['dataValues'].userId] ? true : false,
+                        })
+                    }
+                    res.send(result)
+                })
+
+        } catch
+            (error) {
+            console.log(error);
+            console.log(`${req.method} ${req.originalUrl} : ${error.message}`);
+            res.status(400).send({
+                errorMessage: "대화방의 정보를 불러올 수 없습니다.",
+            });
+        }
+    })
 
 router.route('/:postId')
     .get(authmiddleware, async (req, res) => {
@@ -97,27 +156,20 @@ router.route('/join')
             const userId = res.locals.user.userId;
             const {postId} = await postIdSchema.validateAsync(req.body);
 
-            // // JOIN을 제외하고 구현하였음. include에서 에러가 발생해서 SQL로 선회
-            // const sequelizeQuery = {
-            //     attributes: [
-            //         [sequelize.fn('COUNT', sequelize.col('userId')), 'currentMember'],
-            //         [sequelize.literal(`CASE WHEN 1 = (SELECT DISTINCT 1 FROM Channels WHERE postId=${postId} AND userId=${userId}) THEN 'Y' ELSE 'N' END`), 'isExist'],
-            //     ],
-            //     where: {
-            //         postId,
-            //     },
-            // }
-            // const findData = await Channels.findOne(sequelizeQuery)
-            // console.log(findData);
+            // const query = `SELECT COUNT(c.userId) AS currentMember,
+            //         p.maxMember,
+            //         CASE WHEN 1 = (SELECT DISTINCT 1 FROM Channels WHERE postId = ${postId} AND userId = ${userId}) THEN 'Y' ELSE 'N' END AS 'isExist'
+            //     FROM Channels AS c
+            //     JOIN Posts AS p
+            //     ON c.postId = p.postId
+            //     WHERE c.postId = ${postId}
+            //     GROUP BY c.postId`
 
-            const query = `SELECT COUNT(c.userId) AS currentMember,
-                    p.maxMember,    
-                    CASE WHEN 1 = (SELECT DISTINCT 1 FROM Channels WHERE postId = ${postId} AND userId = ${userId}) THEN 'Y' ELSE 'N' END AS 'isExist'
-                FROM Channels AS c
-                JOIN Posts AS p 
-                ON c.postId = p.postId
-                WHERE c.postId = ${postId}
-                GROUP BY c.postId`
+            const query = `
+            SELECT confirmCount, currentMember, maxMember, 
+                CASE WHEN 1 = (SELECT DISTINCT 1 FROM Channels WHERE postId = ${postId} AND userId = ${userId}) THEN 'Y' ELSE 'N' END AS 'isExist'
+            FROM POSTS_VW
+            WHERE postId = ${postId}`
 
             const findData = await sequelize.query(query, {type: Sequelize.QueryTypes.SELECT})
                 .then((result) => {
@@ -137,13 +189,19 @@ router.route('/join')
                 return;
             }
 
-            const {currentMember, maxMember} = findData;
-            if (currentMember >= maxMember) {
+            const {confirmCount, currentMember, maxMember} = findData;
+            if (confirmCount >= currentMember) {
+                res.status(406).send({
+                    errorMessage: "이미 확정된 모임입니다."
+                })
+                return;
+            } else if (currentMember >= maxMember) {
                 res.status(406).send({
                     errorMessage: "모임의 입장가능 인원이 초과되어 입장이 불가능합니다."
                 })
                 return;
             }
+
             // 마지막으로 입장하였을 경우 모임 Room 정보 및 위치 정보를 삭제한다.
             if (currentMember == maxMember - 1) {
                 console.log("Room Over DeletePosts");
@@ -168,16 +226,22 @@ router.route('/exit')
             const userId = res.locals.user.userId;
             const {postId} = await postIdSchema.validateAsync(req.body);
 
+            // const query = `
+            //     SELECT p.title, p.postImg, COUNT(c.userId) AS currentMember, p.maxMember,
+            //         p.startDate, p.endDate, p.place,
+            //         ST_Y(p.location) AS lat, ST_X(p.location) AS lng,
+            //         CASE WHEN 1 = (SELECT DISTINCT 1 FROM Channels WHERE postId = ${postId} AND userId = ${userId}) THEN 'Y' ELSE 'N' END AS isExist
+            //     FROM Posts AS p
+            //     JOIN Channels AS c
+            //     ON p.postId = c.postId
+            //     WHERE p.postId = ${postId}
+            //     GROUP BY c.postId`
+
             const query = `
-                SELECT p.title, p.postImg, COUNT(c.userId) AS currentMember, p.maxMember,
-                    p.startDate, p.endDate, p.place,
-                    ST_Y(p.location) AS lat, ST_X(p.location) AS lng,
-                    CASE WHEN 1 = (SELECT DISTINCT 1 FROM Channels WHERE postId = ${postId} AND userId = ${userId}) THEN 'Y' ELSE 'N' END AS isExist
-                FROM Posts AS p
-                JOIN Channels AS c
-                ON p.postId = c.postId
-                WHERE p.postId = ${postId}
-                GROUP BY c.postId`
+                SELECT userId, title, postImg, confirmCount, currentMember, maxMember, startDate, endDate, place, lat, lng, 
+                    CASE WHEN 1 = (SELECT DISTINCT 1 FROM Channels WHERE postId = ${postId} AND userId = ${userId}) THEN 'Y' ELSE 'N' END AS 'isExist'
+                FROM POSTS_VW
+                WHERE postId = ${postId}`
             const findData = await sequelize.query(query, {type: Sequelize.QueryTypes.SELECT})
                 .then((result) => {
                     return result[0]
@@ -189,14 +253,39 @@ router.route('/exit')
                 })
                 return;
             }
-            const {title, postImg, currentMember, maxMember, startDate, endDate, place, lat, lng, isExist} = findData;
+            if (userId == findData['userId']) {
+                res.status(403).send({
+                    errorMessage: "방장은 모임에서 나갈 수 없습니다."
+                })
+                return;
+            }
+            const {
+                title,
+                postImg,
+                confirmCount,
+                currentMember,
+                maxMember,
+                startDate,
+                endDate,
+                place,
+                lat,
+                lng,
+                isExist
+            } = findData;
 
+            if (confirmCount >= currentMember) {
+                res.status(406).send({
+                    errorMessage: "이미 확정된 모임입니다."
+                })
+                return;
+            }
             if (isExist == 'N') {
                 res.status(406).send({
                     errorMessage: "해당하는 모임에 참여하고 있지 않습니다."
                 })
                 return;
             }
+
 
             await Channels.destroy({where: {postId, userId}})
 
@@ -285,6 +374,129 @@ router.route('/invite')
             }
 
             await Invites.create({giveUserId, receiveUserId: userId, postId});
+            //문자 메시지 발송
+            res.status(201).send()
+        } catch (error) {
+            console.log(`${req.method} ${req.originalUrl} : ${error.message}`);
+            res.status(400).send({
+                errorMessage: "모임 초대에 실패 하였습니다.",
+            });
+        }
+    })
+
+router.route('/kick')
+    .post(authmiddleware, async (req, res) => {
+        try {
+            const userId = res.locals.user.userId;
+            const {userId: targetUserId, postId} = await userIdpostIdSchema.validateAsync(req.body);
+
+            if (userId == targetUserId) {
+                res.status(412).send({
+                    errorMessage: "자신을 추방할 수 없습니다."
+                })
+                return;
+            }
+
+            const query = `
+            SELECT confirmCount, currentMember,
+                CASE WHEN 1 = (SELECT DISTINCT 1 FROM Channels WHERE postId = ${postId} AND userId = ${targetUserId}) THEN 'Y' ELSE 'N' END AS isTargetExist
+            FROM POSTS_VW
+            WHERE postId = ${postId}
+                AND userId = ${userId}`
+
+            const findData = await sequelize.query(query, {type: Sequelize.QueryTypes.SELECT})
+
+            if (!Object.keys(findData).length) {
+                res.status(406).send({
+                    errorMessage: "해당하는 모임의 방장이 아닙니다."
+                })
+                return;
+            }
+
+            const {confirmCount, currentMember, isTargetExist} = findData[0];
+            if (confirmCount >= currentMember) {
+                res.status(406).send({
+                    errorMessage: "확정된 모임에서는 추방할 수 없습니다."
+                })
+                return;
+            } else if (isTargetExist != 'Y') {
+                res.status(406).send({
+                    errorMessage: "해당하는 대상이 존재하지 않습니다."
+                })
+                return;
+            }
+
+            await Channels.destroy({
+                where: {postId, userId: targetUserId}
+            })
+
+            res.status(200).send()
+        } catch (error) {
+            console.log(`${req.method} ${req.originalUrl} : ${error.message}`);
+            res.status(400).send({
+                errorMessage: "모임 퇴장에 실패 하였습니다.",
+            });
+        }
+    })
+
+router.route('/confirm')
+    .post(authmiddleware, async (req, res) => {
+        try {
+            const userId = res.locals.user.userId;
+            const {postId} = await postIdSchema.validateAsync(req.body);
+
+
+            const findData = await Channels.findOne({where: {userId, postId}})
+
+            if (!findData) {
+                res.status(406).send({
+                    errorMessage: "해당하는 모임에 참가하고 있지않습니다."
+                })
+                return;
+            }
+
+            const {channelId, confirm} = findData['dataValues']
+
+            if (confirm == 1) {
+                res.status(406).send({
+                    errorMessage: "이미 확정버튼을 누른 상태입니다."
+                })
+                return;
+            }
+
+            const query = `
+                SELECT
+                   (SELECT COUNT(confirm) FROM Channels WHERE postId = ${postId} AND confirm = 1) AS confirmCount ,
+                   (SELECT COUNT(userId) FROM Channels WHERE postId = ${postId}) AS currentMember,
+                    CASE WHEN 1 = (SELECT DISTINCT 1 FROM Posts WHERE userId = ${userId} AND postid = ${postId} ) THEN 'Y' ELSE 'N' END AS isMaster`
+
+            const {
+                confirmCount,
+                currentMember,
+                isMaster
+            } = await sequelize.query(query, {type: Sequelize.QueryTypes.SELECT})
+                .then((result) => {
+                    return result[0]
+                })
+
+            console.log(confirmCount, currentMember);
+            if (isMaster == 'Y') {
+                if (currentMember == 1) {
+                    res.status(406).send({
+                        errorMessage: "다른 인원이 존재하지 않습니다."
+                    })
+                    return;
+                } else if (confirmCount < currentMember - 1) {
+                    res.status(406).send({
+                        errorMessage: "다른 인원이 확정버튼을 누르지 않았습니다."
+                    })
+                    return;
+                }
+            }
+
+            await Channels.update({confirm: 1},
+                {where: {channelId, userId, postId}})
+
             res.status(201).send()
         } catch (error) {
             console.log(`${req.method} ${req.originalUrl} : ${error.message}`);

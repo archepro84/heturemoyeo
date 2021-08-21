@@ -28,6 +28,7 @@ module.exports = {
             },
             confirm: {
                 type: Sequelize.TINYINT.UNSIGNED,
+                defaultValue: '0',
                 allowNull: false,
             },
             createdAt: {

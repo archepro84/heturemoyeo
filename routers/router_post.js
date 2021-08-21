@@ -2,7 +2,7 @@ const express = require("express");
 const router = express.Router();
 const authmiddleware = require("../middleware/auth-middleware");
 const authmiddlewareAll = require("../middleware/auth-middlewareAll")
-const {Invites, Posts, Tags, sequelize, Sequelize} = require("../models");
+const {Channels, Invites, Posts, Tags, sequelize, Sequelize} = require("../models");
 const {postIdSchema, postSchema, postPutSchema, startLimitSchema} = require("./joi_Schema")
 const startDateLimit = 8 * 24 * 60 * 60 * 1000;
 const endDateLimit = 14 * 24 * 60 * 60 * 1000;
@@ -15,7 +15,7 @@ router.route("/")
             );
 
             const query = `
-                SELECT p.title, p.postImg, p.content, u.nickname, u.rating, u.statusMessage, COUNT(*) AS currentMember,
+                SELECT p.title, p.postImg, p.content, u.userId, u.nickname, u.profileImg, u.rating, u.statusMessage, COUNT(*) AS currentMember,
                 p.maxMember, p.startDate, p.endDate, p.place, ST_Y(p.location) AS lat, ST_X(p.location) AS lng, p.bring,
                 (SELECT GROUP_CONCAT(tag ORDER BY tag ASC SEPARATOR ', ')
                     FROM Tags
@@ -40,7 +40,9 @@ router.route("/")
                         title: result[0].title,
                         postImg: result[0].postImg,
                         content: result[0].content,
+                        userId: result[0].userId,
                         nickname: result[0].nickname,
+                        profileImg: result[0].profileImg,
                         rating: result[0].rating,
                         statusMessage: result[0].statusMessage,
                         currentMember: result[0].currentMember,
@@ -135,6 +137,8 @@ router.route("/")
         }
     })
 
+    // TODO 모임이 가득찼을 때 최대인원을 늘리면 Socket에 모임을 뿌려줘야한다.
+    // 반대로 최대인원을 현재 인원으로 변경할 경우 Socket에 모임을 제거해야한다.
     .put(authmiddleware, async (req, res) => {
         try {
             let location;
@@ -161,6 +165,31 @@ router.route("/")
                 || endDate >= now.getTime() + endDateLimit) {
                 res.status(412).send({
                     errorMessage: "모임 시간이 잘못 설정되었습니다."
+                })
+                return;
+            }
+
+            const countQuery = `
+                SELECT
+                    (SELECT COUNT(confirm) FROM Channels WHERE postId = ${postId} AND confirm = 1) AS confirmCount,
+                    COUNT(userId) AS currentMember
+                FROM Channels AS c
+                WHERE c.postId = ${postId}`
+
+            const {confirmCount, currentMember} = await sequelize.query(countQuery, {type: Sequelize.QueryTypes.SELECT})
+                .then((result) => {
+                    return result[0]
+                })
+
+            if (confirmCount >= currentMember) {
+                res.status(406).send({
+                    errorMessage: "확정된 모임은 수정할 수 없습니다."
+                })
+                return;
+            }
+            if (currentMember > maxMember) {
+                res.status(412).send({
+                    errorMessage: "현재 참여중인 인원 수보다 적은 인원 수로 변경 할 수 없습니다."
                 })
                 return;
             }
@@ -212,13 +241,28 @@ router.route("/")
             const {userId} = res.locals.user;
             const {postId} = await postIdSchema.validateAsync(req.body);
 
+            // 만약 postId랑 userId가 다를 경우는 어떻게 처리하지?
+            const findData = await Channels.findOne({
+                attributes: ['userId'],
+                where: {
+                    postId,
+                    userId: {[Sequelize.Op.ne]: userId,}
+                }
+            })
+
+            if (findData) {
+                res.status(406).send({
+                    errorMessage: "다른 사용자가 참여중인 모임은 삭제할 수 없습니다."
+                })
+                return;
+            }
+
             const deleteCount = await Posts.destroy({
                 where: {
                     postId,
                     userId,
                 },
             })
-
             if (deleteCount < 1) {
                 res.status(412).send({errorMessage: "모임이 삭제되지 않았습니다."})
                 return;
@@ -244,13 +288,12 @@ router.route('/posts')
             )
 
             const query = `
-                SELECT p.postId, p.title, p.postImg, COUNT(*) AS currentMember, p.maxMember, p.startDate, p.endDate, p.place,
-                    (SELECT GROUP_CONCAT(tag ORDER BY tag ASC SEPARATOR ', ') FROM Tags WHERE postId = p.postId GROUP BY postId) AS tagItem
-                FROM Channels  AS c
-                JOIN Posts AS p
-                ON p.postId = c.postId
-                GROUP BY c.postId
-                HAVING currentMember < maxMember
+                SELECT postId, title, postImg, currentMember, maxMember, startDate, endDate, place, tagItem
+                FROM POSTS_VW
+                WHERE confirmCount < currentMember
+                    AND currentMember < maxMember
+                    AND startDate >= NOW()
+                ORDER BY startDate
                 LIMIT ${start}, ${limit}`
 
             await sequelize.query(query, {type: Sequelize.QueryTypes.SELECT})
@@ -269,7 +312,7 @@ router.route('/posts')
                             startDate: search.startDate,
                             endDate: search.endDate,
                             place: search.place,
-                            tagItem,
+                            tag: tagItem,
                         })
                     }
                     res.status(200).send(result)
@@ -316,7 +359,7 @@ router.route('/posts/my')
                             startDate: search.startDate,
                             endDate: search.endDate,
                             place: search.place,
-                            tagItem,
+                            tag: tagItem,
                         })
                     }
                     res.status(200).send(result)
@@ -357,20 +400,6 @@ router.route('/posts/location')
                     }
                     res.status(200).send(postList)
                 })
-            // await Posts.findAll({
-            //     attributes: ['postId', 'location'],
-            //     where: {location: {[Sequelize.Op.not]: null}}
-            // })
-            //     .then((result) => {
-            //         for (const x of result) {
-            //             postList.push({
-            //                 postId: x['dataValues'].postId,
-            //                 lat: x['dataValues'].location.coordinates[0],
-            //                 lng: x['dataValues'].location.coordinates[1],
-            //             })
-            //         }
-            //         res.status(200).send(postList)
-            //     })
         } catch (error) {
             console.log(`${req.method} ${req.originalUrl} : ${error.message}`);
             res.status(400).send({
@@ -422,22 +451,44 @@ router.route('/posts/master')
             });
         }
     })
+
 router.route('/posts/invite')
     .get(authmiddleware, async (req, res) => {
         try {
             const result = [];
             const userId = res.locals.user.userId;
+            const {start, limit} = await startLimitSchema.validateAsync(
+                Object.keys(req.query).length ? req.query : req.body
+            )
 
-            await Invites.findAll({
-                attributes: ['inviteId', 'giveUserId', 'postId'],
-                where: {receiveUserId: userId}
-            })
+            const query = `
+                SELECT i.InviteId, i.giveUserId AS userId, u.nickname, u.profileImg, i.postId, p.title, p.postImg, 
+                    (SELECT COUNT(userId) FROM Channels WHERE postId = p.postId) AS currentMember,
+                    p.maxMember, p.startDate, p.endDate, p.place
+                FROM Invites AS i
+                JOIN Posts AS p
+                ON i.postId = p.postId
+                JOIN Users AS u
+                ON i.giveUserId = u.userId
+                WHERE i.receiveUserId = ${userId}
+                ORDER BY i.postId
+                LIMIT ${start}, ${limit}`
+            await sequelize.query(query, {type: Sequelize.QueryTypes.SELECT})
                 .then((inviteList) => {
                     for (const x of inviteList) {
                         result.push({
-                            inviteId: x['dataValues'].inviteId,
-                            userId: x['dataValues'].giveUserId,
-                            postId: x['dataValues'].postId,
+                            InviteId: x.InviteId,
+                            userId: x.userId,
+                            nickname: x.nickname,
+                            profileImg: x.profileImg,
+                            postId: x.postId,
+                            title: x.title,
+                            postImg: x.postImg,
+                            currentMember: x.currentMember,
+                            maxMember: x.maxMember,
+                            startDate: x.startDate,
+                            endDate: x.endDate,
+                            place: x.place,
                         })
                     }
                     res.status(200).send(result)

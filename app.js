@@ -6,14 +6,20 @@ const cookieparser = require("cookie-parser")
 const nunjucks = require("nunjucks");
 const socketIO = require("./socket");
 const session = require("express-session");
+// const redis = require('redis')
 const swaggerUi = require("swagger-ui-express");
 const swaggerFile = require("./swagger/swagger-output.json");
 const morgan = require("morgan")
 
+
 require('dotenv').config();
-const port = 4001;
+const port = 4001
 const app = express()
 
+/*const redisClient = redis.createClient({
+    url: `redis://${process.env.REDIS_HOST}:${process.env.REDIS_PORT}`,
+})
+const geo = require('georedis').initialize(redisClient)*/
 
 // const Https = require("https");
 // const fs = require("fs")
@@ -23,10 +29,19 @@ const app = express()
 //     key: fs.readFileSync(`/etc/letsencrypt/live/${domainName}/privkey.pem`),
 //     cert: fs.readFileSync(`/etc/letsencrypt/live/${domainName}/cert.pem`),
 // };
-// Https.createServer(options, app).listen(443);
+//
+//
+// const https = Https.createServer(options, app)
+//     .listen(443, () => {
+//         console.log(`localhost: https://localhost:${port}`);
+//     });
+
 const http = Http.createServer(app)
+    .listen(port, () => {
+        console.log(`localhost: http://localhost:${port}`);
+    })
 
-
+// TODO Test Only Module
 app.set('view engine', 'html');
 nunjucks.configure('views', {
     express: app,
@@ -38,13 +53,12 @@ app.use(express.json())
 app.use(cookieparser())
 app.use(cors({
     // 맨 뒤에 .shop/중에서 /를 삭제해야 사용할 수 있다.
-    origin: ["http://localhost:3000", "http://heturemoyeo.s3-website.ap-northeast-2.amazonaws.com/"],
+    origin: ["http://localhost:3000", "moyeora.org"],
     credentials: true
 }))
 // app.use(morgan("combined"));
 app.use(express.static('public'));
 app.use("/swagger", swaggerUi.serve, swaggerUi.setup(swaggerFile));
-
 
 app.use(
     session({
@@ -59,6 +73,12 @@ app.use(
     })
 );
 
+// app.use((req, res, next) => {
+//     req.client = redisClient;
+//     req.geo = geo;
+//     next();
+// })
+
 app.use("/api", router)
 
 app.get('/maps', (req, res) => {
@@ -71,8 +91,28 @@ app.get('/locationaddress', (req, res) => {
     res.render("maps_LocationAddress")
 });
 
-app.get('/socketmaps', (req, res) => {
-    res.render("socket_maps")
+app.get('/socketmaps2', (req, res) => {
+    res.render("socket_maps2")
+});
+
+app.get('/socketmaps3', (req, res) => {
+    res.render("socket_maps3")
+});
+
+app.get('/socketmaps5', (req, res) => {
+    res.render("socket_maps5")
+});
+
+app.get('/socketmaps10', (req, res) => {
+    res.render("socket_maps10")
+});
+
+app.get('/socketmaps46', (req, res) => {
+    res.render("socket_maps46")
+});
+
+app.get('/socketmaps47', (req, res) => {
+    res.render("socket_maps47")
 });
 
 app.get('/room', (req, res) => {
@@ -86,10 +126,8 @@ app.get('/chat/:postId', (req, res) => {
     res.render("chat", {postId: req.params.postId})
 });
 
-const server = http.listen(port, () => {
-    console.log(`localhost:  http://localhost:${port}`);
-})
 
-socketIO(server, app);
+// socketIO(https, app);
+socketIO(http, app);
 
-module.exports = http
+// module.exports = http

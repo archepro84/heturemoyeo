@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const {Users, Likes, sequelize, Sequelize} = require("../models")
+const {Posts, Users, Likes, sequelize, Sequelize} = require("../models")
 const authmiddleware = require("../middleware/auth-middleware")
 const crypto = require("crypto");
 const {userIdNumberSchema, statusMessageSchema, userModifySchema} = require("./joi_Schema")
@@ -195,60 +195,108 @@ router.route('/target/post')
             const targetUserId = await userIdNumberSchema.validateAsync(
                 Object.keys(req.query).length ? req.query.userId : req.body.userId
             );
+            let userIdList = []
+
             if (userId == targetUserId) {
                 res.status(412).send({errorMessage: "동일한 아이디를 조회할 수 없습니다."})
                 return;
             }
+            const isScheduleQuery = `
+                SELECT DISTINCT userId
+                FROM Channels
+                WHERE postId IN (SELECT postId FROM Channels WHERE userId = ${userId})
+                    AND userId != ${userId}`
+            await sequelize.query(isScheduleQuery, {type: Sequelize.QueryTypes.SELECT})
+                .then((result) => {
+                    for (const x of result) {
+                        userIdList.push(x.userId)
+                    }
+                })
+
+            if (userIdList.indexOf(targetUserId) == -1) {
+                res.status(412).send({
+                    errorMessage: "같은 모임을 참여하고 있지않습니다."
+                })
+                return;
+            }
 
             const query = `
-                SELECT nickname, rating, profileImg, statusMessage, 
-                (SELECT GROUP_CONCAT(likeItem ORDER BY likeItem ASC SEPARATOR ', ')
-                    FROM Likes 
-                    WHERE userId = u.userId
-                    GROUP BY userId) AS likeItem,
-                (SELECT COUNT(*)  
-                    FROM (SELECT DISTINCT postId FROM Channels WHERE userId = ${userId}) AS a
-                    JOIN (SELECT DISTINCT postId FROM Channels WHERE userId = ${targetUserId} ) AS b
-                    ON a.postId = b.postId) AS scheduleCount,
-                (SELECT title FROM Posts WHERE postId = (SELECT a.postId
-                    FROM (SELECT DISTINCT postId FROM Channels WHERE userId = ${userId}) AS a
-                    JOIN (SELECT DISTINCT postId FROM Channels WHERE userId = ${targetUserId}) AS b
-                    ON a.postId = b.postId ORDER BY a.postId DESC LIMIT 1)) AS scheduleTitle,
-                (SELECT COALESCE(MIN('Y'), 'N')
-                    FROM Friends
-                    WHERE EXISTS (select a.1
-                        FROM (SELECT DISTINCT 1
-                            FROM  Friends
-                            WHERE giveUserId  = ${userId} AND receiveUserId  = ${targetUserId}) AS a
-                        JOIN (SELECT DISTINCT 1
-                            FROM  Friends
-                            WHERE giveUserId  = ${targetUserId} AND receiveUserId  = ${userId}) AS b)) AS isFriend
+                SELECT u.nickname, u.rating, u.profileImg, u.statusMessage, 
+                    (SELECT GROUP_CONCAT(likeItem ORDER BY likeItem ASC SEPARATOR ', ')
+                        FROM Likes 
+                        WHERE userId = u.userId
+                        GROUP BY userId) AS likeItem,
+                    GROUP_CONCAT(s.postId ORDER BY s.postId DESC SEPARATOR ', ') AS scheduleItem,
+                    CASE WHEN 2 = (SELECT COUNT(DISTINCT giveUserId) 
+                        FROM Friends 
+                        WHERE (giveUserId = ${userId} AND receiveUserId = ${targetUserId}) 
+                            OR (giveUserId = ${targetUserId} AND receiveUserId = ${userId})) THEN 'Y' ELSE 'N' END AS isFriend
                 FROM Users AS u
-                WHERE userId = ${targetUserId}
-                    AND userId IN (SELECT DISTINCT userId
-                        FROM Channels
-                        WHERE postId IN (SELECT postId FROM Channels WHERE userId = ${userId})
-                            AND userId != ${userId})`
+                JOIN (SELECT a.postId
+                   FROM (SELECT DISTINCT postId FROM Channels WHERE userId = ${userId}) AS a
+                   JOIN (SELECT DISTINCT postId FROM Channels WHERE userId = ${targetUserId}) AS b
+                   ON a.postId = b.postId) AS s
+                WHERE userId = ${targetUserId}`
+
+            // const query = `
+            //     SELECT nickname, rating, profileImg, statusMessage,
+            //     (SELECT GROUP_CONCAT(likeItem ORDER BY likeItem ASC SEPARATOR ', ')
+            //         FROM Likes
+            //         WHERE userId = u.userId
+            //         GROUP BY userId) AS likeItem,
+            //     (SELECT COUNT(*)
+            //         FROM (SELECT DISTINCT postId FROM Channels WHERE userId = ${userId}) AS a
+            //         JOIN (SELECT DISTINCT postId FROM Channels WHERE userId = ${targetUserId} ) AS b
+            //         ON a.postId = b.postId) AS scheduleCount,
+            //     (SELECT title FROM Posts WHERE postId = (SELECT a.postId
+            //         FROM (SELECT DISTINCT postId FROM Channels WHERE userId = ${userId}) AS a
+            //         JOIN (SELECT DISTINCT postId FROM Channels WHERE userId = ${targetUserId}) AS b
+            //         ON a.postId = b.postId ORDER BY a.postId DESC LIMIT 1)) AS scheduleTitle,
+            //     CASE WHEN 2 = (SELECT COUNT(DISTINCT giveUserId)
+            //         FROM Friends
+            //         WHERE (giveUserId = ${userId} AND receiveUserId = ${targetUserId})
+            //             OR (giveUserId = ${targetUserId} AND receiveUserId = ${userId})) THEN 'Y' ELSE 'N' END AS isFriend
+            //     FROM Users AS u
+            //     WHERE userId = ${targetUserId}`
 
             // 검색된 데이터가 없을 경우 에러가 발생한다.
-            await sequelize.query(query, {type: Sequelize.QueryTypes.SELECT})
+            let findData = await sequelize.query(query, {type: Sequelize.QueryTypes.SELECT})
+
+            const {nickname, rating, profileImg, statusMessage, likeItem, scheduleItem, isFriend} = findData[0]
+
+            let likeList = [];
+            let scheduleList = [];
+            if (likeItem)
+                for (const Item of likeItem.split(', '))
+                    likeList.push(Item)
+
+            if (scheduleItem) {
+                for (const Item of scheduleItem.split(', '))
+                    scheduleList.push(Item)
+            }
+
+            // 동일한 Schedule에 소속되어있기 때문에 sheduleItem이 null일 경우는 존재하지않는다.
+            await Posts.findOne({
+                attributes: ['title'],
+                where: {postId: scheduleList[scheduleList.length - 1]}
+            })
                 .then((result) => {
-                    let likeItem = [];
-                    if (result[0].likeItem)
-                        for (const Item of result[0].likeItem.split(', '))
-                            likeItem.push(Item)
+                    const scheduleTitle = result['dataValues'].title;
                     res.status(200).send({
-                        nickname: result[0].nickname,
-                        rating: result[0].rating,
-                        profileImg: result[0].profileImg,
-                        statusMessage: result[0].statusMessage,
-                        likeItem,
-                        scheduleCount: result[0].scheduleCount,
-                        scheduleTitle: result[0].scheduleTitle,
-                        isFriend: result[0].scheduleTitle == 'Y' ? true : false,
+                        nickname,
+                        rating,
+                        profileImg,
+                        statusMessage,
+                        likeItem: likeList,
+                        scheduleCount: scheduleList.length,
+                        scheduleTitle,
+                        isFriend: isFriend == 'Y' ? true : false,
                     })
                 })
+
+
         } catch (error) {
+            console.log(`${req.method} ${req.originalUrl} : ${error.message}`);
             res.status(400).send(
                 {errorMessage: "정보를 찾을 수 없습니다."}
             )
@@ -270,6 +318,7 @@ router.route("/status")
                 res.status(201).send();
             });
         } catch (error) {
+            console.log(`${req.method} ${req.originalUrl} : ${error.message}`);
             res.status(400).send({errorMessage: "정보를 찾을 수 없습니다."});
         }
     });
