@@ -16,14 +16,14 @@ const joiSchema = {
     phoneSchema: Joi.object({
         // 완료
         phone: Joi.string()
-            .pattern(/(^02.{0}|^01.{1}|[0-9]{3})([0-9]+)([0-9]{4})/g)
+            .pattern(/^01(?:0|1|[6-9])(\\d{3}|\\d{4})(\\d{4})$/)
             .required(),
     }),
     //
     authDataSchema: Joi.object({
         // 완료
         phone: Joi.string()
-            .pattern(/(^02.{0}|^01.{1}|[0-9]{3})([0-9]+)([0-9]{4})/g)
+            .pattern(/^01(?:0|1|[6-9])(\\d{3}|\\d{4})(\\d{4})$/)
             .required(),
         authData: Joi.string()
             .min(6)
@@ -35,7 +35,7 @@ const joiSchema = {
         // 완료
         authId: Joi.number().min(1).required(),
         phone: Joi.string()
-            .pattern(/(^02.{0}|^01.{1}|[0-9]{3})([0-9]+)([0-9]{4})/g)
+            .pattern(/^01(?:0|1|[6-9])(\\d{3}|\\d{4})(\\d{4})$/)
             .required(),
         password: Joi.string()
             .pattern(/^(?=.*[a-zA-Z0-9])((?=.*\d)|(?=.*\W)).{6,20}$/)
@@ -48,7 +48,7 @@ const joiSchema = {
     loginSchema: Joi.object({
         // 완료
         phone: Joi.string()
-            .pattern(/(^02.{0}|^01.{1}|[0-9]{3})([0-9]+)([0-9]{4})/g)
+            .pattern(/^01(?:0|1|[6-9])(\\d{3}|\\d{4})(\\d{4})$/)
             .required(),
         password: Joi.string()
             .pattern(/^(?=.*[a-zA-Z0-9])((?=.*\d)|(?=.*\W)).{6,20}$/)
@@ -109,7 +109,7 @@ const joiSchema = {
     signSchema: Joi.object({
         //
         phone: Joi.string()
-            .pattern(/(^02.{0}|^01.{1}|[0-9]{3})([0-9]+)([0-9]{4})/g)
+            .pattern(/^01(?:0|1|[6-9])(\\d{3}|\\d{4})(\\d{4})$/)
             .required(),
         name: Joi.string()
             .pattern(new RegExp("^[ㄱ-ㅎ|ㅏ-ㅣ|가-힣\\s|0-9a-zA-z]{3,10}$"))
@@ -150,7 +150,7 @@ const joiSchema = {
     }),
     signDeleteSchema: Joi.object({
         phone: Joi.string()
-            .pattern(/(^02.{0}|^01.{1}|[0-9]{3})([0-9]+)([0-9]{4})/g)
+            .pattern(/^01(?:0|1|[6-9])(\\d{3}|\\d{4})(\\d{4})$/)
             .required(),
         password: Joi.string()
             .pattern(
