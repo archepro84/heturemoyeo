@@ -62,7 +62,7 @@ router.route('/me')
         try {
             const {userId} = res.locals.user
             const query = `
-                SELECT u.userId, u.email, u.name, u.nickname, u.profileImg, u.statusMessage, u.rating,
+                SELECT u.userId, u.phone, u.name, u.nickname, u.profileImg, u.statusMessage, u.rating,
                 (SELECT GROUP_CONCAT(likeItem ORDER BY likeItem ASC SEPARATOR ', ')
                     FROM Likes 
                     WHERE userId = u.userId
@@ -77,7 +77,7 @@ router.route('/me')
                             likeItem.push(Item)
                     res.status(200).send({
                         userId: result[0].userId,
-                        email: result[0].email,
+                        phone: result[0].phone,
                         name: result[0].name,
                         nickname: result[0].nickname,
                         profileImg: result[0].profileImg,
@@ -145,7 +145,7 @@ router.route('/target/friend')
             }
 
             const query = `
-                SELECT u.userId, u.email, u.name, u.nickname, u.profileImg, u.statusMessage,
+                SELECT u.userId, u.phone, u.name, u.nickname, u.profileImg, u.statusMessage,
                 (SELECT GROUP_CONCAT(likeItem ORDER BY likeItem ASC SEPARATOR ', ')
                     FROM Likes 
                     WHERE userId = u.userId

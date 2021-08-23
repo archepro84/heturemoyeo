@@ -1,6 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const authmiddleware = require("../middleware/auth-middleware");
+const MessageFuntion = require("../message-funtion");
 const {Users, Invites, Messages, Channels, Posts, sequelize, Sequelize} = require("../models");
 const {postIdSchema, startLimitSchema, chatSchema, userIdpostIdSchema, inviteIdSchema} = require("./joi_Schema")
 
@@ -318,11 +319,21 @@ router.route('/invite')
         try {
             const giveUserId = res.locals.user.userId;
             const {userId, postId} = await userIdpostIdSchema.validateAsync(req.body);
+            const message = "헤쳐모여 알림\n그룹에 초대 되었습니다. 앱에서 확인해 보세요.";
 
             if (giveUserId == userId) {
                 res.status(412).send({errorMessage: "동일한 사용자에게 초대를 보낼 수 없습니다."})
                 return;
             }
+
+            user = await Users.findOne({ where: {userId}})
+
+            if (user == null) {
+                res.status(412).send({errorMessage: "유저 정보를 찾을 수 없습니다."})
+                return;
+            }
+
+            const phone = user.phone
 
             const query = `
                 SELECT COUNT(c.userId) AS currentMember, p.maxMember, 
@@ -374,7 +385,10 @@ router.route('/invite')
             }
 
             await Invites.create({giveUserId, receiveUserId: userId, postId});
+            
             //문자 메시지 발송
+            MessageFuntion.send_message(phone, message);
+
             res.status(201).send()
         } catch (error) {
             console.log(`${req.method} ${req.originalUrl} : ${error.message}`);

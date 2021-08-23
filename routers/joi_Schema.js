@@ -107,7 +107,7 @@ const joiSchema = {
         limit: Joi.number().min(1).required(),
     }),
     signSchema: Joi.object({
-        //
+        authId: Joi.number().min(1).required(),
         phone: Joi.string()
             .pattern(/^01(?:0|1|[6-9])([0-9]{3}|[0-9]{4})([0-9]{4})$/)
             .required(),
