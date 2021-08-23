@@ -15,12 +15,14 @@ router.route("/")
             );
 
             const query = `
-                SELECT p.title, p.postImg, p.content, u.userId, u.nickname, u.profileImg, u.rating, u.statusMessage, COUNT(*) AS currentMember,
-                p.maxMember, p.startDate, p.endDate, p.place, ST_Y(p.location) AS lat, ST_X(p.location) AS lng, p.bring,
-                (SELECT GROUP_CONCAT(tag ORDER BY tag ASC SEPARATOR ', ')
-                    FROM Tags
-                    WHERE postId = p.postId
-                    GROUP BY postId) AS tag
+                SELECT p.title, p.postImg, p.content, u.userId, u.nickname, u.profileImg, u.rating, u.statusMessage,
+                    (SELECT COUNT(confirm) FROM Channels WHERE postId = p.postId AND confirm = 1) AS confirmCount, 
+                    COUNT(*) AS currentMember,
+                    p.maxMember, p.startDate, p.endDate, p.place, ST_Y(p.location) AS lat, ST_X(p.location) AS lng, p.bring,
+                    (SELECT GROUP_CONCAT(tag ORDER BY tag ASC SEPARATOR ', ')
+                        FROM Tags
+                        WHERE postId = p.postId
+                        GROUP BY postId) AS tag
                 FROM Posts AS p 
                 JOIN Users AS u
                 ON p.userId = u.userId
@@ -53,7 +55,8 @@ router.route("/")
                         lat: result[0].lat,
                         lng: result[0].lng,
                         bring: result[0].bring,
-                        tag
+                        tag,
+                        isConfirm: result[0].confirmCount >= result[0].currentMember ? true : false,
                     })
                 })
 
@@ -335,13 +338,10 @@ router.route('/posts/my')
             )
 
             const query = `
-                SELECT p.postId, p.title, p.postImg, COUNT(*) AS currentMember, p.maxMember, p.startDate, p.endDate, p.place,
-                    (SELECT GROUP_CONCAT(tag ORDER BY tag ASC SEPARATOR ', ') FROM Tags WHERE postId = p.postId GROUP BY postId) AS tagItem
-                FROM Posts AS p
-                JOIN Channels AS c
-                ON c.postId = p.postId
-                WHERE c.userId = ${userId}
-                GROUP BY c.postId
+                SELECT postId, title, postImg, confirmCount, currentMember, maxMember, startDate, endDate, place, tagItem, 
+                    CASE WHEN currentMember <=confirmCount THEN 'Y' ELSE 'N' END AS isConfirm
+                FROM POSTS_VW
+                WHERE postId IN (SELECT postId FROM Channels WHERE userId = ${userId})
                 LIMIT ${start}, ${limit}`
             await sequelize.query(query, {type: Sequelize.QueryTypes.SELECT})
                 .then((searchList) => {
@@ -360,6 +360,7 @@ router.route('/posts/my')
                             endDate: search.endDate,
                             place: search.place,
                             tag: tagItem,
+                            isConfirm: search.isConfirm == 'Y' ? true : false,
                         })
                     }
                     res.status(200).send(result)
