@@ -180,7 +180,7 @@ router.route("/password").post(logincheckmiddleware, async (req, res) => {
     }
 });
 
-//핸드폰 인증문자 발송
+//핸드폰 인증문자 보내기
 router.route("/phone").post(logincheckmiddleware, async (req, res) => {
     try {
         const { phone } = await phoneSchema.validateAsync(req.body);
