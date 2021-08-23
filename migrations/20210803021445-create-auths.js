@@ -40,7 +40,7 @@ module.exports = {
                 )
                 BEGIN
                     IF EXISTS (SELECT phone FROM Auths WHERE phone = auth_phone) THEN
-                        UPDATE Auths SET authData = auth_authData, updatedAt = NOW()
+                        UPDATE Auths SET authData = auth_authData, updatedAt = NOW(), isAuth = 0
                         WHERE phone = auth_phone;
                     ELSE 
                         INSERT INTO Auths (phone, authData) VALUES (auth_phone, auth_authData);
