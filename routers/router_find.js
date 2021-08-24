@@ -2,7 +2,7 @@ const express = require("express");
 const router = express.Router();
 const logincheckmiddleware = require("../middleware/login-check-middleware");
 const {Users, Auths, sequelize, Sequelize,} = require("../models");
-const MessageFuntion = require("../message-funtion");
+const MessageFuntion = require("./message-funtion");
 const {phoneSchema, authDataSchema, newPassSchema} = require("./joi_Schema");
 const crypto = require("crypto");
 require("dotenv").config();

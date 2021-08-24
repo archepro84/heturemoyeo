@@ -89,7 +89,7 @@ router.route("/")
             } = await postSchema.validateAsync(req.body);
 
             if (lat && lng)
-                location = {type: 'Point', coordinates: [lat, lng]}
+                location = {type: 'Point', coordinates: [lng, lat]}
             else
                 location = null
 
@@ -198,7 +198,7 @@ router.route("/")
             }
 
             if (lat && lng)
-                location = {type: 'Point', coordinates: [lat, lng]}
+                location = {type: 'Point', coordinates: [lng, lat]}
             else
                 location = null
 
@@ -381,15 +381,11 @@ router.route('/posts/location')
 
             //Limit 을 사용하지 않음 / 이후 Geometry가 추가되기 때문
             const query = `
-                SELECT p.postId, 
-                    COUNT(c.userId) AS currentMember,
-                    p.maxMember, ST_Y(p.location) AS lat, ST_X(p.location) AS lng  
-                FROM Posts AS p
-                JOIN Channels AS c
-                ON p.postId = c.postId
-                WHERE p.location IS NOT NULL 
-                GROUP BY c.postId
-                HAVING currentMember < maxMember`
+                SELECT postId, confirmCount, currentMember, maxMember, lat, lng
+                FROM POSTS_VW
+                WHERE lat IS NOT NULL
+                    AND currentMember < maxMember
+                    AND confirmCount < currentMember`
             await sequelize.query(query, {type: Sequelize.QueryTypes.SELECT})
                 .then((result) => {
                     for (const x of result) {
@@ -419,13 +415,11 @@ router.route('/posts/master')
             )
 
             const query = `
-                SELECT p.postId, p.title, p.postImg, COUNT(c.userId) AS currentMember, p.maxMember, p.startDate, p.endDate, p.place
-                FROM Posts AS p
-                JOIN Channels AS c
-                ON p.postId = c.postId
-                WHERE p.userId = ${userId}
-                GROUP BY c.postId
-                HAVING currentMember < maxMember
+                SELECT postId, title, postImg, confirmCount, currentMember, maxMember, startDate, endDate, place
+                FROM POSTS_VW
+                WHERE currentMember < maxMember
+                    AND confirmCount < currentMember
+                    AND userId = ${userId}
                 LIMIT ${start}, ${limit}`
             await sequelize.query(query, {type: Sequelize.QueryTypes.SELECT})
                 .then((masterList) => {

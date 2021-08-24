@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const {Op} = require("sequelize");
-const MessageFuntion = require("../message-funtion");
+const MessageFuntion = require("./message-funtion");
 const logincheckmiddleware = require("../middleware/login-check-middleware");
 const authmiddleware = require("../middleware/auth-middleware");
 const {Users, Likes, Auths, sequelize, Sequelize} = require("../models");
@@ -14,7 +14,6 @@ const {
     nicknameSchema,
     authDataSchema,
 } = require("./joi_Schema");
-const {Router} = require("express");
 require("dotenv").config();
 
 
@@ -23,7 +22,7 @@ router.route("/")
     .post(logincheckmiddleware, async (req, res) => {
         try {
             const {
-                authId,
+                // authId,
                 phone,
                 name,
                 nickname,
@@ -32,6 +31,7 @@ router.route("/")
                 statusMessage,
                 likeItem,
             } = await signSchema.validateAsync(req.body);
+
             const cryptoPass = crypto
                 .createHash("sha512")
                 .update(password)
@@ -39,7 +39,8 @@ router.route("/")
 
             const auth = await Auths.findOne({
                 where: {
-                    [Op.and]: [{authId}, {phone}],
+                    // [Op.and]: [{authId}, {phone}],
+                    [Op.and]: [{phone}],
                 },
             });
 
@@ -67,12 +68,17 @@ router.route("/")
                 return user.null; // then안의 user로 id값을 넣어줌
             });
 
-            let result = [];
+            let likeList = [];
             for (const x of likeItem) {
-                result.push({userId, likeItem: x});
+                likeList.push({userId, likeItem: x});
             }
-            await Likes.bulkCreate(result);
-            await Auths.destroy({where: {authId}});
+            await Likes.bulkCreate(likeList);
+            await Auths.destroy({
+                where: {
+                    // [Op.and]: [{authId}, {phone}],
+                    [Op.and]: [{phone}],
+                }
+            });
 
             res.status(201).send();
         } catch (error) {
@@ -113,49 +119,51 @@ router.route("/")
     });
 
 // 닉네임 중복확인
-router.route("/nickname").post(async (req, res) => {
-    try {
-        const {nickname} = await nicknameSchema.validateAsync(req.body);
-        const nick = await Users.findOne({
-            where: {nickname},
-        });
-
-        if (nick) {
-            res.status(412).send({
-                errorMessage: "동일한 닉네임이 존재합니다. 다시 입력해주세요.",
+router.route("/nickname")
+    .post(async (req, res) => {
+        try {
+            const {nickname} = await nicknameSchema.validateAsync(req.body);
+            const nick = await Users.findOne({
+                where: {nickname},
             });
-            return;
-        }
 
-        res.status(200).send();
-    } catch (error) {
-        console.log(`${req.method} ${req.originalUrl} : ${error.message}`);
-        res.status(400).send({errorMessage: "닉네임 검사에 실패하였습니다."});
-    }
-});
+            if (nick) {
+                res.status(412).send({
+                    errorMessage: "동일한 닉네임이 존재합니다. 다시 입력해주세요.",
+                });
+                return;
+            }
+
+            res.status(200).send();
+        } catch (error) {
+            console.log(`${req.method} ${req.originalUrl} : ${error.message}`);
+            res.status(400).send({errorMessage: "닉네임 검사에 실패하였습니다."});
+        }
+    });
 
 //비밀번호 확인
-router.route("/password").post(logincheckmiddleware, async (req, res) => {
-    try {
-        const {password, confirm} = await confirmSchema.validateAsync(
-            req.body
-        );
+router.route("/password")
+    .post(logincheckmiddleware, async (req, res) => {
+        try {
+            const {password, confirm} = await confirmSchema.validateAsync(
+                req.body
+            );
 
-        if (password !== confirm) {
-            res.status(412).send({
-                errorMessage: "비밀번호가 일치하지 않습니다.",
+            if (password !== confirm) {
+                res.status(412).send({
+                    errorMessage: "비밀번호가 일치하지 않습니다.",
+                });
+                return;
+            }
+
+            res.status(200).send();
+        } catch (error) {
+            console.log(`${req.method} ${req.originalUrl} : ${error.message}`);
+            res.status(400).send({
+                errorMessage: "비밀번호 검사에 일치하지 않았습니다.",
             });
-            return;
         }
-
-        res.status(200).send();
-    } catch (error) {
-        console.log(`${req.method} ${req.originalUrl} : ${error.message}`);
-        res.status(400).send({
-            errorMessage: "비밀번호 검사에 일치하지 않았습니다.",
-        });
-    }
-});
+    });
 
 //핸드폰 인증문자 보내기
 router.route("/phone")
@@ -164,29 +172,28 @@ router.route("/phone")
             const {phone} = await phoneSchema.validateAsync(req.body);
             const user = await Users.findOne({where: {phone}});
 
-            if (user == null) {
-                const authData = MessageFuntion.RandomCode(6);
-
-                const cryptoAuthData = crypto
-                    .createHash("sha512")
-                    .update(authData)
-                    .digest("base64");
-
-                await sequelize.query("CALL SP_Auths_INSERT(:phone, :authData)", {
-                    replacements: {phone, authData: cryptoAuthData}, // :phone, :authData에 데이터를 넣어준다.
-                    type: Sequelize.QueryTypes.PROCEDURE, //현재 사용하고 있는 Query의 형식을 정의한다.
-                });
-
-                const message = "헤쳐모여 가입인증 번호: " + authData;
-
-                MessageFuntion.send_message(phone, message);
-
-                res.status(201).send();
-            } else {
+            if (user != null) {
                 res.status(412).send({
                     errorMessage: "해당 번호는 이미 사용 중입니다.",
                 });
+                return;
             }
+            const authData = MessageFuntion.RandomCode(6);
+
+            const cryptoAuthData = crypto
+                .createHash("sha512")
+                .update(authData)
+                .digest("base64");
+
+            await sequelize.query("CALL SP_Auths_INSERT(:phone, :authData)", {
+                replacements: {phone, authData: cryptoAuthData}, // :phone, :authData에 데이터를 넣어준다.
+                type: Sequelize.QueryTypes.PROCEDURE, //현재 사용하고 있는 Query의 형식을 정의한다.
+            });
+
+            const message = "헤쳐모여 가입인증 번호: " + authData;
+            MessageFuntion.send_message(phone, message);
+
+            res.status(201).send();
         } catch (error) {
             console.log(`${req.method} ${req.originalUrl} : ${error.message}`);
             res.status(400).send({
@@ -196,41 +203,43 @@ router.route("/phone")
     });
 
 //핸드폰 번호 인증
-router.route("/phone/auth").post(logincheckmiddleware, async (req, res) => {
-    try {
-        const {phone, authData} = await authDataSchema.validateAsync(req.body);
-        const cryptoAuthData = crypto
-            .createHash("sha512")
-            .update(authData)
-            .digest("base64");
-        const auth = await Auths.findOne({
-            attributes: ['authId'],
-            where: {
-                [Op.and]: [{phone}, {authData: cryptoAuthData}],
-            },
-        });
+router.route("/phone/auth")
+    .post(logincheckmiddleware, async (req, res) => {
+        try {
+            const {phone, authData} = await authDataSchema.validateAsync(req.body);
+            const cryptoAuthData = crypto
+                .createHash("sha512")
+                .update(authData)
+                .digest("base64");
 
-        if (auth == null) {
-            res.status(412).send({
-                errorMessage: "인증번호가 맞지 않습니다.",
+            const auth = await Auths.findOne({
+                attributes: ['authId'],
+                where: {
+                    [Op.and]: [{phone}, {authData: cryptoAuthData}],
+                },
             });
-            return;
+
+            if (auth == null) {
+                res.status(412).send({
+                    errorMessage: "인증번호가 맞지 않습니다.",
+                });
+                return;
+            }
+
+            await Auths.update({isAuth: 1}, {where: {phone: phone}})
+                .then(result => {
+                    if (result[0]) {
+                        res.status(201).send({authId: auth['dataValues'].authId})
+                    } else {
+                        res.status(412).send({errorMessage: "인증 업데이트가 실패했습니다."})
+                    }
+                });
+        } catch (error) {
+            console.log(`${req.method} ${req.originalUrl} : ${error.message}`);
+            res.status(400).send({
+                errorMessage: "인증번호를 조회하는데 실패했습니다.",
+            });
         }
-
-        await Auths.update({isAuth: 1}, {where: {phone: phone}})
-            .then(result => {
-                if (result[0]) {
-                    res.status(201).send({authId: auth['dataValues'].authId})
-                } else {
-                    res.status(412).send({errorMessage: "인증 업데이트가 실패했습니다."})
-                }
-            });
-    } catch (error) {
-        console.log(`${req.method} ${req.originalUrl} : ${error.message}`);
-        res.status(400).send({
-            errorMessage: "인증번호를 조회하는데 실패했습니다.",
-        });
-    }
-});
+    });
 
 module.exports = router;

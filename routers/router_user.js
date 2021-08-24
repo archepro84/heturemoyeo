@@ -195,12 +195,14 @@ router.route('/target/post')
             const targetUserId = await userIdNumberSchema.validateAsync(
                 Object.keys(req.query).length ? req.query.userId : req.body.userId
             );
+
             let userIdList = []
 
             if (userId == targetUserId) {
                 res.status(412).send({errorMessage: "동일한 아이디를 조회할 수 없습니다."})
                 return;
             }
+
             const isScheduleQuery = `
                 SELECT DISTINCT userId
                 FROM Channels
@@ -238,27 +240,6 @@ router.route('/target/post')
                    ON a.postId = b.postId) AS s
                 WHERE userId = ${targetUserId}`
 
-            // const query = `
-            //     SELECT nickname, rating, profileImg, statusMessage,
-            //     (SELECT GROUP_CONCAT(likeItem ORDER BY likeItem ASC SEPARATOR ', ')
-            //         FROM Likes
-            //         WHERE userId = u.userId
-            //         GROUP BY userId) AS likeItem,
-            //     (SELECT COUNT(*)
-            //         FROM (SELECT DISTINCT postId FROM Channels WHERE userId = ${userId}) AS a
-            //         JOIN (SELECT DISTINCT postId FROM Channels WHERE userId = ${targetUserId} ) AS b
-            //         ON a.postId = b.postId) AS scheduleCount,
-            //     (SELECT title FROM Posts WHERE postId = (SELECT a.postId
-            //         FROM (SELECT DISTINCT postId FROM Channels WHERE userId = ${userId}) AS a
-            //         JOIN (SELECT DISTINCT postId FROM Channels WHERE userId = ${targetUserId}) AS b
-            //         ON a.postId = b.postId ORDER BY a.postId DESC LIMIT 1)) AS scheduleTitle,
-            //     CASE WHEN 2 = (SELECT COUNT(DISTINCT giveUserId)
-            //         FROM Friends
-            //         WHERE (giveUserId = ${userId} AND receiveUserId = ${targetUserId})
-            //             OR (giveUserId = ${targetUserId} AND receiveUserId = ${userId})) THEN 'Y' ELSE 'N' END AS isFriend
-            //     FROM Users AS u
-            //     WHERE userId = ${targetUserId}`
-
             // 검색된 데이터가 없을 경우 에러가 발생한다.
             let findData = await sequelize.query(query, {type: Sequelize.QueryTypes.SELECT})
 
@@ -266,19 +247,20 @@ router.route('/target/post')
 
             let likeList = [];
             let scheduleList = [];
+
             if (likeItem)
                 for (const Item of likeItem.split(', '))
                     likeList.push(Item)
 
-            if (scheduleItem) {
+            if (scheduleItem)
                 for (const Item of scheduleItem.split(', '))
                     scheduleList.push(Item)
-            }
 
             // 동일한 Schedule에 소속되어있기 때문에 sheduleItem이 null일 경우는 존재하지않는다.
             await Posts.findOne({
                 attributes: ['title'],
-                where: {postId: scheduleList[scheduleList.length - 1]}
+                // where: {postId: scheduleList[0]} // 가장 늦게 만들어진 방
+                where: {postId: scheduleList[scheduleList.length - 1]} // 가장 일찍 만들어진 방
             })
                 .then((result) => {
                     const scheduleTitle = result['dataValues'].title;
@@ -293,8 +275,6 @@ router.route('/target/post')
                         isFriend: isFriend == 'Y' ? true : false,
                     })
                 })
-
-
         } catch (error) {
             console.log(`${req.method} ${req.originalUrl} : ${error.message}`);
             res.status(400).send(

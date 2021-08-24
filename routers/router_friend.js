@@ -45,8 +45,7 @@ router.route("/")
 
             if (myUserId === userId) {
                 res.status(412).send({
-                    errorMessage:
-                        "로그인된 유저와 친구 요청을 하는 userId는 같을 수 없습니다.",
+                    errorMessage:                        "로그인된 유저와 친구 요청을 하는 userId는 같을 수 없습니다.",
                 });
                 return;
             }

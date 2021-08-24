@@ -13,13 +13,14 @@ const joiSchema = {
         start: Joi.number().min(0).required(),
         limit: Joi.number().min(1).required(),
     }),
+    // email > phone
     phoneSchema: Joi.object({
         // 완료
         phone: Joi.string()
             .pattern(/^01(?:0|1|[6-9])([0-9]{3}|[0-9]{4})([0-9]{4})$/)
             .required(),
     }),
-    //
+    // email > phone
     authDataSchema: Joi.object({
         // 완료
         phone: Joi.string()
@@ -31,6 +32,7 @@ const joiSchema = {
             .replace(/[\'\"\`]/g, "")
             .required(),
     }),
+    // email > phone
     newPassSchema: Joi.object({
         // 완료
         authId: Joi.number().min(1).required(),
@@ -44,7 +46,7 @@ const joiSchema = {
             .pattern(/^(?=.*[a-zA-Z0-9])((?=.*\d)|(?=.*\W)).{6,20}$/)
             .required(),
     }),
-    //
+    // email > phone
     loginSchema: Joi.object({
         // 완료
         phone: Joi.string()
@@ -106,8 +108,9 @@ const joiSchema = {
         start: Joi.number().min(0).required(),
         limit: Joi.number().min(1).required(),
     }),
+    // email > phone
     signSchema: Joi.object({
-        authId: Joi.number().min(1).required(),
+        // authId: Joi.number().min(1).required(),
         phone: Joi.string()
             .pattern(/^01(?:0|1|[6-9])([0-9]{3}|[0-9]{4})([0-9]{4})$/)
             .required(),
@@ -148,6 +151,7 @@ const joiSchema = {
             )
             .required(),
     }),
+    // email > phone
     signDeleteSchema: Joi.object({
         phone: Joi.string()
             .pattern(/^01(?:0|1|[6-9])([0-9]{3}|[0-9]{4})([0-9]{4})$/)

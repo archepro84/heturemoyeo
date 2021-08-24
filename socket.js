@@ -8,6 +8,12 @@ const redisClient = redis.createClient({
 })
 const geo = require('georedis').initialize(redisClient)
 
+
+setInterval(function () {
+    // 만약 생성된지 6시간 지난 location이 있다면, 지워라
+
+}, 60000)
+
 module.exports = (server, app) => {
     let loginUser = {} //접속한 UserId가 사용하는 Socket의 아이디를 설정한다.
     const geoOptions = {
@@ -48,7 +54,7 @@ module.exports = (server, app) => {
     const room = io.of("/room");
     const chat = io.of("/chat");
 
-    // FIXME 누군가 latlng로 디도스를 건다면? 자동으로 차단할 수 있도록 설정하자.
+
     location.use(socketAuthMiddleWare)
     location.on("connection", async (socket) => {
         const req = socket.request;
@@ -69,7 +75,6 @@ module.exports = (server, app) => {
 
             // 로그인 중인 유저 목록에서 접속중인 유저를 삭제합니다.
             delete loginUser[socketUserId]
-
             return;
         }
 
@@ -77,7 +82,7 @@ module.exports = (server, app) => {
 
         socket.on("latlng", (LocationData) => {
             try {
-                const {userId, lat, lng} = LocationData;
+                const {lat, lng} = LocationData;
                 // Redis 내부에 geo:locations에 이미 데이터가 존재하더라도 덮어쓰기 된다. ☆
                 geo.addLocation(socketUserId, {latitude: lat, longitude: lng}, (error, reply) => {
                     if (error) console.error(error);
@@ -102,9 +107,6 @@ module.exports = (server, app) => {
 
         socket.on("disconnect", () => {
             delete loginUser[socketUserId]
-            geo.removeLocation(socketUserId, function (err, reply) {
-                if (err) console.error(err)
-            })
             console.log("Location Socket Client Disconnect / IP :", ip, socketUserId);
 
             clearInterval(socket.interval);
@@ -130,6 +132,8 @@ module.exports = (server, app) => {
         })
     })
 
+    let loginChatUser = {};
+
     chat.use(socketAuthMiddleWare)
     chat.on("connect", (socket) => {
         const req = socket.request; // Request
@@ -140,30 +144,15 @@ module.exports = (server, app) => {
         // get Query로 들어온 postId 값을 roomId로 지정한다.
         const postId = Number(socket.handshake.query.postId);
 
-        // TODO postId 데이터가 존재하지 않을경우 Conenct를 종료하도록 설정한다. / Nan 나중에 해결
-        // Front End에서 해결해야한다.
-        console.log('chat Socket Connect', ip, postId);
+        // loginChatUser[postId] = socket.id
 
+        console.log('chat Socket Connect', ip, postId);
         //postId를 기준으로 socket 방을 join 한다.
         socket.join(postId);
-
-        // join한 방에게 Message를 보낸다.
-        socket.to(postId).emit("join", {
-                user: "system",
-                chat: `${nickname} 유저가 입장하셨습니다.`,
-            }
-        );
 
 
         socket.on("disconnect", () => {
             console.log("chat Socket Client Disconnect IP : ", ip);
-
-            //TODO session을 통해서 누구인지 확인할 수 있도록 설정해야한다.
-            socket.to(postId).emit("exit", {
-                user: "system",
-                chat: `${nickname} 유저가 퇴장하셨습니다.`,
-            });
-
             clearInterval(socket.interval);
         })
 

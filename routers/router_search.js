@@ -108,19 +108,16 @@ router.route('/room')
             const {keyword, start, limit} = await searchPostSchema.validateAsync(
                 Object.keys(req.query).length ? req.query : req.body
             )
+
             let result = [];
 
-
             const query = `
-                SELECT p.postId, p.title, p.postImg, p.content, COUNT(c.userId) AS currentMember, p.maxMember, p.startDate, p.endDate, p.place,
-                    (SELECT GROUP_CONCAT(tag ORDER BY tag ASC SEPARATOR ', ') FROM Tags WHERE postId = p.postId GROUP BY postId) AS tagItem  
-                FROM Posts AS p
-                JOIN Channels AS c
-                ON p.postId = c.postId
-                WHERE c.postId IN (SELECT DISTINCT postId FROM Channels WHERE userId = ${userId})
-                    AND p.title LIKE '%${keyword}%'
-                GROUP BY c.postId
-                ORDER BY p.postId ASC
+                SELECT postId, title, postImg, confirmCount, currentMember, maxMember, startDate, endDate, place, tagItem, 
+                    CASE WHEN currentMember <=confirmCount THEN 'Y' ELSE 'N' END AS isConfirm
+                FROM POSTS_VW
+                WHERE postId IN (SELECT postId FROM Channels WHERE userId = ${userId})
+                    AND (title LIKE '%${keyword}%'
+                    OR tagItem LIKE '%${keyword}%')
                 LIMIT ${start}, ${limit}`
             await sequelize.query(query, {type: Sequelize.QueryTypes.SELECT})
                 .then((searchList) => {

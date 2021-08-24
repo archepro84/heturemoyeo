@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const authmiddleware = require("../middleware/auth-middleware");
-const MessageFuntion = require("../message-funtion");
+const MessageFuntion = require("./message-funtion");
 const {Users, Invites, Messages, Channels, Posts, sequelize, Sequelize} = require("../models");
 const {postIdSchema, startLimitSchema, chatSchema, userIdpostIdSchema, inviteIdSchema} = require("./joi_Schema")
 
@@ -17,23 +17,27 @@ router.route('/info')
             const findChannel = await Channels.findOne({where: {postId, userId}})
 
             if (!findChannel) {
-                res.status(412).send({errorMessage: "해당 방에 참여 하고 있지않습니다."})
+                res.status(412).send(
+                    {errorMessage: "해당 방에 참여 하고 있지않습니다."}
+                )
                 return;
             }
-
 
             const findUsersList = await Channels.findAll({
                 distinct: true,
                 attributes: ['userId', 'confirm'],
                 where: {postId},
             })
+
             let userIdList = [];
             let confirmList = {};
+
             for (const x of findUsersList) {
                 const userId = x['dataValues'].userId;
                 userIdList.push(userId);
                 confirmList[userId] = x['dataValues'].confirm;
             }
+
 
             await Users.findAll({
                 attributes: ['userId', 'nickname', 'profileImg'],
@@ -52,12 +56,10 @@ router.route('/info')
                             confirm: confirmList[x['dataValues'].userId] ? true : false,
                         })
                     }
-                    res.send(result)
+                    res.status(200).send(result)
                 })
 
-        } catch
-            (error) {
-            console.log(error);
+        } catch (error) {
             console.log(`${req.method} ${req.originalUrl} : ${error.message}`);
             res.status(400).send({
                 errorMessage: "대화방의 정보를 불러올 수 없습니다.",
@@ -157,15 +159,6 @@ router.route('/join')
             const userId = res.locals.user.userId;
             const {postId} = await postIdSchema.validateAsync(req.body);
 
-            // const query = `SELECT COUNT(c.userId) AS currentMember,
-            //         p.maxMember,
-            //         CASE WHEN 1 = (SELECT DISTINCT 1 FROM Channels WHERE postId = ${postId} AND userId = ${userId}) THEN 'Y' ELSE 'N' END AS 'isExist'
-            //     FROM Channels AS c
-            //     JOIN Posts AS p
-            //     ON c.postId = p.postId
-            //     WHERE c.postId = ${postId}
-            //     GROUP BY c.postId`
-
             const query = `
             SELECT confirmCount, currentMember, maxMember, 
                 CASE WHEN 1 = (SELECT DISTINCT 1 FROM Channels WHERE postId = ${postId} AND userId = ${userId}) THEN 'Y' ELSE 'N' END AS 'isExist'
@@ -183,6 +176,7 @@ router.route('/join')
                 })
                 return;
             }
+
             if (findData.isExist == 'Y') {
                 res.status(406).send({
                     errorMessage: "해당하는 모임에 이미 참여 중 입니다."
@@ -202,6 +196,9 @@ router.route('/join')
                 })
                 return;
             }
+
+
+            // 현재 1명 / 최대 2명 // 1명이 더들어오면 최대인원이 꽉참
 
             // 마지막으로 입장하였을 경우 모임 Room 정보 및 위치 정보를 삭제한다.
             if (currentMember == maxMember - 1) {
@@ -226,17 +223,6 @@ router.route('/exit')
         try {
             const userId = res.locals.user.userId;
             const {postId} = await postIdSchema.validateAsync(req.body);
-
-            // const query = `
-            //     SELECT p.title, p.postImg, COUNT(c.userId) AS currentMember, p.maxMember,
-            //         p.startDate, p.endDate, p.place,
-            //         ST_Y(p.location) AS lat, ST_X(p.location) AS lng,
-            //         CASE WHEN 1 = (SELECT DISTINCT 1 FROM Channels WHERE postId = ${postId} AND userId = ${userId}) THEN 'Y' ELSE 'N' END AS isExist
-            //     FROM Posts AS p
-            //     JOIN Channels AS c
-            //     ON p.postId = c.postId
-            //     WHERE p.postId = ${postId}
-            //     GROUP BY c.postId`
 
             const query = `
                 SELECT userId, title, postImg, confirmCount, currentMember, maxMember, startDate, endDate, place, lat, lng, 
@@ -290,6 +276,7 @@ router.route('/exit')
 
             await Channels.destroy({where: {postId, userId}})
 
+            //현재 5 맥스 5명,
             if ((currentMember >= maxMember) && (lat && lng)) {
                 console.log("Room Ready NewPots");
                 req.app.get('io').of('/room').emit('newRoom', {
@@ -326,7 +313,7 @@ router.route('/invite')
                 return;
             }
 
-            user = await Users.findOne({ where: {userId}})
+            const user = await Users.findOne({where: {userId}})
 
             if (user == null) {
                 res.status(412).send({errorMessage: "유저 정보를 찾을 수 없습니다."})
@@ -335,8 +322,13 @@ router.route('/invite')
 
             const phone = user.phone
 
+            // isInvite : 내가 이미 그사람에게 초대문자를 보냈는지
+            // isExist : 대상자가 이미 참여중인지
+            // isMaster : 내가 그 방의 방장인지
             const query = `
-                SELECT COUNT(c.userId) AS currentMember, p.maxMember, 
+                SELECT 
+                    (SELECT COUNT(confirm) FROM Channels WHERE postId = p.postId AND confirm = 1) AS confirmCount,
+                    COUNT(c.userId) AS currentMember, p.maxMember, 
                     CASE WHEN 1 = (SELECT DISTINCT 1 FROM Invites WHERE giveUserId = ${giveUserId} AND receiveUserId = ${userId} AND postId = ${postId}) THEN 'Y' ELSE 'N' END AS isInvite,
                     CASE WHEN 1 = (SELECT DISTINCT 1 FROM Channels WHERE userId = ${userId} AND postId = ${postId}) THEN 'Y' ELSE 'N' END AS isExist,
                     CASE WHEN 1 = (SELECT DISTINCT 1 FROM Posts WHERE postId = ${postId} AND userId = ${giveUserId}) THEN 'Y' ELSE 'N' END AS isMaster
@@ -363,6 +355,11 @@ router.route('/invite')
                     errorMessage: "모임의 인원이 초과되어 초대를 할 수 없습니다."
                 })
                 return;
+            } else if (findData.confirmCount >= findData.currentMember) {
+                res.status(406).send({
+                    errorMessage: "확정된 모임은 초대할 수 없습니다."
+                })
+                return;
             }
 
             const {isInvite, isExits, isMaster} = findData
@@ -377,7 +374,7 @@ router.route('/invite')
                     errorMessage: "이미 초대한 사용자 입니다."
                 })
                 return;
-            } else if (isExits) {
+            } else if (isExits == 'Y') {
                 res.status(406).send({
                     errorMessage: "이미 대화방에 참여 중 입니다."
                 })
@@ -385,7 +382,7 @@ router.route('/invite')
             }
 
             await Invites.create({giveUserId, receiveUserId: userId, postId});
-            
+
             //문자 메시지 발송
             MessageFuntion.send_message(phone, message);
 
@@ -412,11 +409,11 @@ router.route('/kick')
             }
 
             const query = `
-            SELECT confirmCount, currentMember,
-                CASE WHEN 1 = (SELECT DISTINCT 1 FROM Channels WHERE postId = ${postId} AND userId = ${targetUserId}) THEN 'Y' ELSE 'N' END AS isTargetExist
-            FROM POSTS_VW
-            WHERE postId = ${postId}
-                AND userId = ${userId}`
+                SELECT confirmCount, currentMember,
+                    CASE WHEN 1 = (SELECT DISTINCT 1 FROM Channels WHERE postId = ${postId} AND userId = ${targetUserId}) THEN 'Y' ELSE 'N' END AS isTargetExist
+                FROM POSTS_VW
+                WHERE postId = ${postId}
+                    AND userId = ${userId}`
 
             const findData = await sequelize.query(query, {type: Sequelize.QueryTypes.SELECT})
 
@@ -444,6 +441,9 @@ router.route('/kick')
                 where: {postId, userId: targetUserId}
             })
 
+            // TODO SOCKET 대화방에서 더이상 글을 읽을 수 없도록 차단 시켜야한다.
+            //req.app.get('io')
+
             res.status(200).send()
         } catch (error) {
             console.log(`${req.method} ${req.originalUrl} : ${error.message}`);
@@ -458,7 +458,6 @@ router.route('/confirm')
         try {
             const userId = res.locals.user.userId;
             const {postId} = await postIdSchema.validateAsync(req.body);
-
 
             const findData = await Channels.findOne({where: {userId, postId}})
 
@@ -493,11 +492,10 @@ router.route('/confirm')
                     return result[0]
                 })
 
-            console.log(confirmCount, currentMember);
             if (isMaster == 'Y') {
                 if (currentMember == 1) {
                     res.status(406).send({
-                        errorMessage: "다른 인원이 존재하지 않습니다."
+                        errorMessage: "모임에 다른 인원이 존재하지 않습니다."
                     })
                     return;
                 } else if (confirmCount < currentMember - 1) {
@@ -520,6 +518,7 @@ router.route('/confirm')
         }
     })
 
+// TODO 확정된 방일경우 입장할 수 없도록 설정
 router.route('/invite/accept')
     .post(authmiddleware, async (req, res) => {
         try {
@@ -527,16 +526,13 @@ router.route('/invite/accept')
             const {inviteId} = await inviteIdSchema.validateAsync(req.body);
 
             const query = `
-               SELECT i.postId, COUNT(c.userId) AS currentMember, p.maxMember,
-                    CASE WHEN 1 = (SELECT DISTINCT 1 FROM Channels WHERE userId = ${userId} AND postId = i.postId) THEN 'Y' ELSE 'N' END AS isExist
-                FROM Invites AS i
-                JOIN Posts AS p
-                ON i.postId = p.postId
-                JOIN Channels AS c
-                ON c.postId = p.postId
+               SELECT p.postId, p.confirmCount, p.currentMember, p.maxMember,
+                    CASE WHEN 1 = (SELECT DISTINCT 1 FROM Channels WHERE userId = 1 AND postId = i.postId) THEN 'Y' ELSE 'N' END AS isExist
+                FROM POSTS_VW AS p
+                JOIN Invites AS i
+                ON p.postId = i.postId
                 WHERE i.inviteId = ${inviteId}
-                    AND i.receiveUserId = ${userId}
-                GROUP BY c.postId`
+                    AND i.receiveUserId = ${userId}`
 
             const findData = await sequelize.query(query, {type: Sequelize.QueryTypes.SELECT})
                 .then((result) => {
@@ -555,6 +551,12 @@ router.route('/invite/accept')
                 await Invites.destroy({where: {inviteId}})
                 res.status(406).send({
                     errorMessage: "모임의 인원이 초과되어 입장 할 수 없습니다."
+                })
+                return;
+            } else if (findData.confirmCount >= findData.currentMember) {
+                await Invites.destroy({where: {inviteId}})
+                res.status(406).send({
+                    errorMessage: "확정된 모임에는 참여할 수 없습니다."
                 })
                 return;
             }
