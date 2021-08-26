@@ -57,7 +57,7 @@ router.route('/post')
                             AND startDate < ${endAt})
                         AND (title LIKE '%${keyword ? keyword : ''}%'
                             OR tagItem LIKE '%${keyword ? keyword : ''}%')
-                    ORDER BY startDate
+                    ORDER BY startDate ASC , postId DESC
                     LIMIT ${start}, ${limit}`
             } else {
                 query = `
@@ -68,7 +68,7 @@ router.route('/post')
                             AND startDate >= NOW())
                         AND (title LIKE '%${keyword ? keyword : ''}%'
                             OR tagItem LIKE '%${keyword ? keyword : ''}%')
-                    ORDER BY startDate
+                    ORDER BY startDate ASC , postId DESC
                     LIMIT ${start}, ${limit}`
             }
 
@@ -118,6 +118,7 @@ router.route('/room')
                 WHERE postId IN (SELECT postId FROM Channels WHERE userId = ${userId})
                     AND (title LIKE '%${keyword}%'
                     OR tagItem LIKE '%${keyword}%')
+                ORDER BY startDate ASC , postId DESC
                 LIMIT ${start}, ${limit}`
             await sequelize.query(query, {type: Sequelize.QueryTypes.SELECT})
                 .then((searchList) => {

@@ -56,7 +56,6 @@ router.route('/')
         }
     })
 
-
 router.route('/me')
     .post(authmiddleware, async (req, res) => {
         try {
@@ -94,7 +93,6 @@ router.route('/me')
         }
     })
 
-
 router.route("/target/all")
     .get(authmiddleware, async (req, res) => {
         try {
@@ -129,7 +127,6 @@ router.route("/target/all")
             });
         }
     });
-
 
 router.route('/target/friend')
     .get(authmiddleware, async (req, res) => {
@@ -186,7 +183,6 @@ router.route('/target/friend')
             )
         }
     })
-
 
 router.route('/target/post')
     .get(authmiddleware, async (req, res) => {
@@ -283,7 +279,6 @@ router.route('/target/post')
         }
     })
 
-
 router.route("/status")
     .put(authmiddleware, async (req, res) => {
         try {
@@ -302,7 +297,6 @@ router.route("/status")
             res.status(400).send({errorMessage: "정보를 찾을 수 없습니다."});
         }
     });
-
 
 router.route('/myusers')
     .get(authmiddleware, async (req, res) => {

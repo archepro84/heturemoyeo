@@ -296,7 +296,7 @@ router.route('/posts')
                 WHERE confirmCount < currentMember
                     AND currentMember < maxMember
                     AND startDate >= NOW()
-                ORDER BY startDate
+                ORDER BY startDate ASC, postId DESC
                 LIMIT ${start}, ${limit}`
 
             await sequelize.query(query, {type: Sequelize.QueryTypes.SELECT})
@@ -342,6 +342,7 @@ router.route('/posts/my')
                     CASE WHEN currentMember <=confirmCount THEN 'Y' ELSE 'N' END AS isConfirm
                 FROM POSTS_VW
                 WHERE postId IN (SELECT postId FROM Channels WHERE userId = ${userId})
+                ORDER BY startDate ASC , postId DESC 
                 LIMIT ${start}, ${limit}`
             await sequelize.query(query, {type: Sequelize.QueryTypes.SELECT})
                 .then((searchList) => {
@@ -385,7 +386,8 @@ router.route('/posts/location')
                 FROM POSTS_VW
                 WHERE lat IS NOT NULL
                     AND currentMember < maxMember
-                    AND confirmCount < currentMember`
+                    AND confirmCount < currentMember
+                    AND startDate >= NOW()`
             await sequelize.query(query, {type: Sequelize.QueryTypes.SELECT})
                 .then((result) => {
                     for (const x of result) {
@@ -420,6 +422,7 @@ router.route('/posts/master')
                 WHERE currentMember < maxMember
                     AND confirmCount < currentMember
                     AND userId = ${userId}
+                ORDER BY startDate ASC, postId DESC
                 LIMIT ${start}, ${limit}`
             await sequelize.query(query, {type: Sequelize.QueryTypes.SELECT})
                 .then((masterList) => {
