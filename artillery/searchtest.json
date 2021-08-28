@@ -1,0 +1,33 @@
+{
+    "config": {
+        "target": "http://localhost:4001",
+        "phases": [
+            {
+                "duration": 30,
+                "arrivalRate": 100
+            }
+        ],
+        "defaults": {
+            "headers": {
+                "Authorization": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsImlhdCI6MTYyOTcwMTI2NX0.e2nSuFaodDWRmDnvobHllnq5OmAuENw0CtqfDvlGxYg"
+            }
+        }
+    },
+    "scenarios": [
+        {
+            "name": "메인페이지, 마이페이지",
+            "flow": [
+                {
+                    "get": {
+                        "url": "/api/search/post?keyword=게임&start=0&limit=5"
+                    }
+                },
+                {
+                    "get": {
+                        "url": "/api/search/room?keyword=게임&start=0&limit=5"
+                    }
+                }
+            ]
+        }
+    ]
+}

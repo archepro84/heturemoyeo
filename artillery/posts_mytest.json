@@ -1,0 +1,66 @@
+{
+    "config": {
+        "target": "http://localhost:4001",
+        "phases": [
+            {
+                "duration": 60,
+                "arrivalRate": 100
+            }
+        ],
+        "defaults": {
+            "headers": {
+                "Authorization": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsImlhdCI6MTYyOTcwMTI2NX0.e2nSuFaodDWRmDnvobHllnq5OmAuENw0CtqfDvlGxYg"
+            }
+        }
+    },
+    "scenarios": [
+        {
+            "name": "게시글 관련",
+            "flow": [
+                {
+                    "get": {
+                        "url": "/api/post?postId=3"
+                    }
+                },
+                {
+                    "post": {
+                        "url": "/api/post",
+                        "json": {
+                            "title": "Hello",
+                            "postImg": ".img",
+                            "content": "안녕하세요 방입니다.",
+                            "maxMember": 5,
+                            "startDate": 1629733504497,
+                            "endDate": 1629733504497,
+                            "place": "seoul",
+                            "bring": "No",
+                            "tag": [
+                                "room"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "get": {
+                        "url": "/api/post/posts/my?start=0&limit=5"
+                    }
+                },
+                {
+                    "get": {
+                        "url": "/api/post/posts/master?start=0&limit=5"
+                    }
+                },
+                {
+                    "get": {
+                        "url": "/api/post/posts/location"
+                    }
+                },
+                {
+                    "get": {
+                        "url": "/api/post/posts/invite?start=0&limit=5'"
+                    }
+                }
+            ]
+        }
+    ]
+}

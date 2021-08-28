@@ -1,0 +1,58 @@
+{
+    "config": {
+        "target": "http://localhost:4001",
+        "phases": [
+            {
+                "duration": 60,
+                "arrivalRate": 100
+            }
+        ],
+        "defaults": {
+            "headers": {
+                "Authorization": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsImlhdCI6MTYyOTcwMTI2NX0.e2nSuFaodDWRmDnvobHllnq5OmAuENw0CtqfDvlGxYg"
+            }
+        }
+    },
+    "scenarios": [
+        {
+            "name": "게시글 관련",
+            "flow": [
+                {
+                    "get": {
+                        "url": "/api/room/info?postId=1"
+                    }
+                },
+                {
+                    "get": {
+                        "url": "/api/room/1?start=0&limit=10"
+                    }
+                },
+                {
+                    "post": {
+                        "url": "/api/room/chat",
+                        "json": {
+                            "postId": 1,
+                            "message": "HI"
+                        }
+                    }
+                },
+                {
+                    "post": {
+                        "url": "/api/room/join",
+                        "json": {
+                            "postId": 5
+                        }
+                    }
+                },
+                {
+                    "post": {
+                        "url": "/api/room/exit",
+                        "json": {
+                            "postId": 5
+                        }
+                    }
+                }
+            ]
+        }
+    ]
+}

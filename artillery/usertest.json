@@ -1,0 +1,48 @@
+{
+    "config": {
+        "target": "http://localhost:4001",
+        "phases": [
+            {
+                "duration": 30,
+                "arrivalRate": 100
+            }
+        ],
+        "defaults": {
+            "headers": {
+                "Authorization": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsImlhdCI6MTYyOTcwMTI2NX0.e2nSuFaodDWRmDnvobHllnq5OmAuENw0CtqfDvlGxYg"
+            }
+        }
+    },
+    "scenarios": [
+        {
+            "name": "메인페이지, 마이페이지",
+            "flow": [
+                {
+                    "get": {
+                        "url": "/api/user/target/all?userId=3"
+                    }
+                }
+            ]
+        },
+        {
+            "name": "사용자 일정 정보",
+            "flow": [
+                {
+                    "get": {
+                        "url": "/api/user/target/post?userId=3"
+                    }
+                }
+            ]
+        },
+        {
+            "name": "사용자 친구 정보",
+            "flow": [
+                {
+                    "get": {
+                        "url": "/api/user/target/friend?userId=2"
+                    }
+                }
+            ]
+        }
+    ]
+}
