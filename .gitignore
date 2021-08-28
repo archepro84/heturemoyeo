@@ -20,7 +20,6 @@ doc/**/*.pdf
 
 node_modules/
 views/
-seeders/
 uploads/
 .env
 coverage/
