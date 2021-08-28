@@ -36,7 +36,7 @@ router.route("/")
                     let tag = [];
                     if (result[0].tag)
                         for (const Item of result[0].tag.split(', '))
-                            tag.push(Item)
+                            tag.push(String(Item).trim())
 
                     res.status(200).send({
                         title: result[0].title,
@@ -120,7 +120,7 @@ router.route("/")
 
             if (Object.keys(tag).length) {
                 for (const t of tag) {
-                    tagArray.push({postId, tag: t});
+                    tagArray.push({postId, tag: String(t).trim()});
                 }
                 await Tags.bulkCreate(tagArray);
             }
@@ -132,6 +132,8 @@ router.route("/")
             req.app.get("io").of("/room").emit("newRoom", {
                 postId, title, postImg, currentMember: 1, maxMember, startDate, endDate, place
             });
+            req.app.get('io').of('/location').emit('newPost', {postId, lat, lng})
+
 
             res.status(201).send();
         } catch (error) {
@@ -175,11 +177,16 @@ router.route("/")
             const countQuery = `
                 SELECT
                     (SELECT COUNT(confirm) FROM Channels WHERE postId = ${postId} AND confirm = 1) AS confirmCount,
-                    COUNT(userId) AS currentMember
+                    COUNT(userId) AS currentMember,
+                    (SELECT maxMember FROM Posts WHERE postId = ${postId}) AS currentMaxMember 
                 FROM Channels AS c
                 WHERE c.postId = ${postId}`
 
-            const {confirmCount, currentMember} = await sequelize.query(countQuery, {type: Sequelize.QueryTypes.SELECT})
+            const {
+                confirmCount,
+                currentMember,
+                currentMaxMember
+            } = await sequelize.query(countQuery, {type: Sequelize.QueryTypes.SELECT})
                 .then((result) => {
                     return result[0]
                 })
@@ -203,17 +210,7 @@ router.route("/")
                 location = null
 
             const updateCount = await Posts.update(
-                {
-                    title,
-                    postImg,
-                    content,
-                    maxMember,
-                    startDate,
-                    endDate,
-                    place,
-                    location,
-                    bring,
-                },
+                {title, postImg, content, maxMember, startDate, endDate, place, location, bring,},
                 {
                     where: {userId, postId},
                 }
@@ -228,9 +225,23 @@ router.route("/")
 
             let tagArray = [];
             for (const t of tag) {
-                tagArray.push({postId, tag: t});
+                tagArray.push({postId, tag: String(t).trim()});
             }
             await Tags.bulkCreate(tagArray);
+
+            if (currentMaxMember > maxMember
+                && currentMember == maxMember) {
+                if (lat && lng)
+                    req.app.get('io').of('/location').emit('removePost', {postId})
+                req.app.get('io').of('/room').emit('removeRoom', {postId})
+            } else if (currentMaxMember < maxMember
+                && currentMember == currentMaxMember) {
+                if (lat && lng)
+                    req.app.get('io').of('/location').emit('newPost', {postId, lat, lng})
+                req.app.get("io").of("/room").emit("newRoom", {
+                    postId, title, postImg, currentMember, maxMember, startDate, endDate, place,
+                });
+            }
 
             res.status(201).send();
         } catch (error) {
@@ -305,7 +316,7 @@ router.route('/posts')
                         let tagItem = []
                         if (search.tagItem)
                             for (const Item of search.tagItem.split(', '))
-                                tagItem.push(Item)
+                                tagItem.push(String(Item).trim())
                         result.push({
                             postId: search.postId,
                             title: search.title,
@@ -350,7 +361,7 @@ router.route('/posts/my')
                         let tagItem = []
                         if (search.tagItem)
                             for (const Item of search.tagItem.split(', '))
-                                tagItem.push(Item)
+                                tagItem.push(String(Item).trim())
                         result.push({
                             postId: search.postId,
                             title: search.title,

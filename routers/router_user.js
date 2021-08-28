@@ -41,7 +41,7 @@ router.route('/')
             for (const x of likeItem) {
                 result.push({
                     userId,
-                    likeItem: x
+                    likeItem: String(x).trim()
                 })
             }
 
@@ -73,7 +73,7 @@ router.route('/me')
                     let likeItem = [];
                     if (result[0].likeItem)
                         for (const Item of result[0].likeItem.split(', '))
-                            likeItem.push(Item)
+                            likeItem.push(String(Item).trim())
                     res.status(200).send({
                         userId: result[0].userId,
                         phone: result[0].phone,
@@ -164,7 +164,7 @@ router.route('/target/friend')
                     let likeItem = [];
                     if (result[0].likeItem)
                         for (const Item of result[0].likeItem.split(', '))
-                            likeItem.push(Item)
+                            likeItem.push(String(Item).trim())
                     res.status(200).send({
                         nickname: result[0].nickname,
                         rating: result[0].rating,
@@ -246,7 +246,7 @@ router.route('/target/post')
 
             if (likeItem)
                 for (const Item of likeItem.split(', '))
-                    likeList.push(Item)
+                    likeList.push(String(Item).trim())
 
             if (scheduleItem)
                 for (const Item of scheduleItem.split(', '))

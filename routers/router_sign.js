@@ -70,7 +70,7 @@ router.route("/")
 
             let likeList = [];
             for (const x of likeItem) {
-                likeList.push({userId, likeItem: x});
+                likeList.push({userId, likeItem: String(x).trim()});
             }
             await Likes.bulkCreate(likeList);
             await Auths.destroy({

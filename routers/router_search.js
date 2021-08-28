@@ -78,7 +78,7 @@ router.route('/post')
                         let tagItem = []
                         if (search.tagItem)
                             for (const Item of search.tagItem.split(', '))
-                                tagItem.push(Item)
+                                tagItem.push(String(Item).trim())
                         result.push({
                             postId: search.postId,
                             title: search.title,
@@ -126,7 +126,7 @@ router.route('/room')
                         let tagItem = []
                         if (search.tagItem)
                             for (const Item of search.tagItem.split(', '))
-                                tagItem.push(Item)
+                                tagItem.push(String(Item).trim())
                         result.push({
                             postId: search.postId,
                             title: search.title,

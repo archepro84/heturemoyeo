@@ -280,14 +280,7 @@ router.route('/exit')
             if ((currentMember >= maxMember) && (lat && lng)) {
                 console.log("Room Ready NewPots");
                 req.app.get('io').of('/room').emit('newRoom', {
-                    postId,
-                    title,
-                    postImg,
-                    currentMember,
-                    maxMember,
-                    startDate,
-                    endDate,
-                    place
+                    postId, title, postImg, currentMember, maxMember, startDate, endDate, place
                 })
                 req.app.get('io').of('/location').emit('newPost', {postId, lat, lng})
             }
@@ -437,13 +430,43 @@ router.route('/kick')
                 return;
             }
 
+            const postQuery = `
+                SELECT title, postImg, currentMember, maxMember, startDate, endDate, place, lat, lng 
+                FROM POSTS_VW
+                WHERE postId = ${postId}`
+
+            const postData = await sequelize.query(postQuery, {type: Sequelize.QueryTypes.SELECT})
+                .then(result => result[0])
+
             await Channels.destroy({
                 where: {postId, userId: targetUserId}
             })
 
-            // TODO SOCKET 대화방에서 더이상 글을 읽을 수 없도록 차단 시켜야한다.
-            //req.app.get('io')
+            if (postData.maxMember == postData.currentMember) {
+                if (postData.lat && postData.lng) {
+                    req.app.get('io').of('/location').emit('newPost', {postId, lat: postData.lat, lng: postData.lng})
+                }
+                req.app.get("io").of("/room").emit("newRoom", {
+                    postId,
+                    title: postData.title,
+                    postImg: postData.postImg,
+                    currentMember: postData.currentMember - 1,
+                    maxMember: postData.maxMember,
+                    startDate: postData.startDate,
+                    endDate: postData.endDate,
+                    place: postData.place,
+                });
+            }
 
+            const io = req.app.get('io')
+            if (io.loginChatUser)
+                if ((Object.keys(io.loginChatUser).indexOf(String(postId)) != -1)  // Socket 방이 생성되어있고,
+                    && io.loginChatUser[postId][targetUserId]) { //해당하는 유저가 Socket에 접속해 있을경우
+                    const socketId = io.loginChatUser[postId][targetUserId];
+                    console.log(`room kick fetchSockets : [${socketId}]`);
+                    await io.of('/chat').to(socketId).emit('kick', {})
+                    await io.of('/chat').to(socketId).disconnectSockets();
+                }
             res.status(200).send()
         } catch (error) {
             console.log(`${req.method} ${req.originalUrl} : ${error.message}`);
@@ -481,12 +504,18 @@ router.route('/confirm')
                 SELECT
                    (SELECT COUNT(confirm) FROM Channels WHERE postId = ${postId} AND confirm = 1) AS confirmCount ,
                    (SELECT COUNT(userId) FROM Channels WHERE postId = ${postId}) AS currentMember,
-                    CASE WHEN 1 = (SELECT DISTINCT 1 FROM Posts WHERE userId = ${userId} AND postid = ${postId} ) THEN 'Y' ELSE 'N' END AS isMaster`
+                   maxMember,
+                    CASE WHEN 1 = (SELECT DISTINCT 1 FROM Posts WHERE userId = ${userId} AND postid = ${postId} ) THEN 'Y' ELSE 'N' END AS isMaster,
+                    ST_X(location) AS lng, ST_Y(location) AS lat
+                FROM Posts
+                WHERE postId = ${postId}`
 
             const {
                 confirmCount,
                 currentMember,
-                isMaster
+                maxMember,
+                isMaster,
+                lat, lng,
             } = await sequelize.query(query, {type: Sequelize.QueryTypes.SELECT})
                 .then((result) => {
                     return result[0]
@@ -504,8 +533,14 @@ router.route('/confirm')
                     })
                     return;
                 }
+                if (confirmCount == currentMember - 1
+                    && currentMember < maxMember) { // 마지막 확정은 방장만 누를 수 있다.
+                    if (lat && lng)
+                        req.app.get('io').of('/location').emit('removePost', {postId})
+                    req.app.get("io").of("/room").emit("removeRoom", {postId})
+                }
             }
-
+            
             await Channels.update({confirm: 1},
                 {where: {channelId, userId, postId}})
 
@@ -513,12 +548,11 @@ router.route('/confirm')
         } catch (error) {
             console.log(`${req.method} ${req.originalUrl} : ${error.message}`);
             res.status(400).send({
-                errorMessage: "모임 초대에 실패 하였습니다.",
+                errorMessage: "모임 확정에 실패 하였습니다.",
             });
         }
     })
 
-// TODO 확정된 방일경우 입장할 수 없도록 설정
 router.route('/invite/accept')
     .post(authmiddleware, async (req, res) => {
         try {

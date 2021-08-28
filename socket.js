@@ -1,30 +1,34 @@
 const SocketIO = require("socket.io")
 const socketAuthMiddleWare = require("./middleware/socket-auth-middleware")
-const {Posts, sequelize, Sequelize} = require("./models")
+const socketAuthMiddleWareChat = require("./middleware/socket-auth-middleware_chat")
+const {Channels, Posts, sequelize, Sequelize} = require("./models")
 const redis = require('redis')
 const fs = require("fs");
+const Joi = require("./routers/joi_Schema");
 const redisClient = redis.createClient({
     url: `redis://${process.env.REDIS_HOST}:${process.env.REDIS_PORT}`,
 })
 const geo = require('georedis').initialize(redisClient)
 
+// redisClient.DEL('geo:locations', function (error, reply) {
+//     if (error) console.log(error);
+// })
 
-setInterval(function () {
-    // 만약 생성된지 6시간 지난 location이 있다면, 지워라
-
-}, 60000)
+// setInterval(function () {
+//     // 만약 생성된지 6시간 지난 location이 있다면, 지워라
+// }, 60000)
 
 module.exports = (server, app) => {
     let loginUser = {} //접속한 UserId가 사용하는 Socket의 아이디를 설정한다.
+    let loginChatUser = {}; // 모임의 접속한 유저들을 저장하는 객체
     const geoOptions = {
         withCoordinates: true, // 일치하는 항목의 경도, 위도 좌표를 반환, default false
         withDistances: true, // 지정된 중심에서 항목의 거리를 반환, default false
         order: 'ASC', // 가장 가까운 것 부터 정렬, 'DESC' or true (same as 'ASC'), default false
         units: 'm', // m (Meters), km (Kilometers), mi (Miles), ft (Feet), default 'm'
+        count: 50, // N개의 일치하는 항목으로 결과를 제한, default undefined (All)
         accurate: true, // Useful if in emulated mode and accuracy is important, default false
     }
-
-
     const locationSet = {
         '2': {latitude: 37.5671461, longitude: 126.9309533},
         '3': {latitude: 37.5679144, longitude: 126.9344071},
@@ -39,6 +43,15 @@ module.exports = (server, app) => {
         '14': {latitude: 35.86529023619457, longitude: 128.63485306412625}, //약국
         '15': {latitude: 35.86717621007772, longitude: 128.63068483731408}, //LPG
         '16': {latitude: 35.86517136691063, longitude: 128.6336549866826}, // 인생의 갈림길
+
+        '20': {latitude: 35.85618567277376, longitude: 128.63275935627814}, // 대구 KBS
+        '21': {latitude: 35.85742020536634, longitude: 128.63209836072522}, // 수성구청 역
+        '22': {latitude: 35.856331197160394, longitude: 128.6286777048585}, // 대구여고 마을
+        '23': {latitude: 35.85719220896354, longitude: 128.62764924344924}, // W 오피스텔
+        '24': {latitude: 35.85752603220386, longitude: 128.62628896758892}, // 대구여고 마을
+        '25': {latitude: 35.85573882947642, longitude: 128.6294985578524}, // 대구여고 마을
+        
+        '26': {latitude: 35.866305268282744, longitude: 128.59284327495126}, // 반월당
     }
     geo.addLocations(locationSet, function (err, reply) {
         if (err) console.error(err)
@@ -60,7 +73,9 @@ module.exports = (server, app) => {
         const req = socket.request;
         const ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
         const {userId: socketUserId} = socket.user;
-        console.log('Location Socket Connect / IP :', ip);
+        const MAX_DISTANCE = 500000;
+        let radiusDistance = 500000;
+        console.log('Location Socket Connect / IP :', ip, socket.id);
 
         if (loginUser[socketUserId]) {
             console.log(`Duplicatie Socket Id : ${loginUser[socketUserId]}, ${socket.id}`);
@@ -71,7 +86,8 @@ module.exports = (server, app) => {
             location.to(socket.id).emit("closeEvent");
 
             // 이전에 접속한 유저의 연결을 종료합니다.
-            await io.in(loginUser[socketUserId]).fetchSockets();
+            // await io.in(loginUser[socketUserId]).fetchSockets();
+            await location.to(loginUser[socketUserId]).disconnectSockets();
 
             // 로그인 중인 유저 목록에서 접속중인 유저를 삭제합니다.
             delete loginUser[socketUserId]
@@ -80,9 +96,13 @@ module.exports = (server, app) => {
 
         loginUser[socketUserId] = socket.id
 
-        socket.on("latlng", (LocationData) => {
+        socket.on("latlng", (locationData) => {
             try {
-                const {lat, lng} = LocationData;
+                const {lat, lng} = locationData;
+
+                // Redis의 geo:locations 만료시간을 기록하는 별도의 테이블을 생성한다.
+                redisClient.ZADD('geo:locations:expire', new Date().getTime(), socketUserId)
+
                 // Redis 내부에 geo:locations에 이미 데이터가 존재하더라도 덮어쓰기 된다. ☆
                 geo.addLocation(socketUserId, {latitude: lat, longitude: lng}, (error, reply) => {
                     if (error) console.error(error);
@@ -93,15 +113,27 @@ module.exports = (server, app) => {
             }
         })
 
+        socket.on("changeDistance", (distanceData) => {
+            try {
+                Joi.socketDistanceSchema.validateAsync(distanceData)
+                    .then((result) => {
+                        const {distance} = result;
+                        if (distance <= MAX_DISTANCE)
+                            radiusDistance = distance
+                        // console.log(`${socket.id} : ${radiusDistance}`);
+                    })
+            } catch (error) {
+                console.log(`${req.method} ${req.originalUrl} : ${error.message}`);
+            }
+        })
+
         // 3초마다 클라이언트로 모든 유저의 위치 전송
         // GEORADIUSBYMEMBER geo:locations 1 5000 m WITHCOORD ASC
         socket.interval = setInterval(() => {
             // GEORADIUSBYMEMBER의 member룰 숫자로 정의할 경우 형식 에러가 발생한다.
-            geo.nearby(`${socketUserId}`, 50000, geoOptions, function (err, locations) {
+            geo.nearby(`${socketUserId}`, radiusDistance, geoOptions, function (err, locations) {
                 if (err) console.error(err)
-                else {
-                    socket.emit("userLocation", locations)
-                }
+                else socket.emit("userLocation", locations)
             })
         }, 3000);
 
@@ -132,27 +164,31 @@ module.exports = (server, app) => {
         })
     })
 
-    let loginChatUser = {};
 
-    chat.use(socketAuthMiddleWare)
-    chat.on("connect", (socket) => {
+    chat.use(socketAuthMiddleWareChat)
+    chat.on("connect", async (socket) => {
         const req = socket.request; // Request
-        const {socketUserId: userId, nickname} = socket.user
-        //접속한 유저의 IP를 가져옴
-        const ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
+        const {userId: socketUserId, nickname} = socket.user
 
-        // get Query로 들어온 postId 값을 roomId로 지정한다.
-        const postId = Number(socket.handshake.query.postId);
+        const ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress; //접속한 유저의 IP를 가져옴
+        const postId = Number(socket.handshake.query.postId); // get Query로 들어온 postId 값을 roomId로 지정한다.
 
-        // loginChatUser[postId] = socket.id
+        if (Object.keys(loginChatUser).indexOf(String(postId)) == -1) { // postId 방이 생성되어있는지 확인한다.
+            loginChatUser[postId] = {}
+        }
+        loginChatUser[postId][socketUserId] = socket.id
+        io.loginChatUser = loginChatUser;
+
+        // // 이전에 접속한 유저의 연결을 종료합니다.
+        // await io.in(loginUser[socketUserId]).fetchSockets();
 
         console.log('chat Socket Connect', ip, postId);
-        //postId를 기준으로 socket 방을 join 한다.
-        socket.join(postId);
-
+        socket.join(postId); //postId를 기준으로 socket 방을 join 한다.
 
         socket.on("disconnect", () => {
             console.log("chat Socket Client Disconnect IP : ", ip);
+
+            delete loginChatUser[postId][socketUserId]
             clearInterval(socket.interval);
         })
 
