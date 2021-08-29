@@ -1,0 +1,22 @@
+config:
+  target: 'http://localhost:4001'
+  socketio:
+    query: "location"
+  phases:
+    - duration: 60
+      arrivalRate: 4
+  defaults:
+    headers:
+      Authorization: >-
+        eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsImlhdCI6MTYyOTcwMTI2NX0.e2nSuFaodDWRmDnvobHllnq5OmAuENw0CtqfDvlGxYg
+  payload:
+    path: ./payloadData/UserIdCount.csv
+    fields:
+      - count
+scenarios:
+  - name: GET /api/user/target/all
+    engine: "socketio"
+    flow:
+      - get:
+          url: '/api/user/target/all?userId={{count}}'
+      - name: GET /api/user/target/friend

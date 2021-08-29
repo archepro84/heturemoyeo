@@ -1,0 +1,44 @@
+{
+    "config": {
+        "target": "http://localhost:4001",
+        "phases": [
+            {
+                "duration": 30,
+                "arrivalRate": 100
+            }
+        ],
+        "defaults": {
+            "headers": {
+                "Authorization": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsImlhdCI6MTYyOTcwMTI2NX0.e2nSuFaodDWRmDnvobHllnq5OmAuENw0CtqfDvlGxYg"
+            }
+        },
+        "payload": {
+            "path": "./payloadData/SearchKeyword.csv",
+            "fields": [
+                "keyword"
+            ]
+        }
+    },
+    "scenarios": [
+        {
+            "name": "GET /api/search/room",
+            "flow": [
+                {
+                    "get": {
+                        "url": "/api/search/room?keyword={{keyword}}&start=0&limit=20"
+                    }
+                }
+            ]
+        },
+        {
+            "name": "GET /api/search/post",
+            "flow": [
+                {
+                    "get": {
+                        "url": "/api/search/post?keyword={{keyword}}&start=0&limit=20"
+                    }
+                }
+            ]
+        }
+    ]
+}

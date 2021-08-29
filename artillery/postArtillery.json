@@ -1,0 +1,34 @@
+{
+    "config": {
+        "target": "http://localhost:4001",
+        "phases": [
+            {
+                "duration": 10,
+                "arrivalRate": 150
+            }
+        ],
+        "defaults": {
+            "headers": {
+                "Authorization": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsImlhdCI6MTYyOTcwMTI2NX0.e2nSuFaodDWRmDnvobHllnq5OmAuENw0CtqfDvlGxYg"
+            }
+        },
+        "payload": {
+            "path": "./payloadData/PostIdCount.csv",
+            "fields": [
+                "count"
+            ]
+        }
+    },
+    "scenarios": [
+        {
+            "name": "GET /api/post Artillery Test",
+            "flow": [
+                {
+                    "get": {
+                        "url": "/api/post?postId={{count}}"
+                    }
+                }
+            ]
+        }
+    ]
+}

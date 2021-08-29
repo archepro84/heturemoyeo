@@ -1,0 +1,64 @@
+{
+    "config": {
+        "target": "http://localhost:4001",
+        "phases": [
+            {
+                "duration": 30,
+                "arrivalRate": 100
+            }
+        ],
+        "defaults": {
+            "headers": {
+                "Authorization": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsImlhdCI6MTYyOTcwMTI2NX0.e2nSuFaodDWRmDnvobHllnq5OmAuENw0CtqfDvlGxYg"
+            }
+        },
+        "payload": {
+            "path": "./payloadData/UserIdCount.csv",
+            "fields": [
+                "count"
+            ]
+        }
+    },
+    "scenarios": [
+        {
+            "name": "GET /api/user/target/all",
+            "flow": [
+                {
+                    "get": {
+                        "url": "/api/user/target/all?userId={{count}}"
+                    }
+                }
+            ]
+        },
+        {
+            "name": "GET /api/user/target/post",
+            "flow": [
+                {
+                    "get": {
+                        "url": "/api/user/target/post?userId={{count}}"
+                    }
+                }
+            ]
+        },
+        {
+            "name": "GET /api/user/target/friend",
+            "flow": [
+                {
+                    "get": {
+                        "url": "/api/user/target/friend?userId={{count}}"
+                    }
+                }
+            ]
+        },
+        {
+            "name": "POST /api/user/me",
+            "flow": [
+                {
+                    "post": {
+                        "url": "/api/user/me"
+                    }
+                }
+            ]
+        }
+    ]
+}

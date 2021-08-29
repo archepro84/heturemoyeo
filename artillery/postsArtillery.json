@@ -1,0 +1,75 @@
+{
+    "config": {
+        "target": "http://localhost:4001",
+        "phases": [
+            {
+                "duration": 30,
+                "arrivalRate": 100
+            }
+        ],
+        "defaults": {
+            "headers": {
+                "Authorization": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsImlhdCI6MTYyOTcwMTI2NX0.e2nSuFaodDWRmDnvobHllnq5OmAuENw0CtqfDvlGxYg"
+            }
+        },
+        "payload": {
+            "path": "./payloadData/PostsLimit.csv",
+            "fields": [
+                "start",
+                "limit"
+            ]
+        }
+    },
+    "scenarios": [
+        {
+            "name": "GET /api/post/posts Artillery Test",
+            "flow": [
+                {
+                    "get": {
+                        "url": "/api/post/posts?start={{start}}&limit={{limit}}"
+                    }
+                }
+            ]
+        },
+        {
+            "name": "GET /api/post/posts/my Artillery Test",
+            "flow": [
+                {
+                    "get": {
+                        "url": "/api/post/posts/my?start={{start}}&limit={{limit}}"
+                    }
+                }
+            ]
+        },
+        {
+            "name": "GET /api/post/posts/master Artillery Test",
+            "flow": [
+                {
+                    "get": {
+                        "url": "/api/post/posts/master?start={{start}}&limit={{limit}}"
+                    }
+                }
+            ]
+        },
+        {
+            "name": "GET /api/post/posts/invite Artillery Test",
+            "flow": [
+                {
+                    "get": {
+                        "url": "/api/post/posts/invite?start={{start}}&limit={{limit}}"
+                    }
+                }
+            ]
+        },
+        {
+            "name": "GET /api/post/posts/location Artillery Test",
+            "flow": [
+                {
+                    "get": {
+                        "url": "/api/post/posts/location"
+                    }
+                }
+            ]
+        }
+    ]
+}

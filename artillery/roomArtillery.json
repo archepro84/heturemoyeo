@@ -11,35 +11,45 @@
             "headers": {
                 "Authorization": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsImlhdCI6MTYyOTcwMTI2NX0.e2nSuFaodDWRmDnvobHllnq5OmAuENw0CtqfDvlGxYg"
             }
+        },
+        "payload": {
+            "path": "./payloadData/PostIdCount.csv",
+            "fields": [
+                "count"
+            ]
         }
     },
     "scenarios": [
         {
-            "name": "메인페이지, 마이페이지",
+            "name": "GET /api/room/info",
             "flow": [
                 {
                     "get": {
-                        "url": "/api/user/target/all?userId=3"
+                        "url": "/api/room/info?postId={{count}}"
                     }
                 }
             ]
         },
         {
-            "name": "사용자 일정 정보",
+            "name": "GET /api/room/:postId",
             "flow": [
                 {
                     "get": {
-                        "url": "/api/user/target/post?userId=3"
+                        "url": "/api/room/{{count}}?start=0&limit=1000"
                     }
                 }
             ]
         },
         {
-            "name": "사용자 친구 정보",
+            "name": "POST /api/room/chat",
             "flow": [
                 {
-                    "get": {
-                        "url": "/api/user/target/friend?userId=2"
+                    "post": {
+                        "url": "/api/room/chat",
+                        "json": {
+                            "postId": "{{count}}",
+                            "message": "Artillery"
+                        }
                     }
                 }
             ]
