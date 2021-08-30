@@ -130,7 +130,7 @@ const joiSchema = {
             new RegExp("^(?=.*[a-zA-Z0-9])((?=.*\\d)|(?=.*\\W)).{6,20}$")
         ),
         profileImg: Joi.string().max(5000).allow(null, ""),
-        statusMessage: Joi.string().min(2).max(250),
+        statusMessage: Joi.string().allow(null, "").required(),
         likeItem: Joi.array().required(),
     }),
     // 2021-08-28 nickname 3,20 > 1, 30

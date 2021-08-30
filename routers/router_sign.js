@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const {Op} = require("sequelize");
-const MessageFuntion = require("./message-funtion");
+const MessageFuntion = require("../public/message-funtion");
 const logincheckmiddleware = require("../middleware/login-check-middleware");
 const authmiddleware = require("../middleware/auth-middleware");
 const {Users, Likes, Auths, sequelize, Sequelize} = require("../models");

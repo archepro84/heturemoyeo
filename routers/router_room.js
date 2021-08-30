@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const authmiddleware = require("../middleware/auth-middleware");
-const MessageFuntion = require("./message-funtion");
+const MessageFuntion = require("../public/message-funtion");
 const {Users, Invites, Messages, Channels, Posts, sequelize, Sequelize} = require("../models");
 const {postIdSchema, startLimitSchema, chatSchema, userIdpostIdSchema, inviteIdSchema} = require("./joi_Schema")
 
