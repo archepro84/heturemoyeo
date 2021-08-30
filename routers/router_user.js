@@ -4,7 +4,7 @@ const {Posts, Users, Likes, sequelize, Sequelize} = require("../models")
 const authmiddleware = require("../middleware/auth-middleware")
 const crypto = require("crypto");
 const {userIdNumberSchema, statusMessageSchema, userModifySchema} = require("./joi_Schema")
-
+const redis = require("../public/redis_connect");
 
 router.route('/')
     .put(authmiddleware, async (req, res) => {
@@ -110,16 +110,26 @@ router.route("/target/all")
 
             const {rating, statusMessage} = userInfoData["dataValues"];
 
-            res.status(200).send({
-                nickname: null,
-                rating,
-                profileImg: null,
-                statusMessage,
-                likeItem: [],
-                scheduleCount: null,
-                scheduleTitle: null,
-                isFriend: null,
-            });
+            await redis.ZSCORE('geo:locations:expire', userId, (err, reply) => {
+                if (err) console.error(err);
+                else {
+                    let lastLogin = null;
+                    if (reply) lastLogin = new Date().getTime() - parseInt(reply);
+
+                    res.status(200).send({
+                        nickname: null,
+                        rating,
+                        profileImg: null,
+                        statusMessage,
+                        likeItem: [],
+                        scheduleCount: null,
+                        scheduleTitle: null,
+                        isFriend: null,
+                        lastLogin,
+                    });
+                }
+            })
+
         } catch (error) {
             console.log(`${req.method} ${req.originalUrl} : ${error.message}`);
             res.status(400).send({
@@ -165,15 +175,25 @@ router.route('/target/friend')
                     if (result[0].likeItem)
                         for (const Item of result[0].likeItem.split(', '))
                             likeItem.push(String(Item).trim())
-                    res.status(200).send({
-                        nickname: result[0].nickname,
-                        rating: result[0].rating,
-                        profileImg: result[0].profileImg,
-                        statusMessage: result[0].statusMessage,
-                        likeItem,
-                        scheduleCount: null,
-                        scheduleTitle: null,
-                        isFriend: null,
+
+                    redis.ZSCORE('geo:locations:expire', targetUserId, (err, reply) => {
+                        if (err) console.error(err);
+                        else {
+                            let lastLogin = null;
+                            if (reply) lastLogin = new Date().getTime() - parseInt(reply);
+
+                            res.status(200).send({
+                                nickname: result[0].nickname,
+                                rating: result[0].rating,
+                                profileImg: result[0].profileImg,
+                                statusMessage: result[0].statusMessage,
+                                likeItem,
+                                scheduleCount: null,
+                                scheduleTitle: null,
+                                isFriend: null,
+                                lastLogin,
+                            })
+                        }
                     })
                 })
         } catch (error) {
@@ -260,15 +280,24 @@ router.route('/target/post')
             })
                 .then((result) => {
                     const scheduleTitle = result['dataValues'].title;
-                    res.status(200).send({
-                        nickname,
-                        rating,
-                        profileImg,
-                        statusMessage,
-                        likeItem: likeList,
-                        scheduleCount: scheduleList.length,
-                        scheduleTitle,
-                        isFriend: isFriend == 'Y' ? true : false,
+                    redis.ZSCORE('geo:locations:expire', targetUserId, (err, reply) => {
+                        if (err) console.error(err);
+                        else {
+                            let lastLogin = null;
+                            if (reply) lastLogin = new Date().getTime() - parseInt(reply);
+
+                            res.status(200).send({
+                                nickname,
+                                rating,
+                                profileImg,
+                                statusMessage,
+                                likeItem: likeList,
+                                scheduleCount: scheduleList.length,
+                                scheduleTitle,
+                                isFriend: isFriend == 'Y' ? true : false,
+                                lastLogin,
+                            })
+                        }
                     })
                 })
         } catch (error) {

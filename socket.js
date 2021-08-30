@@ -73,8 +73,8 @@ module.exports = (server, app) => {
         const req = socket.request;
         const ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
         const {userId: socketUserId} = socket.user;
-        const MAX_DISTANCE = 500000;
-        let radiusDistance = 500000;
+        const MAX_DISTANCE = 700000;
+        let radiusDistance = 700000;
         console.log('Location Socket Connect / IP :', ip, socket.id);
 
         if (loginUser[socketUserId]) {

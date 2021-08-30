@@ -299,7 +299,6 @@ router.route('/invite')
         try {
             const giveUserId = res.locals.user.userId;
             const {userId, postId} = await userIdpostIdSchema.validateAsync(req.body);
-            const message = "헤쳐모여 알림\n그룹에 초대 되었습니다. 앱에서 확인해 보세요.";
 
             if (giveUserId == userId) {
                 res.status(412).send({errorMessage: "동일한 사용자에게 초대를 보낼 수 없습니다."})
@@ -319,9 +318,9 @@ router.route('/invite')
             // isExist : 대상자가 이미 참여중인지
             // isMaster : 내가 그 방의 방장인지
             const query = `
-                SELECT 
+                SELECT
                     (SELECT COUNT(confirm) FROM Channels WHERE postId = p.postId AND confirm = 1) AS confirmCount,
-                    COUNT(c.userId) AS currentMember, p.maxMember, 
+                    COUNT(c.userId) AS currentMember, p.maxMember,  
                     CASE WHEN 1 = (SELECT DISTINCT 1 FROM Invites WHERE giveUserId = ${giveUserId} AND receiveUserId = ${userId} AND postId = ${postId}) THEN 'Y' ELSE 'N' END AS isInvite,
                     CASE WHEN 1 = (SELECT DISTINCT 1 FROM Channels WHERE userId = ${userId} AND postId = ${postId}) THEN 'Y' ELSE 'N' END AS isExist,
                     CASE WHEN 1 = (SELECT DISTINCT 1 FROM Posts WHERE postId = ${postId} AND userId = ${giveUserId}) THEN 'Y' ELSE 'N' END AS isMaster
@@ -375,6 +374,8 @@ router.route('/invite')
             }
 
             await Invites.create({giveUserId, receiveUserId: userId, postId});
+
+            const message = `새로운 모임 초대가 도착했습니다.\n하단 메뉴 [모임]-[초대된 모임] 에서 확인하실 수 있습니다.`;
 
             //문자 메시지 발송
             MessageFuntion.send_message(phone, message);
@@ -540,7 +541,7 @@ router.route('/confirm')
                     req.app.get("io").of("/room").emit("removeRoom", {postId})
                 }
             }
-            
+
             await Channels.update({confirm: 1},
                 {where: {channelId, userId, postId}})
 
