@@ -31,7 +31,7 @@ Redux | Express
 Axios | MySQL
 WebSocket | WebSocket
 카카오맵 api | 카카오맵 api
-| Redis
+"" | Redis
 
 
 ## 3. 사용 라이브러리
