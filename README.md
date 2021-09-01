@@ -65,7 +65,7 @@ artillery | 서버 부하 테스트
 <br>
 
 ## 4. 아키텍처
-![헤쳐모여 아키텍처](https://user-images.githubusercontent.com/49636918/131671365-46f16297-926f-4a60-aa40-94da0ef2f514.png)
+![헤쳐모여 아키텍처](https://user-images.githubusercontent.com/49636918/131686936-176aa7b7-e40f-4ee4-a5de-c0ef1000c138.png)
 
 <br>
 
