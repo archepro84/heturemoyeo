@@ -1,0 +1,22 @@
+config:
+  target: 'http://localhost:4001'
+  phases:
+    - duration: 50  # 실행시간
+      arrivalRate: 3 # 1초당 실행횟수
+  payload:
+    path: ./payloadData/UserToken.csv
+    fields:
+      - token
+
+scenarios:
+  - name: map location test
+    engine: "socketio"
+    flow:
+      - emit:
+          # namespace: "/location"
+          headers:
+            Authorization: token
+          channel: 'latlng'
+          data:
+            "lat" : 37.5592
+            "lng" : 126.9397
