@@ -25,7 +25,7 @@ GPS 기반 소규모 모임 플랫폼입니다.
 ## 2. 기술스텍
 
 Front | Back
----|---:
+---|:---:
 React | Node.js
 Redux | Express
 Axios | MySQL
@@ -38,18 +38,31 @@ WebSocket | WebSocket
 
 라이브러리 | 설명
 ---|:---:
+artillery | 서버 부하 테스트
+aws-sdk | aws 서비스 호출
+chokidar | 파일 감시 라이브러리
+cookie-parser | 쿠키 저장
 cors | 교차 리소스 공유
-dotenv | DB비밀번호, 시크릿키 암호화
+cypto-js | 비밀번호 암호화
+dotenv | DB비밀번호, 시크릿키, 포트번호, api key 암호화
 express | 서버
+express-session | 세션 사용
+georedis | 위치 정보 관리
+joi | 입력데이터 검출
 jsonwebtoken | 회원가입 작동 방식
+morgan | http log 기록
+nunjucks | html 코드 내 변수 사용
+redis | 비관계형 데이터베이스 관리
+request | 외부 api 요청
 sequelize | MySQL ORM
 sequelize-cli | MySQL ORM Console
 mysql | MySQL
-cookie-parser | 쿠키 저장
-joi | 입력데이터 검출
+socket.io | 소켓 통신
+swagger-ui-express | 스웨거 api 사용
+
 
 ## 4. DB ERD
-![image](https://blog.kakaocdn.net/dn/csyYol/btq99nLz5sx/Myv5qyQoMMmqDA1IKj3Km0/img.png)
+
 
 
 ## 5. 코드 리뷰 및 개선사항
