@@ -29,7 +29,7 @@ Front | Back
 React | Node.js
 Redux | Express
 Axios | MySQL
-WebSocket | WebSocket
+Socket.io | Socket.io
 카카오맵 api | 카카오맵 api
 "" | Redis
 
@@ -61,14 +61,21 @@ socket.io | 소켓 통신
 swagger-ui-express | 스웨거 api 사용
 
 
-## 4. DB ERD
+## . 아키텍처
+![헤쳐모여 아키텍처](https://user-images.githubusercontent.com/49636918/131671365-46f16297-926f-4a60-aa40-94da0ef2f514.png)
 
+
+## . DB ERD
+<img width="977" alt="헤쳐모여 DB ERD 2021-09-01" src="https://user-images.githubusercontent.com/49636918/131671532-09a11ae4-ad13-4981-b1d5-f60a72e194f2.png">
 
 
 ## 5. 코드 리뷰 및 개선사항
 
 ### 1) 
+![헤쳐모여 Socket 통신 구조](https://user-images.githubusercontent.com/49636918/131671829-b3aa9261-512a-48f2-9b16-412ee465d7a3.png)
+
 - 
+
 
 ```SQL
  
@@ -107,7 +114,7 @@ swagger-ui-express | 스웨거 api 사용
 https://www.notion.so/99-9-b3c6d3acc4cd489d8abda6c0b7f3c714
 
 ## 7. Front-End Git hub
-
+https://github.com/demian0721/heturemoyeo
 
 ## 8. Youtube
 
