@@ -1,4 +1,5 @@
 const CLEAR_DATA = {
+    //회원정보
     Phone: "01011111111",
     Name: "tester",
     Password: "!@#4qwer",
@@ -8,9 +9,10 @@ const CLEAR_DATA = {
     LikeItem: ["Game"],
     Authorization:
         "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsImlhdCI6MTYzMDEyMzExNn0.F-kqyIFkbBV_yxpspAT9c8vTeZNaF3B0DPU6YYUm1ZA",
-
     Authorization2:
         "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjcsImlhdCI6MTYzMDEyOTgyMH0.nDUycr-gvj50FLMHCwOO4l07hn4quR3XFW6lWPGl7NA",
+
+    //회원가입 정보
     SignPhone: "01012341235",
     SignName: "cccc",
     SignNickname: "cccc",
@@ -23,10 +25,12 @@ const CLEAR_DATA = {
     SignAuthorization:
         "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjIsImlhdCI6MTYyODU3ODE1MH0.Y5cNiUZuWgms8VIzXsxIMW2RHToqjORWOQzsoya7aRw",
 
+    //수정 할 것
     PutPassword: "asdf!@#$",
     PutImg: ".img",
-    PutlikeItem: ["beer", "soju"],
+    PutlikeItem: ["beer"],
 
+    //게시글 정보
     PostTitle: "방탈출",
     PostPostImg: ".img",
     PostContent: "방탈출 갈사람 구해요",
@@ -35,6 +39,7 @@ const CLEAR_DATA = {
     PostBring: 2,
     PostTag: ["No"],
 
+    //스키마 
     SchemaTitle: "안녕하세요 이것은 타이틀 입니다.",
     SchemaNickname: "QEswWad힣",
     SchemaPassword: "asdf!@#",
@@ -44,16 +49,6 @@ const CLEAR_DATA = {
     authData: "abcdef",
     authId: 1,
 
-    PostId: 1,
-    PostTitle: "this is title",
-    PostImg: "https://t1.daumcdn.net/cfile/tistory/99AF903359A15D8A1E",
-    PostContent: "hello",
-    PostMaxmember: 10,
-    PostStartDate: new Date().getTime() + 10000,
-    PostEndDate: new Date().getTime() + 10000,
-    PostPlace: "house",
-    PostBring: "money",
-    PostTag: ["WHAT"],
 
     Message: "hello world",
 

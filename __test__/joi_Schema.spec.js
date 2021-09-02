@@ -74,401 +74,242 @@ test("userIdNumberSchema : userId가 성공", async () => {
     await expect(schema.userIdSchema.validateAsync({ userId: 1 })); // 성공
 });
 
-//userModifySchema 테스트
-test("userModifySchema : nickname이 3글자 미만일 경우 실패 ", async () => {
-    await expect(
-        schema.userModifySchema.validateAsync({
-            nickname: "qq",
-            password: clearData.SchemaPassword,
-            newpassword: clearData.SchemaPassword,
-            confirm: clearData.SchemaPassword,
-            profileImg: clearData.SchemaProfileImg,
-            likeItem: clearData.SchemaLikeItem,
-        })
-    ).rejects.toThrowError();
 
+//postIdSchema 테스트
+test("postIdSchema : postId가 없거나 1미만일 경우 실패 ", async () => {
     await expect(
-        schema.userModifySchema.validateAsync({
-            nickname: "q",
-            password: clearData.SchemaPassword,
-            newpassword: clearData.SchemaPassword,
-            confirm: clearData.SchemaPassword,
-            profileImg: clearData.SchemaProfileImg,
-            likeItem: clearData.SchemaLikeItem,
+        schema.postIdSchema.validateAsync({
+            postId: "",
+        })
+    ).rejects.toThrowError();
+    await expect(
+        schema.postIdSchema.validateAsync({
+            postId: 0,
+        })
+    ).rejects.toThrowError();
+    await expect(
+        schema.postIdSchema.validateAsync({
+            postId: -1,
         })
     ).rejects.toThrowError();
 });
-test("userModifySchema : nickname에 특수문자가 들어간 경우 실패 ", async () => {
+test("postIdSchema : 테스트 성공 ", async () => {
     await expect(
-        schema.userModifySchema.validateAsync({
-            nickname: "qq!@",
-            password: clearData.SchemaPassword,
-            newpassword: clearData.SchemaPassword,
-            confirm: clearData.SchemaPassword,
-            profileImg: clearData.SchemaProfileImg,
-            likeItem: clearData.SchemaLikeItem,
+        schema.postIdSchema.validateAsync({
+            postId: 1,
         })
-    ).rejects.toThrowError();
+    )
+});
 
-    await expect(
-        schema.userModifySchema.validateAsync({
-            nickname: "&*",
-            password: clearData.SchemaPassword,
-            newpassword: clearData.SchemaPassword,
-            confirm: clearData.SchemaPassword,
-            profileImg: clearData.SchemaProfileImg,
-            likeItem: clearData.SchemaLikeItem,
-        })
-    ).rejects.toThrowError();
-});
-test("userModifySchema : password, newpassword, confirm에 한글이 들어간 경우 실패 ", async () => {
-    await expect(
-        schema.userModifySchema.validateAsync({
-            nickname: clearData.SchemaNickname,
-            password: "테스트",
-            newpassword: clearData.SchemaPassword,
-            confirm: clearData.SchemaPassword,
-            profileImg: clearData.SchemaProfileImg,
-            likeItem: clearData.SchemaLikeItem,
-        })
-    ).rejects.toThrowError();
 
+//startLimitSchema 테스트
+test("startLimitSchema: start가 0보다 작을 경우", async () => {
     await expect(
-        schema.userModifySchema.validateAsync({
-            nickname: clearData.SchemaNickname,
-            password: clearData.SchemaPassword,
-            newpassword: "테스트",
-            confirm: clearData.SchemaPassword,
-            profileImg: clearData.SchemaProfileImg,
-            likeItem: clearData.SchemaLikeItem,
-        })
-    ).rejects.toThrowError();
-    await expect(
-        schema.userModifySchema.validateAsync({
-            nickname: clearData.SchemaNickname,
-            password: clearData.SchemaPassword,
-            newpassword: clearData.SchemaPassword,
-            confirm: "테스트",
-            profileImg: clearData.SchemaProfileImg,
-            likeItem: clearData.SchemaLikeItem,
+        schema.startLimitSchema.validateAsync({
+            start: -1,
+            limit: clearData.Limit,
         })
     ).rejects.toThrowError();
 });
-test("userModifySchema : password, newpassword, confirm이 6글자 미만일 경우 실패 ", async () => {
+test("startLimitSchema : start가 number가 아닐 경우", async () => {
     await expect(
-        schema.userModifySchema.validateAsync({
-            nickname: clearData.SchemaNickname,
-            password: "a",
-            newpassword: clearData.SchemaPassword,
-            confirm: clearData.SchemaPassword,
-            profileImg: clearData.SchemaProfileImg,
-            likeItem: clearData.SchemaLikeItem,
+        schema.startLimitSchema.validateAsync({
+            start: "abc",
+            limit: clearData.Limit,
         })
     ).rejects.toThrowError();
     await expect(
-        schema.userModifySchema.validateAsync({
-            nickname: clearData.SchemaNickname,
-            password: "",
-            newpassword: clearData.SchemaPassword,
-            confirm: clearData.SchemaPassword,
-            profileImg: clearData.SchemaProfileImg,
-            likeItem: clearData.SchemaLikeItem,
+        schema.startLimitSchema.validateAsync({
+            start: [],
+            limit: clearData.Limit,
         })
     ).rejects.toThrowError();
     await expect(
-        schema.userModifySchema.validateAsync({
-            nickname: clearData.SchemaNickname,
-            password: clearData.SchemaPassword,
-            newpassword: "abcd!",
-            confirm: clearData.SchemaPassword,
-            profileImg: clearData.SchemaProfileImg,
-            likeItem: clearData.SchemaLikeItem,
+        schema.startLimitSchema.validateAsync({
+            start: {},
+            limit: clearData.Limit,
         })
     ).rejects.toThrowError();
     await expect(
-        schema.userModifySchema.validateAsync({
-            nickname: clearData.SchemaNickname,
-            password: clearData.SchemaPassword,
-            newpassword: clearData.SchemaPassword,
-            confirm: "zz",
-            profileImg: clearData.SchemaProfileImg,
-            likeItem: clearData.SchemaLikeItem,
+        schema.startLimitSchema.validateAsync({
+            start: undefined,
+            limit: clearData.Limit,
+        })
+    ).rejects.toThrowError();
+    await expect(
+        schema.startLimitSchema.validateAsync({
+            start: null,
+            limit: clearData.Limit,
         })
     ).rejects.toThrowError();
 });
-test("userModifySchema : password, newpassword, confirm이 20글자가 넘을 경우 실패 ", async () => {
+test("startLimitSchema : limit가 1보다 작을 경우", async () => {
     await expect(
-        schema.userModifySchema.validateAsync({
-            nickname: clearData.SchemaNickname,
-            password: "abcdefghijskvlksdjfvkladfjblafdebjl",
-            newpassword: clearData.SchemaPassword,
-            confirm: clearData.SchemaPassword,
-            profileImg: clearData.SchemaProfileImg,
-            likeItem: clearData.SchemaLikeItem,
-        })
-    ).rejects.toThrowError();
-    await expect(
-        schema.userModifySchema.validateAsync({
-            nickname: clearData.SchemaNickname,
-            password: clearData.SchemaPassword,
-            newpassword: "abcd!",
-            confirm: clearData.SchemaPassword,
-            profileImg: clearData.SchemaProfileImg,
-            likeItem: clearData.SchemaLikeItem,
-        })
-    ).rejects.toThrowError();
-    await expect(
-        schema.userModifySchema.validateAsync({
-            nickname: clearData.SchemaNickname,
-            password: clearData.SchemaPassword,
-            newpassword: clearData.SchemaPassword,
-            confirm: "zz",
-            profileImg: clearData.SchemaProfileImg,
-            likeItem: clearData.SchemaLikeItem,
+        schema.startLimitSchema.validateAsync({
+            start: clearData.Start,
+            limit: 0,
         })
     ).rejects.toThrowError();
 });
-test("userModifySchema : password가 비어있을 경우 실패 ", async () => {
+test("startLimitSchema : limit가 number가 아닐 경우", async () => {
     await expect(
-        schema.userModifySchema.validateAsync({
-            nickname: clearData.SchemaNickname,
-            password: "",
-            newpassword: clearData.SchemaPassword,
-            confirm: clearData.SchemaPassword,
-            profileImg: clearData.SchemaProfileImg,
-            likeItem: clearData.SchemaLikeItem,
+        schema.startLimitSchema.validateAsync({
+            start: clearData.Start,
+            limit: "abc",
+        })
+    ).rejects.toThrowError();
+    await expect(
+        schema.startLimitSchema.validateAsync({
+            start: clearData.Start,
+            limit: [],
+        })
+    ).rejects.toThrowError();
+    await expect(
+        schema.startLimitSchema.validateAsync({
+            start: clearData.Start,
+            limit: {},
+        })
+    ).rejects.toThrowError();
+    await expect(
+        schema.startLimitSchema.validateAsync({
+            start: clearData.Start,
+            limit: undefined,
+        })
+    ).rejects.toThrowError();
+    await expect(
+        schema.startLimitSchema.validateAsync({
+            start: clearData.Start,
+            limit: null,
         })
     ).rejects.toThrowError();
 });
-test("userModifySchema : password가 null이거나 undefined일 경우 실패 ", async () => {
+test("startLimitSchema : 테스트 코드 통과", async () => {
     await expect(
-        schema.userModifySchema.validateAsync({
-            nickname: clearData.SchemaNickname,
-            password: null,
-            newpassword: clearData.SchemaPassword,
-            confirm: clearData.SchemaPassword,
-            profileImg: clearData.SchemaProfileImg,
-            likeItem: clearData.SchemaLikeItem,
+        schema.startLimitSchema.validateAsync({
+            start: clearData.Start,
+            limit: clearData.Limit,
         })
-    ).rejects.toThrowError();
+    );
     await expect(
-        schema.userModifySchema.validateAsync({
-            nickname: clearData.SchemaNickname,
-            password: undefined,
-            newpassword: clearData.SchemaPassword,
-            confirm: clearData.SchemaPassword,
-            profileImg: clearData.SchemaProfileImg,
-            likeItem: clearData.SchemaLikeItem,
-        })
-    ).rejects.toThrowError();
-});
-test("userModifySchema : profileImg가 숫자일 경우 실패 ", async () => {
-    await expect(
-        schema.userModifySchema.validateAsync({
-            nickname: clearData.SchemaNickname,
-            password: clearData.SchemaPassword,
-            newpassword: clearData.SchemaPassword,
-            confirm: clearData.SchemaPassword,
-            profileImg: 12,
-            likeItem: clearData.SchemaLikeItem,
-        })
-    ).rejects.toThrowError();
-});
-test("userModifySchema : likeItem이 숫자일 경우 실패 ", async () => {
-    await expect(
-        schema.userModifySchema.validateAsync({
-            nickname: clearData.SchemaNickname,
-            password: clearData.SchemaPassword,
-            newpassword: clearData.SchemaPassword,
-            confirm: clearData.SchemaPassword,
-            profileImg: clearData.SchemaProfileImg,
-            likeItem: 1,
-        })
-    ).rejects.toThrowError();
-});
-test("userModifySchema : likeItem이 문자일 경우 실패 ", async () => {
-    await expect(
-        schema.userModifySchema.validateAsync({
-            nickname: clearData.SchemaNickname,
-            password: clearData.SchemaPassword,
-            newpassword: clearData.SchemaPassword,
-            confirm: clearData.SchemaPassword,
-            profileImg: clearData.SchemaProfileImg,
-            likeItem: "test",
-        })
-    ).rejects.toThrowError();
-});
-test("userModifySchema : 테스트 성공", async () => {
-    await expect(
-        schema.userModifySchema.validateAsync({
-            nickname: "홍길동",
-            password: "123456@@9",
-            newpassword: "sldk13!!",
-            confirm: "sldk13!!",
-            profileImg:
-                "https://cdn.hellodd.com/news/photo/202005/71835_craw1.jpg",
-            likeItem: ["test", "길동", "통과 기원"],
+        schema.startLimitSchema.validateAsync({
+            start: clearData.Start,
+            limit: clearData.Limit,
         })
     );
 });
 
-// nicknameSchema 테스트
-test("nicknameSchema : nickname이 string 형식이 아닐 경우 실패", async () => {
-    await expect(
-        schema.nicknameSchema.validateAsync({ userId: 123 })
-    ).rejects.toThrowError();
-    await expect(
-        schema.nicknameSchema.validateAsync({ userId: [] })
-    ).rejects.toThrowError();
-    await expect(
-        schema.nicknameSchema.validateAsync({ userId: {} })
-    ).rejects.toThrowError();
-    await expect(
-        schema.nicknameSchema.validateAsync({ userId: true })
-    ).rejects.toThrowError();
-});
-test("nicknameSchema : nickname이 3글자 미만일 경우 실패", async () => {
-    await expect(
-        schema.nicknameSchema.validateAsync({ nickname: "aa" })
-    ).rejects.toThrowError();
-});
-test("nicknameSchema : nickname이 비었거나 없을 경우 실패", async () => {
-    await expect(
-        schema.nicknameSchema.validateAsync({})
-    ).rejects.toThrowError();
-    await expect(
-        schema.nicknameSchema.validateAsync({ nickname: null })
-    ).rejects.toThrowError();
-});
-test("nicknameSchema : nickname이 성공", async () => {
-    await expect(schema.nicknameSchema.validateAsync({ nickname: "홍길동좌" })); // 성공
-});
 
-// confirmSchema 테스트
-test("confirmSchema : password가 6글자 미만일 경우", async () => {
+// phone 스키마 테스트
+test("phoneSchema : 전화번호가 없을 경우", async () => {
     await expect(
-        schema.confirmSchema.validateAsync({
-            password: "123",
-            confirm: clearData.SchemaPassword,
-        })
-    ).rejects.toThrowError();
-    await expect(
-        schema.confirmSchema.validateAsync({
-            password: clearData.SchemaPassword,
-            confirm: "123",
+        schema.phoneSchema.validateAsync({
+            phone: ""
         })
     ).rejects.toThrowError();
 });
-test("confirmSchema : password가 20글자가 넘을 경우", async () => {
+test("phoneSchema : 전화번호가 1로 시작할 경우", async () => {
     await expect(
-        schema.confirmSchema.validateAsync({
-            password: "123af4b56sdfb489sfb16sd156sdv156",
-            confirm: clearData.SchemaPassword,
+        schema.phoneSchema.validateAsync({
+            phone: "11011111111"
         })
     ).rejects.toThrowError();
     await expect(
-        schema.confirmSchema.validateAsync({
-            password: clearData.SchemaPassword,
-            confirm: "123af4b56sdfb489sfb16sd156sdv156",
-        })
-    ).rejects.toThrowError();
-});
-test("confirmSchema : password가 string 형식이 아닐 경우", async () => {
-    await expect(
-        schema.confirmSchema.validateAsync({
-            password: 123,
-            confirm: clearData.SchemaPassword,
-        })
-    ).rejects.toThrowError();
-    await expect(
-        schema.confirmSchema.validateAsync({
-            password: clearData.SchemaPassword,
-            confirm: 123,
+        schema.phoneSchema.validateAsync({
+            phone: "11111111111"
         })
     ).rejects.toThrowError();
 });
-test("confirmSchema : 테스트 통과", async () => {
+test("phoneSchema : 다른 특수문자가 섞여 있을 경우", async () => {
     await expect(
-        schema.confirmSchema.validateAsync({
-            password: "123456abc",
-            confirm: "123456abc",
+        schema.phoneSchema.validateAsync({
+            phone: "010.1111.1111"
+        })
+    ).rejects.toThrowError();
+    await expect(
+        schema.phoneSchema.validateAsync({
+            phone: "010@1111@1111"
+        })
+    ).rejects.toThrowError();
+    await expect(
+        schema.phoneSchema.validateAsync({
+            phone: "010!1111!1111"
+        })
+    ).rejects.toThrowError();
+});
+test("phoneSchema : 전화번호가 11자리 초과이거나 미만일 경우", async () => {
+    await expect(
+        schema.phoneSchema.validateAsync({
+            phone: "0101111111111"
+        })
+    ).rejects.toThrowError();
+    await expect(
+        schema.phoneSchema.validateAsync({
+            phone: "011111111"
+        })
+    ).rejects.toThrowError();
+});
+test("phoneSchema : 테스트 통과", async () => {
+    await expect(
+        schema.phoneSchema.validateAsync({
+            phone: clearData.Phone
         })
     );
 });
 
-// email 스키마 테스트
-test("emailSchema : @가 없을 경우", async () => {
-    await expect(
-        schema.emailSchema.validateAsync({
-            emai: "aaa222naver.com",
-        })
-    ).rejects.toThrowError();
-});
-test("emailSchema : @가 여러개 있을 경우", async () => {
-    await expect(
-        schema.emailSchema.validateAsync({
-            emai: "aaa222@@@naver.com",
-        })
-    ).rejects.toThrowError();
-});
-test("emailSchema : 다른 특수문자가 섞여 있을 경우", async () => {
-    await expect(
-        schema.emailSchema.validateAsync({
-            emai: "aaa!#222@naver.com",
-        })
-    ).rejects.toThrowError();
-    await expect(
-        schema.emailSchema.validateAsync({
-            emai: "aaa222@naver!!.com",
-        })
-    ).rejects.toThrowError();
-});
-test("emailSchema : .이 없는 경우", async () => {
-    await expect(
-        schema.emailSchema.validateAsync({
-            emai: "aaa222@navercom",
-        })
-    ).rejects.toThrowError();
-});
-test("emailSchema : 테스트 통과", async () => {
-    await expect(
-        schema.emailSchema.validateAsync({
-            emai: clearData.Email,
-        })
-    );
-});
 
 // authDataSchema 테스트
-test("authDataSchema : 이메일에 @가 없을 경우", async () => {
+test("authDataSchema : 전화번호가 없을 경우", async () => {
     await expect(
         schema.authDataSchema.validateAsync({
-            email: "aaa222naver.com",
+            phone: "",
+            authData: clearData.authData,
         })
     ).rejects.toThrowError();
 });
-test("authDataSchema : 이메일에 @가 여러개 있을 경우", async () => {
+test("authDataSchema : 전화번호가 1로 시작할 경우", async () => {
     await expect(
         schema.authDataSchema.validateAsync({
-            email: "aaa222@@@naver.com",
+            phone: "11011111111",
+            authData: clearData.authData,
+        })
+    ).rejects.toThrowError();
+    await expect(
+        schema.authDataSchema.validateAsync({
+            phone: "11111111111",
+            authData: clearData.authData,
         })
     ).rejects.toThrowError();
 });
-test("authDataSchema : 이메일에 다른 특수문자가 섞여 있을 경우", async () => {
+test("authDataSchema : 다른 특수문자가 섞여 있을 경우", async () => {
     await expect(
         schema.authDataSchema.validateAsync({
-            email: "aaa!#222@naver.com",
+            phone: "010.1111.1111",
+            authData: clearData.authData,
         })
     ).rejects.toThrowError();
     await expect(
         schema.authDataSchema.validateAsync({
-            email: "aaa222@naver!!.com",
+            phone: "010@1111@1111",
+            authData: clearData.authData,
+        })
+    ).rejects.toThrowError();
+    await expect(
+        schema.authDataSchema.validateAsync({
+            phone: "010!1111!1111",
+            authData: clearData.authData,
         })
     ).rejects.toThrowError();
 });
-test("authDataSchema : 이메일에 .이 없는 경우", async () => {
+test("authDataSchema : 전화번호가 11자리 초과이거나 미만일 경우", async () => {
     await expect(
         schema.authDataSchema.validateAsync({
-            email: "aaa222@navercom",
+            phone: "0101111111111",
+            authData: clearData.authData,
+        })
+    ).rejects.toThrowError();
+    await expect(
+        schema.authDataSchema.validateAsync({
+            phone: "011111111"
         })
     ).rejects.toThrowError();
 });
@@ -483,7 +324,7 @@ test("authDataSchema : authData가 6글자 미만", async () => {
 test("authDataSchema : authData가 7글자 이상", async () => {
     await expect(
         schema.authDataSchema.validateAsync({
-            email: clearData.Email,
+            phone: clearData.Phone,
             authData: "abcdefg",
         })
     ).rejects.toThrowError();
@@ -491,31 +332,31 @@ test("authDataSchema : authData가 7글자 이상", async () => {
 test("authDataSchema : authData가 string형태가 아닐때", async () => {
     await expect(
         schema.authDataSchema.validateAsync({
-            email: clearData.Email,
+            phone: clearData.Phone,
             authData: 1,
         })
     ).rejects.toThrowError();
     await expect(
         schema.authDataSchema.validateAsync({
-            email: clearData.Email,
+            phone: clearData.Phone,
             authData: [],
         })
     ).rejects.toThrowError();
     await expect(
         schema.authDataSchema.validateAsync({
-            email: clearData.Email,
+            phone: clearData.Phone,
             authData: {},
         })
     ).rejects.toThrowError();
     await expect(
         schema.authDataSchema.validateAsync({
-            email: clearData.Email,
+            phone: clearData.Phone,
             authData: null,
         })
     ).rejects.toThrowError();
     await expect(
         schema.authDataSchema.validateAsync({
-            email: clearData.Email,
+            phone: clearData.Phone,
             authData: undefined,
         })
     ).rejects.toThrowError();
@@ -523,18 +364,19 @@ test("authDataSchema : authData가 string형태가 아닐때", async () => {
 test("authDataSchema : 테스트 통과", async () => {
     await expect(
         schema.authDataSchema.validateAsync({
-            email: clearData.Email,
+            phone: clearData.Phone,
             authData: clearData.authData,
         })
     );
 });
+
 
 // newPassSchema 테스트
 test("newPassSchema : authId가 0이하", async () => {
     await expect(
         schema.newPassSchema.validateAsync({
             authId: 0,
-            email: clearData.email,
+            phone: clearData.Phone,
             password: clearData.Password,
             confirm: clearData.confirm,
         })
@@ -544,7 +386,7 @@ test("newPassSchema : authId가 int형태가 아닐때", async () => {
     await expect(
         schema.newPassSchema.validateAsync({
             authId: "1",
-            email: clearData.email,
+            phone: clearData.Phone,
             password: clearData.Password,
             confirm: clearData.confirm,
         })
@@ -552,7 +394,7 @@ test("newPassSchema : authId가 int형태가 아닐때", async () => {
     await expect(
         schema.newPassSchema.validateAsync({
             authId: {},
-            email: clearData.email,
+            phone: clearData.Phone,
             password: clearData.Password,
             confirm: clearData.confirm,
         })
@@ -560,7 +402,7 @@ test("newPassSchema : authId가 int형태가 아닐때", async () => {
     await expect(
         schema.newPassSchema.validateAsync({
             authId: [],
-            email: clearData.email,
+            phone: clearData.Phone,
             password: clearData.Password,
             confirm: clearData.confirm,
         })
@@ -568,7 +410,7 @@ test("newPassSchema : authId가 int형태가 아닐때", async () => {
     await expect(
         schema.newPassSchema.validateAsync({
             authId: null,
-            email: clearData.email,
+            phone: clearData.Phone,
             password: clearData.Password,
             confirm: clearData.confirm,
         })
@@ -576,37 +418,61 @@ test("newPassSchema : authId가 int형태가 아닐때", async () => {
     await expect(
         schema.newPassSchema.validateAsync({
             authId: undefined,
-            email: clearData.email,
+            phone: clearData.Phone,
             password: clearData.Password,
             confirm: clearData.confirm,
         })
     ).rejects.toThrowError();
 });
-test("newPassSchema : 이메일에 @가 없을 경우", async () => {
+test("newPassSchema : 전화번호가 비어 있을 경우", async () => {
     await expect(
         schema.newPassSchema.validateAsync({
             authId: clearData.authId,
-            email: "aaa222naver.com",
+            phone: "",
             password: clearData.Password,
             confirm: clearData.confirm,
         })
     ).rejects.toThrowError();
 });
-test("newPassSchema : 이메일에 @가 여러개 있을 경우", async () => {
+test("newPassSchema : 전화번호에 특수문자가 있을 경우", async () => {
     await expect(
         schema.newPassSchema.validateAsync({
             authId: clearData.authId,
-            email: "aaa222@@@naver.com",
+            phone: "010.1111.1111",
+            password: clearData.Password,
+            confirm: clearData.confirm,
+        })
+    ).rejects.toThrowError();
+    await expect(
+        schema.newPassSchema.validateAsync({
+            authId: clearData.authId,
+            phone: "010@1111@1111",
+            password: clearData.Password,
+            confirm: clearData.confirm,
+        })
+    ).rejects.toThrowError();
+    await expect(
+        schema.newPassSchema.validateAsync({
+            authId: clearData.authId,
+            phone: "010!1111!1111",
+            password: clearData.Password,
+            confirm: clearData.confirm,
+        })
+    ).rejects.toThrowError();
+    await expect(
+        schema.newPassSchema.validateAsync({
+            authId: clearData.authId,
+            phone: "010#1111#1111",
             password: clearData.Password,
             confirm: clearData.confirm,
         })
     ).rejects.toThrowError();
 });
-test("newPassSchema : 이메일에 다른 특수문자가 섞여 있을 경우", async () => {
+test("newPassSchema : 전화번호가 1로 시작할  경우", async () => {
     await expect(
         schema.newPassSchema.validateAsync({
             authId: clearData.authId,
-            email: "aaa!#222@naver.com",
+            phone: "11011111111",
             password: clearData.Password,
             confirm: clearData.confirm,
         })
@@ -614,17 +480,25 @@ test("newPassSchema : 이메일에 다른 특수문자가 섞여 있을 경우",
     await expect(
         schema.newPassSchema.validateAsync({
             authId: clearData.authId,
-            email: "aaa222@naver!!.com",
+            phone: "11111111111",
             password: clearData.Password,
             confirm: clearData.confirm,
         })
     ).rejects.toThrowError();
 });
-test("newPassSchema : 이메일에 .이 없는 경우", async () => {
+test("newPassSchema : 전화번호가 11자리초과 또는 미만일 경우", async () => {
     await expect(
         schema.newPassSchema.validateAsync({
             authId: clearData.authId,
-            email: "aaa222@navercom",
+            phone: "0101111111111111",
+            password: clearData.Password,
+            confirm: clearData.confirm,
+        })
+    ).rejects.toThrowError();
+    await expect(
+        schema.newPassSchema.validateAsync({
+            authId: clearData.authId,
+            phone: "01011111",
             password: clearData.Password,
             confirm: clearData.confirm,
         })
@@ -634,7 +508,7 @@ test("newPassSchema : password가 6글자 미만일 경우", async () => {
     await expect(
         schema.newPassSchema.validateAsync({
             authId: clearData.authId,
-            email: clearData.email,
+            phone: clearData.Phone,
             password: "123",
             confirm: clearData.SchemaPassword,
         })
@@ -642,7 +516,7 @@ test("newPassSchema : password가 6글자 미만일 경우", async () => {
     await expect(
         schema.newPassSchema.validateAsync({
             authId: clearData.authId,
-            email: clearData.email,
+            phone: clearData.Phone,
             password: clearData.SchemaPassword,
             confirm: "123",
         })
@@ -652,7 +526,7 @@ test("newPassSchema : password가 20글자가 넘을 경우", async () => {
     await expect(
         schema.newPassSchema.validateAsync({
             authId: clearData.authId,
-            email: clearData.email,
+            phone: clearData.Phone,
             password: "123af4b56sdfb489sfb16sd156sdv156",
             confirm: clearData.SchemaPassword,
         })
@@ -660,7 +534,7 @@ test("newPassSchema : password가 20글자가 넘을 경우", async () => {
     await expect(
         schema.newPassSchema.validateAsync({
             authId: clearData.authId,
-            email: clearData.email,
+            phone: clearData.Phone,
             password: clearData.SchemaPassword,
             confirm: "123af4b56sdfb489sfb16sd156sdv156",
         })
@@ -670,7 +544,7 @@ test("newPassSchema : password가 string 형식이 아닐 경우", async () => {
     await expect(
         schema.newPassSchema.validateAsync({
             authId: clearData.authId,
-            email: clearData.email,
+            phone: clearData.Phone,
             password: 123,
             confirm: clearData.SchemaPassword,
         })
@@ -678,7 +552,7 @@ test("newPassSchema : password가 string 형식이 아닐 경우", async () => {
     await expect(
         schema.newPassSchema.validateAsync({
             authId: clearData.authId,
-            email: clearData.email,
+            phone: clearData.Phone,
             password: clearData.SchemaPassword,
             confirm: 123,
         })
@@ -695,47 +569,73 @@ test("newPassSchema : 테스트 성공", async () => {
     );
 });
 
+
+
 // loginSchema 테스트 코드
-test("loginSchema : 이메일에 @가 없을 경우", async () => {
+test("loginSchema : 전화번호가 비어 있을 경우", async () => {
     await expect(
         schema.loginSchema.validateAsync({
-            email: "aaa222naver.com",
+            phone: "",
             password: clearData.Password,
         })
     ).rejects.toThrowError();
 });
-test("loginSchema : 이메일에 @가 여러개 있을 경우", async () => {
+test("loginSchema : 전화번호에 특수 문자가 있을 경우", async () => {
     await expect(
         schema.loginSchema.validateAsync({
-            email: "aaa222@@@naver.com",
+            phone: "010.1111.1111",
+            password: clearData.Password,
+        })
+    ).rejects.toThrowError();
+    await expect(
+        schema.loginSchema.validateAsync({
+            phone: "010-1111-1111",
+            password: clearData.Password,
+        })
+    ).rejects.toThrowError();
+    await expect(
+        schema.loginSchema.validateAsync({
+            phone: "010@1111@1111",
+            password: clearData.Password,
+        })
+    ).rejects.toThrowError();
+    await expect(
+        schema.loginSchema.validateAsync({
+            phone: "010!1111!1111",
             password: clearData.Password,
         })
     ).rejects.toThrowError();
 });
-test("loginSchema : 이메일에 .이 없는 경우", async () => {
+test("loginSchema : 전화번호가 11자리 초과 미만일  경우", async () => {
     await expect(
         schema.loginSchema.validateAsync({
-            email: "aaa222@navercom",
+            phone: "0101111111111",
+            password: clearData.Password,
+        })
+    ).rejects.toThrowError();
+    await expect(
+        schema.loginSchema.validateAsync({
+            phone: "01011111",
             password: clearData.Password,
         })
     ).rejects.toThrowError();
 });
-test("loginSchema : 이메일에 다른 특수문자가 섞여 있을 경우", async () => {
+test("loginSchema : 전화번호가 1로 시작할 경우 경우", async () => {
     await expect(
         schema.loginSchema.validateAsync({
-            emai: "aaa!#222@naver.com",
+            phone: "11011111111",
         })
     ).rejects.toThrowError();
     await expect(
         schema.loginSchema.validateAsync({
-            emai: "aaa222@naver!!.com",
+            phone: "11111111111",
         })
     ).rejects.toThrowError();
 });
 test("loginSchema : password 6글자 미만", async () => {
     await expect(
         schema.loginSchema.validateAsync({
-            email: clearData.Email,
+            phone: clearData.Phone,
             password: "ab!",
         })
     ).rejects.toThrowError();
@@ -743,7 +643,7 @@ test("loginSchema : password 6글자 미만", async () => {
 test("loginSchema : password가 20글자가 넘을 때", async () => {
     await expect(
         schema.loginSchema.validateAsync({
-            email: clearData.Email,
+            phone: clearData.Phone,
             password: "abcdefg123456qFBHQER@#THWRTHWRADFVADBV",
         })
     ).rejects.toThrowError();
@@ -751,31 +651,31 @@ test("loginSchema : password가 20글자가 넘을 때", async () => {
 test("loginSchema : password가 string이 아닐 경우", async () => {
     await expect(
         schema.loginSchema.validateAsync({
-            email: clearData.Email,
+            phone: clearData.Phone,
             password: 123456,
         })
     ).rejects.toThrowError();
     await expect(
         schema.loginSchema.validateAsync({
-            email: clearData.Email,
+            phone: clearData.Phone,
             password: ["a", "b", "c"],
         })
     ).rejects.toThrowError();
     await expect(
         schema.loginSchema.validateAsync({
-            email: clearData.Email,
+            phone: clearData.Phone,
             password: {},
         })
     ).rejects.toThrowError();
     await expect(
         schema.loginSchema.validateAsync({
-            email: clearData.Email,
+            phone: clearData.Phone,
             password: null,
         })
     ).rejects.toThrowError();
     await expect(
         schema.loginSchema.validateAsync({
-            email: clearData.Email,
+            phone: clearData.Phone,
             password: undefined,
         })
     ).rejects.toThrowError();
@@ -783,11 +683,12 @@ test("loginSchema : password가 string이 아닐 경우", async () => {
 test("loginSchema : 테스트 통과", async () => {
     await expect(
         schema.loginSchema.validateAsync({
-            email: clearData.Email,
+            phone: clearData.Phone,
             password: clearData.Password,
         })
     );
 });
+
 
 // postSchema 테스트 코드
 test("postSchema : title이 100자가 넘을 경우", async () => {
@@ -983,6 +884,53 @@ test("postSchema : content가 string이 아닐 경우 (undefined 제외)", async
             postImg: clearData.PostImg,
             content: null,
             maxMember: clearData.PostMaxmember,
+            startDate: clearData.PostStartDate,
+            endDate: clearData.PostEndDate,
+            place: clearData.PostPlace,
+            lat: clearData.PostLat,
+            lng: clearData.PostLng,
+            bring: clearData.PostBring,
+            tag: clearData.PostTag,
+        })
+    ).rejects.toThrowError();
+});
+test("postSchema : maxMember가 최소인원이 2미만 일 경우", async () => {
+    await expect(
+        schema.postSchema.validateAsync({
+            title: clearData.PostTitle,
+            postImg: clearData.PostImg,
+            content: clearData.PostContent,
+            maxMember: 1,
+            startDate: clearData.PostStartDate,
+            endDate: clearData.PostEndDate,
+            place: clearData.PostPlace,
+            lat: clearData.PostLat,
+            lng: clearData.PostLng,
+            bring: clearData.PostBring,
+            tag: clearData.PostTag,
+        })
+    ).rejects.toThrowError();
+    await expect(
+        schema.postSchema.validateAsync({
+            title: clearData.PostTitle,
+            postImg: clearData.PostImg,
+            content: clearData.PostContent,
+            maxMember: 0,
+            startDate: clearData.PostStartDate,
+            endDate: clearData.PostEndDate,
+            place: clearData.PostPlace,
+            lat: clearData.PostLat,
+            lng: clearData.PostLng,
+            bring: clearData.PostBring,
+            tag: clearData.PostTag,
+        })
+    ).rejects.toThrowError();
+    await expect(
+        schema.postSchema.validateAsync({
+            title: clearData.PostTitle,
+            postImg: clearData.PostImg,
+            content: clearData.PostContent,
+            maxMember: -1,
             startDate: clearData.PostStartDate,
             endDate: clearData.PostEndDate,
             place: clearData.PostPlace,
@@ -1712,7 +1660,8 @@ test("postSchema : 테스트 통과", async () => {
     );
 });
 
-// *****************************************************************  postPutSchema 테스트 코드  *************************************************************************
+
+//postPutSchema 테스트 코드 
 test("postPutSchema : postId가 1 미만일 경우", async () => {
     await expect(
         schema.postPutSchema.validateAsync({
@@ -2019,6 +1968,56 @@ test("postPutSchema : content가 string이 아닐 경우 (undefined 제외)", as
             postImg: clearData.PostImg,
             content: null,
             maxMember: clearData.PostMaxmember,
+            startDate: clearData.PostStartDate,
+            endDate: clearData.PostEndDate,
+            place: clearData.PostPlace,
+            lat: clearData.PostLat,
+            lng: clearData.PostLng,
+            bring: clearData.PostBring,
+            tag: clearData.PostTag,
+        })
+    ).rejects.toThrowError();
+});
+test("postPutSchema : maxMember가 최소 인원이 2미만 일 경우", async () => {
+    await expect(
+        schema.postPutSchema.validateAsync({
+            postId: clearData.PostId,
+            title: clearData.PostTitle,
+            postImg: clearData.PostImg,
+            content: clearData.PostContent,
+            maxMember: 1,
+            startDate: clearData.PostStartDate,
+            endDate: clearData.PostEndDate,
+            place: clearData.PostPlace,
+            lat: clearData.PostLat,
+            lng: clearData.PostLng,
+            bring: clearData.PostBring,
+            tag: clearData.PostTag,
+        })
+    ).rejects.toThrowError();
+    await expect(
+        schema.postPutSchema.validateAsync({
+            postId: clearData.PostId,
+            title: clearData.PostTitle,
+            postImg: clearData.PostImg,
+            content: clearData.PostContent,
+            maxMember: 0,
+            startDate: clearData.PostStartDate,
+            endDate: clearData.PostEndDate,
+            place: clearData.PostPlace,
+            lat: clearData.PostLat,
+            lng: clearData.PostLng,
+            bring: clearData.PostBring,
+            tag: clearData.PostTag,
+        })
+    ).rejects.toThrowError();
+    await expect(
+        schema.postPutSchema.validateAsync({
+            postId: clearData.PostId,
+            title: clearData.PostTitle,
+            postImg: clearData.PostImg,
+            content: clearData.PostContent,
+            maxMember: -1,
             startDate: clearData.PostStartDate,
             endDate: clearData.PostEndDate,
             place: clearData.PostPlace,
@@ -2794,7 +2793,8 @@ test("postPutSchema : 테스트 통과", async () => {
     );
 });
 
-// ******************************************************** chatSchema 테스트 코드 ******************************************************************
+
+// chatSchema 테스트 코드 
 test("chatSchema : postId가 1 미만일 경우", async () => {
     await expect(
         schema.chatSchema.validateAsync({
@@ -2843,7 +2843,6 @@ test("chatSchema : postId가 1 미만일 경우", async () => {
         })
     ).rejects.toThrowError();
 });
-
 test("chatSchema : message가 string이 아닐 경우", async () => {
     await expect(
         schema.chatSchema.validateAsync({
@@ -2882,6 +2881,7 @@ test("chatSchema : message 테스트 통과", async () => {
     );
 });
 
+
 // keywordSchema 테스트 코드
 test("keywordSchema : keyword가 string이 아닐 경우", async () => {
     await expect(
@@ -2917,6 +2917,7 @@ test("keywordSchema : 테스트 통과", async () => {
         })
     );
 });
+
 
 // searchPostSchema 테스트 코드
 test("searchPostSchema : keyword가 string이 아닐 경우 (null 제외)", async () => {
@@ -3112,22 +3113,10 @@ test("searchPostSchema : 테스트 코드 통과", async () => {
 
 
 // signSchema 테스트 코드
-test("signSchema : email에 @가 두개 이상일 때", async () => {
+test("signSchema : 전화번호가 없을 경우 ", async () => {
     await expect(
         schema.signSchema.validateAsync({
-            email: "test123@@naver.com",
-            name: clearData.Name,
-            nickname: clearData.Nickname,
-            password: clearData.Password,
-            confirm: clearData.Confirm,
-            profileImg: clearData.ProfileImg,
-            statusMessage: clearData.StatusMessage,
-            likeItem: clearData.LikeItem,
-        })
-    ).rejects.toThrowError();
-    await expect(
-        schema.signSchema.validateAsync({
-            email: "test123@@@naver.com",
+            phone: "",
             name: clearData.Name,
             nickname: clearData.Nickname,
             password: clearData.Password,
@@ -3138,10 +3127,22 @@ test("signSchema : email에 @가 두개 이상일 때", async () => {
         })
     ).rejects.toThrowError();
 });
-test("signSchema : email에 @가 없을 경우", async () => {
+test("signSchema : 전화번호가 1로 시작할 경우", async () => {
     await expect(
         schema.signSchema.validateAsync({
-            email: "test123naver.com",
+            phone: "10111111111",
+            name: clearData.Name,
+            nickname: clearData.Nickname,
+            password: clearData.Password,
+            confirm: clearData.Confirm,
+            profileImg: clearData.ProfileImg,
+            statusMessage: clearData.StatusMessage,
+            likeItem: clearData.LikeItem,
+        })
+    ).rejects.toThrowError();
+    await expect(
+        schema.signSchema.validateAsync({
+            phone: "11111111111",
             name: clearData.Name,
             nickname: clearData.Nickname,
             password: clearData.Password,
@@ -3152,10 +3153,46 @@ test("signSchema : email에 @가 없을 경우", async () => {
         })
     ).rejects.toThrowError();
 });
-test("signSchema : email에 다른 특수문자가 섞여 있을 경우", async () => {
+test("signSchema : 전화번호에 특수문자가 들어갈 경우", async () => {
     await expect(
         schema.signSchema.validateAsync({
-            email: "test123@naver!#.com",
+            phone: "010.1111.1111",
+            name: clearData.Name,
+            nickname: clearData.Nickname,
+            password: clearData.Password,
+            confirm: clearData.Confirm,
+            profileImg: clearData.ProfileImg,
+            statusMessage: clearData.StatusMessage,
+            likeItem: clearData.LikeItem,
+        })
+    ).rejects.toThrowError();
+    await expect(
+        schema.signSchema.validateAsync({
+            phone: "010-1111-1111",
+            name: clearData.Name,
+            nickname: clearData.Nickname,
+            password: clearData.Password,
+            confirm: clearData.Confirm,
+            profileImg: clearData.ProfileImg,
+            statusMessage: clearData.StatusMessage,
+            likeItem: clearData.LikeItem,
+        })
+    ).rejects.toThrowError();
+    await expect(
+        schema.signSchema.validateAsync({
+            phone: "010@1111@1111",
+            name: clearData.Name,
+            nickname: clearData.Nickname,
+            password: clearData.Password,
+            confirm: clearData.Confirm,
+            profileImg: clearData.ProfileImg,
+            statusMessage: clearData.StatusMessage,
+            likeItem: clearData.LikeItem,
+        })
+    ).rejects.toThrowError();
+    await expect(
+        schema.signSchema.validateAsync({
+            phone: "010!1111!1111",
             name: clearData.Name,
             nickname: clearData.Nickname,
             password: clearData.Password,
@@ -3166,24 +3203,10 @@ test("signSchema : email에 다른 특수문자가 섞여 있을 경우", async 
         })
     ).rejects.toThrowError();
 });
-test("signSchema : email에 .이 없을 경우", async () => {
+test("signSchema : 전화번호가 string 형식이 아닐 경우", async () => {
     await expect(
         schema.signSchema.validateAsync({
-            email: "test123@navercom",
-            name: clearData.Name,
-            nickname: clearData.Nickname,
-            password: clearData.Password,
-            confirm: clearData.Confirm,
-            profileImg: clearData.ProfileImg,
-            statusMessage: clearData.StatusMessage,
-            likeItem: clearData.LikeItem,
-        })
-    ).rejects.toThrowError();
-});
-test("signSchema : email이 string 형식이 아닐 경우", async () => {
-    await expect(
-        schema.signSchema.validateAsync({
-            email: 123,
+            phone: 123,
             name: clearData.Name,
             nickname: clearData.Nickname,
             password: clearData.Password,
@@ -3195,7 +3218,7 @@ test("signSchema : email이 string 형식이 아닐 경우", async () => {
     ).rejects.toThrowError();
     await expect(
         schema.signSchema.validateAsync({
-            email: [],
+            phone: [],
             name: clearData.Name,
             nickname: clearData.Nickname,
             password: clearData.Password,
@@ -3207,7 +3230,7 @@ test("signSchema : email이 string 형식이 아닐 경우", async () => {
     ).rejects.toThrowError();
     await expect(
         schema.signSchema.validateAsync({
-            email: {},
+            phone: {},
             name: clearData.Name,
             nickname: clearData.Nickname,
             password: clearData.Password,
@@ -3219,7 +3242,7 @@ test("signSchema : email이 string 형식이 아닐 경우", async () => {
     ).rejects.toThrowError();
     await expect(
         schema.signSchema.validateAsync({
-            email: null,
+            phone: null,
             name: clearData.Name,
             nickname: clearData.Nickname,
             password: clearData.Password,
@@ -3231,7 +3254,7 @@ test("signSchema : email이 string 형식이 아닐 경우", async () => {
     ).rejects.toThrowError();
     await expect(
         schema.signSchema.validateAsync({
-            email: undefined,
+            phone: undefined,
             name: clearData.Name,
             nickname: clearData.Nickname,
             password: clearData.Password,
@@ -3245,7 +3268,7 @@ test("signSchema : email이 string 형식이 아닐 경우", async () => {
 test("signSchema : name이 string 형식이 아닐 경우", async () => {
     await expect(
         schema.signSchema.validateAsync({
-            email: clearData.Email,
+            phone: clearData.Phone,
             name: 123,
             nickname: clearData.Nickname,
             password: clearData.Password,
@@ -3257,7 +3280,7 @@ test("signSchema : name이 string 형식이 아닐 경우", async () => {
     ).rejects.toThrowError();
     await expect(
         schema.signSchema.validateAsync({
-            email: clearData.Email,
+            phone: clearData.Phone,
             name: [],
             nickname: clearData.Nickname,
             password: clearData.Password,
@@ -3269,7 +3292,7 @@ test("signSchema : name이 string 형식이 아닐 경우", async () => {
     ).rejects.toThrowError();
     await expect(
         schema.signSchema.validateAsync({
-            email: clearData.Email,
+            phone: clearData.Phone,
             name: {},
             nickname: clearData.Nickname,
             password: clearData.Password,
@@ -3281,7 +3304,7 @@ test("signSchema : name이 string 형식이 아닐 경우", async () => {
     ).rejects.toThrowError();
     await expect(
         schema.signSchema.validateAsync({
-            email: clearData.Email,
+            phone: clearData.Phone,
             name: null,
             nickname: clearData.Nickname,
             password: clearData.Password,
@@ -3293,7 +3316,7 @@ test("signSchema : name이 string 형식이 아닐 경우", async () => {
     ).rejects.toThrowError();
     await expect(
         schema.signSchema.validateAsync({
-            email: clearData.Email,
+            phone: clearData.Phone,
             name: undefined,
             nickname: clearData.Nickname,
             password: clearData.Password,
@@ -3307,7 +3330,7 @@ test("signSchema : name이 string 형식이 아닐 경우", async () => {
 test("signSchema : name에 특수문자가 섞여 있을 경우", async () => {
     await expect(
         schema.signSchema.validateAsync({
-            email: clearData.Email,
+            phone: clearData.Phone,
             name: "test!!",
             nickname: clearData.Nickname,
             password: clearData.Password,
@@ -3319,7 +3342,7 @@ test("signSchema : name에 특수문자가 섞여 있을 경우", async () => {
     ).rejects.toThrowError();
     await expect(
         schema.signSchema.validateAsync({
-            email: clearData.Email,
+            phone: clearData.Phone,
             name: "test@#$",
             nickname: clearData.Nickname,
             password: clearData.Password,
@@ -3330,22 +3353,10 @@ test("signSchema : name에 특수문자가 섞여 있을 경우", async () => {
         })
     ).rejects.toThrowError();
 });
-test("signSchema : name이 세글자 미만일 때", async () => {
+test("signSchema : name이 두글자 미만일 때", async () => {
     await expect(
         schema.signSchema.validateAsync({
-            email: clearData.Email,
-            name: "ab",
-            nickname: clearData.Nickname,
-            password: clearData.Password,
-            confirm: clearData.Confirm,
-            profileImg: clearData.ProfileImg,
-            statusMessage: clearData.StatusMessage,
-            likeItem: clearData.LikeItem,
-        })
-    ).rejects.toThrowError();
-    await expect(
-        schema.signSchema.validateAsync({
-            email: clearData.Email,
+            phone: clearData.Phone,
             name: "a",
             nickname: clearData.Nickname,
             password: clearData.Password,
@@ -3355,12 +3366,24 @@ test("signSchema : name이 세글자 미만일 때", async () => {
             likeItem: clearData.LikeItem,
         })
     ).rejects.toThrowError();
-});
-test("signSchema : name이 열글자가 넘을 때", async () => {
     await expect(
         schema.signSchema.validateAsync({
-            email: clearData.Email,
-            name: "abcdefghijklmn",
+            phone: clearData.Phone,
+            name: "",
+            nickname: clearData.Nickname,
+            password: clearData.Password,
+            confirm: clearData.Confirm,
+            profileImg: clearData.ProfileImg,
+            statusMessage: clearData.StatusMessage,
+            likeItem: clearData.LikeItem,
+        })
+    ).rejects.toThrowError();
+});
+test("signSchema : name이 30글자가 넘을 때", async () => {
+    await expect(
+        schema.signSchema.validateAsync({
+            phone: clearData.Phone,
+            name: "abcdefghijklmnthsewyfvdswrtyhdsaereq",
             nickname: clearData.Nickname,
             password: clearData.Password,
             confirm: clearData.Confirm,
@@ -3373,7 +3396,7 @@ test("signSchema : name이 열글자가 넘을 때", async () => {
 test("signSchema : nickname이 string 형식이 아닐 경우", async () => {
     await expect(
         schema.signSchema.validateAsync({
-            email: clearData.Email,
+            phone: clearData.Phone,
             name: clearData.Name,
             nickname: 12,
             password: clearData.Password,
@@ -3385,7 +3408,7 @@ test("signSchema : nickname이 string 형식이 아닐 경우", async () => {
     ).rejects.toThrowError();
     await expect(
         schema.signSchema.validateAsync({
-            email: clearData.Email,
+            phone: clearData.Phone,
             name: clearData.Name,
             nickname: [],
             password: clearData.Password,
@@ -3397,7 +3420,7 @@ test("signSchema : nickname이 string 형식이 아닐 경우", async () => {
     ).rejects.toThrowError();
     await expect(
         schema.signSchema.validateAsync({
-            email: clearData.Email,
+            phone: clearData.Phone,
             name: clearData.Name,
             nickname: {},
             password: clearData.Password,
@@ -3409,7 +3432,7 @@ test("signSchema : nickname이 string 형식이 아닐 경우", async () => {
     ).rejects.toThrowError();
     await expect(
         schema.signSchema.validateAsync({
-            email: clearData.Email,
+            phone: clearData.Phone,
             name: clearData.Name,
             nickname: null,
             password: clearData.Password,
@@ -3421,7 +3444,7 @@ test("signSchema : nickname이 string 형식이 아닐 경우", async () => {
     ).rejects.toThrowError();
     await expect(
         schema.signSchema.validateAsync({
-            email: clearData.Email,
+            phone: clearData.Phone,
             name: clearData.Name,
             nickname: undefined,
             password: clearData.Password,
@@ -3435,7 +3458,7 @@ test("signSchema : nickname이 string 형식이 아닐 경우", async () => {
 test("signSchema : nickname에 특수문자가 섞여 있을 경우", async () => {
     await expect(
         schema.signSchema.validateAsync({
-            email: clearData.Email,
+            phone: clearData.Phone,
             name: clearData.Name,
             nickname: "test!!",
             password: clearData.Password,
@@ -3447,7 +3470,7 @@ test("signSchema : nickname에 특수문자가 섞여 있을 경우", async () =
     ).rejects.toThrowError();
     await expect(
         schema.signSchema.validateAsync({
-            email: clearData.Email,
+            phone: clearData.Phone,
             name: clearData.Name,
             nickname: "test@#$",
             password: clearData.Password,
@@ -3458,24 +3481,12 @@ test("signSchema : nickname에 특수문자가 섞여 있을 경우", async () =
         })
     ).rejects.toThrowError();
 });
-test("signSchema : nickname이 세글자 미만일 때", async () => {
+test("signSchema : nickname이 한글자 미만일 때", async () => {
     await expect(
         schema.signSchema.validateAsync({
-            email: clearData.Email,
+            phone: clearData.Phone,
             name: clearData.Name,
-            nickname: "ab",
-            password: clearData.Password,
-            confirm: clearData.Confirm,
-            profileImg: clearData.ProfileImg,
-            statusMessage: clearData.StatusMessage,
-            likeItem: clearData.LikeItem,
-        })
-    ).rejects.toThrowError();
-    await expect(
-        schema.signSchema.validateAsync({
-            email: clearData.Email,
-            name: clearData.Name,
-            nickname:"a",
+            nickname: "",
             password: clearData.Password,
             confirm: clearData.Confirm,
             profileImg: clearData.ProfileImg,
@@ -3487,8 +3498,8 @@ test("signSchema : nickname이 세글자 미만일 때", async () => {
 test("signSchema : nickname이 스무글자가 넘을 때", async () => {
     await expect(
         schema.signSchema.validateAsync({
-            email: clearData.Email,
-            name: "abcdefghijklmnabcdefghijklmn",
+            phone: clearData.Phone,
+            name: "abcdefghijklmnabcdefghijklasdmn",
             nickname: clearData.Nickname,
             password: clearData.Password,
             confirm: clearData.Confirm,
@@ -3501,7 +3512,7 @@ test("signSchema : nickname이 스무글자가 넘을 때", async () => {
 test("signSchema : password, confirm에 한글이 들어간 경우 실패 ", async () => {
     await expect(
         schema.signSchema.validateAsync({
-            email: clearData.Email,
+            phone: clearData.Phone,
             name: clearData.Name,
             nickname: clearData.Nickname,
             password: "테스트",
@@ -3513,7 +3524,7 @@ test("signSchema : password, confirm에 한글이 들어간 경우 실패 ", asy
     ).rejects.toThrowError();
     await expect(
         schema.signSchema.validateAsync({
-            email: clearData.Email,
+            phone: clearData.Phone,
             name: clearData.Name,
             nickname: clearData.Nickname,
             password: clearData.Password,
@@ -3527,7 +3538,7 @@ test("signSchema : password, confirm에 한글이 들어간 경우 실패 ", asy
 test("signSchema : password, confirm이 6글자 미만일 경우 실패 ", async () => {
     await expect(
         schema.signSchema.validateAsync({
-            email: clearData.Email,
+            phone: clearData.Phone,
             name: clearData.Name,
             nickname: clearData.Nickname,
             password: "a",
@@ -3539,7 +3550,7 @@ test("signSchema : password, confirm이 6글자 미만일 경우 실패 ", async
     ).rejects.toThrowError();
     await expect(
         schema.signSchema.validateAsync({
-            email: clearData.Email,
+            phone: clearData.Phone,
             name: clearData.Name,
             nickname: clearData.Nickname,
             password: "",
@@ -3551,7 +3562,7 @@ test("signSchema : password, confirm이 6글자 미만일 경우 실패 ", async
     ).rejects.toThrowError();
     await expect(
         schema.signSchema.validateAsync({
-            email: clearData.Email,
+            phone: clearData.Phone,
             name: clearData.Name,
             nickname: clearData.Nickname,
             password: "abcd!",
@@ -3563,7 +3574,7 @@ test("signSchema : password, confirm이 6글자 미만일 경우 실패 ", async
     ).rejects.toThrowError();
     await expect(
         schema.signSchema.validateAsync({
-            email: clearData.Email,
+            phone: clearData.Phone,
             name: clearData.Name,
             nickname: clearData.Nickname,
             password: clearData.Password,
@@ -3575,7 +3586,7 @@ test("signSchema : password, confirm이 6글자 미만일 경우 실패 ", async
     ).rejects.toThrowError();
     await expect(
         schema.signSchema.validateAsync({
-            email: clearData.Email,
+            phone: clearData.Phone,
             name: clearData.Name,
             nickname: clearData.Nickname,
             password: clearData.Password,
@@ -3587,7 +3598,7 @@ test("signSchema : password, confirm이 6글자 미만일 경우 실패 ", async
     ).rejects.toThrowError();
     await expect(
         schema.signSchema.validateAsync({
-            email: clearData.Email,
+            phone: clearData.Phone,
             name: clearData.Name,
             nickname: clearData.Nickname,
             password: clearData.Password,
@@ -3601,7 +3612,7 @@ test("signSchema : password, confirm이 6글자 미만일 경우 실패 ", async
 test("signSchema : password, confirm이 20글자가 넘을 경우 실패 ", async () => {
     await expect(
         schema.signSchema.validateAsync({
-            email: clearData.Email,
+            phone: clearData.Phone,
             name: clearData.Name,
             nickname: clearData.Nickname,
             password: "abcdefghijskvlksdjfvkladfjblafdebjl",
@@ -3613,7 +3624,7 @@ test("signSchema : password, confirm이 20글자가 넘을 경우 실패 ", asyn
     ).rejects.toThrowError();
     await expect(
         schema.signSchema.validateAsync({
-            email: clearData.Email,
+            phone: clearData.Phone,
             name: clearData.Name,
             nickname: clearData.Nickname,
             password: clearData.Password,
@@ -3627,7 +3638,7 @@ test("signSchema : password, confirm이 20글자가 넘을 경우 실패 ", asyn
 test("signSchema : password가 비어있을 경우 실패 ", async () => {
     await expect(
         schema.signSchema.validateAsync({
-            email: clearData.Email,
+            phone: clearData.Phone,
             name: clearData.Name,
             nickname: clearData.Nickname,
             password: "",
@@ -3639,7 +3650,7 @@ test("signSchema : password가 비어있을 경우 실패 ", async () => {
     ).rejects.toThrowError();
     await expect(
         schema.signSchema.validateAsync({
-            email: clearData.Email,
+            phone: clearData.Phone,
             name: clearData.Name,
             nickname: clearData.Nickname,
             password: clearData.Password,
@@ -3653,7 +3664,7 @@ test("signSchema : password가 비어있을 경우 실패 ", async () => {
 test("signSchema : password가 null이거나 undefined일 경우 실패 ", async () => { // undefined일 경우가 실패하지 않음.
     await expect(
         schema.signSchema.validateAsync({
-            email: clearData.Email,
+            phone: clearData.Phone,
             name: clearData.Name,
             nickname: clearData.Nickname,
             password: null,
@@ -3665,7 +3676,7 @@ test("signSchema : password가 null이거나 undefined일 경우 실패 ", async
     ).rejects.toThrowError();
     await expect(
         schema.signSchema.validateAsync({
-            email: clearData.Email,
+            phone: clearData.Phone,
             name: clearData.Name,
             nickname: clearData.Nickname,
             password: undefined,
@@ -3677,7 +3688,7 @@ test("signSchema : password가 null이거나 undefined일 경우 실패 ", async
     )//.rejects.toThrowError();
     await expect(
         schema.signSchema.validateAsync({
-            email: clearData.Email,
+            phone: clearData.Phone,
             name: clearData.Name,
             nickname: clearData.Nickname,
             password: clearData.Password,
@@ -3689,7 +3700,7 @@ test("signSchema : password가 null이거나 undefined일 경우 실패 ", async
     ).rejects.toThrowError();
     await expect(
         schema.signSchema.validateAsync({
-            email: clearData.Email,
+            phone: clearData.Phone,
             name: clearData.Name,
             nickname: clearData.Nickname,
             password: clearData.Password,
@@ -3703,7 +3714,7 @@ test("signSchema : password가 null이거나 undefined일 경우 실패 ", async
 test("signSchema : profileImg가 string이 아닐 때 (null 제외)", async () => {  // undefined는 왜 안 될까?
     await expect(
         schema.signSchema.validateAsync({
-            email: clearData.Email,
+            phone: clearData.Phone,
             name: clearData.Name,
             nickname: clearData.Nickname,
             password: clearData.Password,
@@ -3715,7 +3726,7 @@ test("signSchema : profileImg가 string이 아닐 때 (null 제외)", async () =
     ).rejects.toThrowError();
     await expect(
         schema.signSchema.validateAsync({
-            email: clearData.Email,
+            phone: clearData.Phone,
             name: clearData.Name,
             nickname: clearData.Nickname,
             password: clearData.Password,
@@ -3727,7 +3738,7 @@ test("signSchema : profileImg가 string이 아닐 때 (null 제외)", async () =
     ).rejects.toThrowError();
     await expect(
         schema.signSchema.validateAsync({
-            email: clearData.Email,
+            phone: clearData.Phone,
             name: clearData.Name,
             nickname: clearData.Nickname,
             password: clearData.Password,
@@ -3739,7 +3750,7 @@ test("signSchema : profileImg가 string이 아닐 때 (null 제외)", async () =
     ).rejects.toThrowError();
     await expect(
         schema.signSchema.validateAsync({
-            email: clearData.Email,
+            phone: clearData.Phone,
             name: clearData.Name,
             nickname: clearData.Nickname,
             password: clearData.Password,
@@ -3750,48 +3761,10 @@ test("signSchema : profileImg가 string이 아닐 때 (null 제외)", async () =
         })
     )//.rejects.toThrowError();
 });
-test("signSchema : statusMessage가 2글자 보다 작을 때", async () => {
+test("signSchema : statusMessage가 string이 아닐 때", async () => {
     await expect(
         schema.signSchema.validateAsync({
-            email: clearData.Email,
-            name: clearData.Name,
-            nickname: clearData.Nickname,
-            password: clearData.Password,
-            confirm: clearData.Confirm,
-            profileImg: clearData.ProfileImg,
-            statusMessage: "a",
-            likeItem: clearData.LikeItem,
-        })
-    ).rejects.toThrowError();
-    await expect(
-        schema.signSchema.validateAsync({
-            email: clearData.Email,
-            name: clearData.Name,
-            nickname: clearData.Nickname,
-            password: clearData.Password,
-            confirm: clearData.Confirm,
-            profileImg: clearData.ProfileImg,
-            statusMessage: "",
-            likeItem: clearData.LikeItem,
-        })
-    ).rejects.toThrowError();
-});
-test("signSchema : statusMessage가 string이 아닐 때", async () => {  // undefined일 때 왜 안될까?
-    await expect(
-        schema.signSchema.validateAsync({
-            email: clearData.Email,
-            name: clearData.Name,
-            nickname: clearData.Nickname,
-            password: clearData.Password,
-            confirm: clearData.Confirm,
-            profileImg: clearData.ProfileImg,
-            statusMessage: 123,
-            likeItem: clearData.LikeItem,
-        })
-    ).rejects.toThrowError();
-    await expect(
-        schema.signSchema.validateAsync({
-            email: clearData.Email,
+            phone: clearData.Phone,
             name: clearData.Name,
             nickname: clearData.Nickname,
             password: clearData.Password,
@@ -3803,7 +3776,7 @@ test("signSchema : statusMessage가 string이 아닐 때", async () => {  // und
     ).rejects.toThrowError();
     await expect(
         schema.signSchema.validateAsync({
-            email: clearData.Email,
+            phone: clearData.Phone,
             name: clearData.Name,
             nickname: clearData.Nickname,
             password: clearData.Password,
@@ -3815,40 +3788,28 @@ test("signSchema : statusMessage가 string이 아닐 때", async () => {  // und
     ).rejects.toThrowError();
     await expect(
         schema.signSchema.validateAsync({
-            email: clearData.Email,
+            phone: clearData.Phone,
             name: clearData.Name,
             nickname: clearData.Nickname,
             password: clearData.Password,
             confirm: clearData.Confirm,
             profileImg: clearData.ProfileImg,
-            statusMessage: null,
+            statusMessage: 123,
             likeItem: clearData.LikeItem,
         })
     ).rejects.toThrowError();
-    await expect(
-        schema.signSchema.validateAsync({
-            email: clearData.Email,
-            name: clearData.Name,
-            nickname: clearData.Nickname,
-            password: clearData.Password,
-            confirm: clearData.Confirm,
-            profileImg: clearData.ProfileImg,
-            statusMessage: undefined,
-            likeItem: clearData.LikeItem,
-        })
-    )// .rejects.toThrowError();
 });
-test("signSchema : statusMessage가 250글자 보다 클 때", async () => {
+test("signSchema : statusMessage가 255글자 보다 클 때", async () => {
     await expect(
         schema.signSchema.validateAsync({
-            email: clearData.Email,
+            phone: clearData.Phone,
             name: clearData.Name,
             nickname: clearData.Nickname,
             password: clearData.Password,
             confirm: clearData.Confirm,
             profileImg: clearData.ProfileImg,
             statusMessage:
-                "abcdefghijklmnopqrstuvwxyzabcdefghiabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzjklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghiabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzjklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghiabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzjklmnopqrstuvwxyz",
+                "abcdefghijklmnopqrasdsadqswrewqrfdsafadsrfdewqre3wrtaegafdsgadstgrwetyerwtregsdfghfsdgeqrwtqrtstuvwxyzabcdefghiabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzjklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghiabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzjklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghiabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzjklmnopqrstuvwxyz",
             likeItem: clearData.LikeItem,
         })
     ).rejects.toThrowError();
@@ -3856,7 +3817,7 @@ test("signSchema : statusMessage가 250글자 보다 클 때", async () => {
 test("signSchema : likeItem이 array가 아닐 때", async () => {
     await expect(
         schema.signSchema.validateAsync({
-            email: clearData.Email,
+            phone: clearData.Phone,
             name: clearData.Name,
             nickname: clearData.Nickname,
             password: clearData.Password,
@@ -3868,7 +3829,7 @@ test("signSchema : likeItem이 array가 아닐 때", async () => {
     ).rejects.toThrowError();
     await expect(
         schema.signSchema.validateAsync({
-            email: clearData.Email,
+            phone: clearData.Phone,
             name: clearData.Name,
             nickname: clearData.Nickname,
             password: clearData.Password,
@@ -3880,7 +3841,7 @@ test("signSchema : likeItem이 array가 아닐 때", async () => {
     ).rejects.toThrowError();
     await expect(
         schema.signSchema.validateAsync({
-            email: clearData.Email,
+            phone: clearData.Phone,
             name: clearData.Name,
             nickname: clearData.Nickname,
             password: clearData.Password,
@@ -3892,7 +3853,7 @@ test("signSchema : likeItem이 array가 아닐 때", async () => {
     ).rejects.toThrowError();
     await expect(
         schema.signSchema.validateAsync({
-            email: clearData.Email,
+            phone: clearData.Phone,
             name: clearData.Name,
             nickname: clearData.Nickname,
             password: clearData.Password,
@@ -3904,7 +3865,7 @@ test("signSchema : likeItem이 array가 아닐 때", async () => {
     ).rejects.toThrowError();
     await expect(
         schema.signSchema.validateAsync({
-            email: clearData.Email,
+            phone: clearData.Phone,
             name: clearData.Name,
             nickname: clearData.Nickname,
             password: clearData.Password,
@@ -3915,11 +3876,10 @@ test("signSchema : likeItem이 array가 아닐 때", async () => {
         })
     ).rejects.toThrowError();
 });
-
 test("signSchema : 테스트 통과", async () => {
     await expect(
         schema.signSchema.validateAsync({
-            email: clearData.Email,
+            phone: clearData.Phone,
             name: clearData.Name,
             nickname: clearData.Nickname,
             password: clearData.Password,
@@ -3931,7 +3891,7 @@ test("signSchema : 테스트 통과", async () => {
     );
     await expect(
         schema.signSchema.validateAsync({
-            email: clearData.Email,
+            phone: clearData.Phone,
             name: clearData.Name,
             nickname: clearData.Nickname,
             password: clearData.Password,
@@ -3942,6 +3902,638 @@ test("signSchema : 테스트 통과", async () => {
         })
     );
 });
-// test("", async () => {
-//     await expect();
-// });
+
+
+// nicknameSchema 테스트
+test("nicknameSchema : nickname이 string 형식이 아닐 경우 실패", async () => {
+    await expect(
+        schema.nicknameSchema.validateAsync({ userId: 123 })
+    ).rejects.toThrowError();
+    await expect(
+        schema.nicknameSchema.validateAsync({ userId: [] })
+    ).rejects.toThrowError();
+    await expect(
+        schema.nicknameSchema.validateAsync({ userId: {} })
+    ).rejects.toThrowError();
+    await expect(
+        schema.nicknameSchema.validateAsync({ userId: true })
+    ).rejects.toThrowError();
+});
+test("nicknameSchema : nickname이 1글자 미만일 경우 실패", async () => {
+    await expect(
+        schema.nicknameSchema.validateAsync({ nickname: "" })
+    ).rejects.toThrowError();
+});
+test("nicknameSchema : nickname이 비었거나 없을 경우 실패", async () => {
+    await expect(
+        schema.nicknameSchema.validateAsync({})
+    ).rejects.toThrowError();
+    await expect(
+        schema.nicknameSchema.validateAsync({ nickname: null })
+    ).rejects.toThrowError();
+});
+test("nicknameSchema : nickname이 성공", async () => {
+    await expect(schema.nicknameSchema.validateAsync({ nickname: "홍길동좌" })); // 성공
+});
+
+
+// confirmSchema 테스트
+test("confirmSchema : password가 6글자 미만일 경우", async () => {
+    await expect(
+        schema.confirmSchema.validateAsync({
+            password: "123",
+            confirm: clearData.SchemaPassword,
+        })
+    ).rejects.toThrowError();
+    await expect(
+        schema.confirmSchema.validateAsync({
+            password: clearData.SchemaPassword,
+            confirm: "123",
+        })
+    ).rejects.toThrowError();
+});
+test("confirmSchema : password가 20글자가 넘을 경우", async () => {
+    await expect(
+        schema.confirmSchema.validateAsync({
+            password: "123af4b56sdfb489sfb16sd156sdv156",
+            confirm: clearData.SchemaPassword,
+        })
+    ).rejects.toThrowError();
+    await expect(
+        schema.confirmSchema.validateAsync({
+            password: clearData.SchemaPassword,
+            confirm: "123af4b56sdfb489sfb16sd156sdv156",
+        })
+    ).rejects.toThrowError();
+});
+test("confirmSchema : password가 string 형식이 아닐 경우", async () => {
+    await expect(
+        schema.confirmSchema.validateAsync({
+            password: 123,
+            confirm: clearData.SchemaPassword,
+        })
+    ).rejects.toThrowError();
+    await expect(
+        schema.confirmSchema.validateAsync({
+            password: clearData.SchemaPassword,
+            confirm: 123,
+        })
+    ).rejects.toThrowError();
+});
+test("confirmSchema : 테스트 통과", async () => {
+    await expect(
+        schema.confirmSchema.validateAsync({
+            password: "123456abc",
+            confirm: "123456abc",
+        })
+    );
+});
+
+
+// signDeleteSchema 테스트 코드
+test("signDeleteSchema : 전화번호가 비어 있을 경우", async () => {
+    await expect(
+        schema.signDeleteSchema.validateAsync({
+            phone: "",
+            password: clearData.Password,
+        })
+    ).rejects.toThrowError();
+});
+test("signDeleteSchema : 전화번호에 특수 문자가 있을 경우", async () => {
+    await expect(
+        schema.signDeleteSchema.validateAsync({
+            phone: "010.1111.1111",
+            password: clearData.Password,
+        })
+    ).rejects.toThrowError();
+    await expect(
+        schema.signDeleteSchema.validateAsync({
+            phone: "010-1111-1111",
+            password: clearData.Password,
+        })
+    ).rejects.toThrowError();
+    await expect(
+        schema.signDeleteSchema.validateAsync({
+            phone: "010@1111@1111",
+            password: clearData.Password,
+        })
+    ).rejects.toThrowError();
+    await expect(
+        schema.signDeleteSchema.validateAsync({
+            phone: "010!1111!1111",
+            password: clearData.Password,
+        })
+    ).rejects.toThrowError();
+});
+test("signDeleteSchema : 전화번호가 11자리 초과 미만일  경우", async () => {
+    await expect(
+        schema.signDeleteSchema.validateAsync({
+            phone: "0101111111111",
+            password: clearData.Password,
+        })
+    ).rejects.toThrowError();
+    await expect(
+        schema.signDeleteSchema.validateAsync({
+            phone: "01011111",
+            password: clearData.Password,
+        })
+    ).rejects.toThrowError();
+});
+test("signDeleteSchema : 전화번호가 1로 시작할 경우 경우", async () => {
+    await expect(
+        schema.signDeleteSchema.validateAsync({
+            phone: "11011111111",
+        })
+    ).rejects.toThrowError();
+    await expect(
+        schema.signDeleteSchema.validateAsync({
+            phone: "11111111111",
+        })
+    ).rejects.toThrowError();
+});
+test("signDeleteSchema : password 6글자 미만", async () => {
+    await expect(
+        schema.signDeleteSchema.validateAsync({
+            phone: clearData.Phone,
+            password: "ab!",
+        })
+    ).rejects.toThrowError();
+});
+test("signDeleteSchema : password가 20글자가 넘을 때", async () => {
+    await expect(
+        schema.signDeleteSchema.validateAsync({
+            phone: clearData.Phone,
+            password: "abcdefg123456qFBHQER@#THWRTHWRADFVADBV",
+        })
+    ).rejects.toThrowError();
+});
+test("signDeleteSchema : password가 string이 아닐 경우", async () => {
+    await expect(
+        schema.signDeleteSchema.validateAsync({
+            phone: clearData.Phone,
+            password: 123456,
+        })
+    ).rejects.toThrowError();
+    await expect(
+        schema.signDeleteSchema.validateAsync({
+            phone: clearData.Phone,
+            password: ["a", "b", "c"],
+        })
+    ).rejects.toThrowError();
+    await expect(
+        schema.signDeleteSchema.validateAsync({
+            phone: clearData.Phone,
+            password: {},
+        })
+    ).rejects.toThrowError();
+    await expect(
+        schema.signDeleteSchema.validateAsync({
+            phone: clearData.Phone,
+            password: null,
+        })
+    ).rejects.toThrowError();
+    await expect(
+        schema.signDeleteSchema.validateAsync({
+            phone: clearData.Phone,
+            password: undefined,
+        })
+    ).rejects.toThrowError();
+});
+test("signDeleteSchema : 테스트 통과", async () => {
+    await expect(
+        schema.signDeleteSchema.validateAsync({
+            phone: clearData.Phone,
+            password: clearData.Password,
+        })
+    );
+});
+
+
+//statusMessageSchema 테스트
+test("statusMessageSchema : statusMessage가 string이 아닐 때", async () => {
+    await expect(
+        schema.statusMessageSchema.validateAsync({
+            statusMessage: [],
+        })
+    ).rejects.toThrowError();
+    await expect(
+        schema.statusMessageSchema.validateAsync({
+            statusMessage: {},
+        })
+    ).rejects.toThrowError();
+    await expect(
+        schema.statusMessageSchema.validateAsync({
+            statusMessage: 123,
+        })
+    ).rejects.toThrowError();
+});
+test("statusMessageSchema : statusMessage가 255글자 보다 클 때", async () => {
+    await expect(
+        schema.statusMessageSchema.validateAsync({
+            statusMessage:
+                "abcdefghijklmnopqrasdsadqswrewqrfdsafadsrfdewqre3wrtaegafdsgadstgrwetyerwtregsdfghfsdgeqrwtqrtstuvwxyzabcdefghiabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzjklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghiabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzjklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghiabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzjklmnopqrstuvwxyz",
+        })
+    ).rejects.toThrowError();
+});
+test("statusMessageSchema : 테스트 통과", async () => {
+    await expect(
+        schema.statusMessageSchema.validateAsync({
+            statusMessage: clearData.StatusMessage,
+        })
+    );
+    await expect(
+        schema.statusMessageSchema.validateAsync({
+            statusMessage: "",
+        })
+    );
+});
+
+
+//userModifySchema 테스트
+test("userModifySchema : nickname이 1글자 미만일 경우 실패 ", async () => {
+    await expect(
+        schema.userModifySchema.validateAsync({
+            nickname: "",
+            password: clearData.SchemaPassword,
+            newpassword: clearData.SchemaPassword,
+            confirm: clearData.SchemaPassword,
+            profileImg: clearData.SchemaProfileImg,
+            likeItem: clearData.SchemaLikeItem,
+        })
+    ).rejects.toThrowError();
+});
+test("userModifySchema : nickname에 특수문자가 들어간 경우 실패 ", async () => {
+    await expect(
+        schema.userModifySchema.validateAsync({
+            nickname: "qq!@",
+            password: clearData.SchemaPassword,
+            newpassword: clearData.SchemaPassword,
+            confirm: clearData.SchemaPassword,
+            profileImg: clearData.SchemaProfileImg,
+            likeItem: clearData.SchemaLikeItem,
+        })
+    ).rejects.toThrowError();
+
+    await expect(
+        schema.userModifySchema.validateAsync({
+            nickname: "&*",
+            password: clearData.SchemaPassword,
+            newpassword: clearData.SchemaPassword,
+            confirm: clearData.SchemaPassword,
+            profileImg: clearData.SchemaProfileImg,
+            likeItem: clearData.SchemaLikeItem,
+        })
+    ).rejects.toThrowError();
+});
+test("userModifySchema : password, newpassword, confirm에 한글이 들어간 경우 실패 ", async () => {
+    await expect(
+        schema.userModifySchema.validateAsync({
+            nickname: clearData.SchemaNickname,
+            password: "테스트",
+            newpassword: clearData.SchemaPassword,
+            confirm: clearData.SchemaPassword,
+            profileImg: clearData.SchemaProfileImg,
+            likeItem: clearData.SchemaLikeItem,
+        })
+    ).rejects.toThrowError();
+
+    await expect(
+        schema.userModifySchema.validateAsync({
+            nickname: clearData.SchemaNickname,
+            password: clearData.SchemaPassword,
+            newpassword: "테스트",
+            confirm: clearData.SchemaPassword,
+            profileImg: clearData.SchemaProfileImg,
+            likeItem: clearData.SchemaLikeItem,
+        })
+    ).rejects.toThrowError();
+    await expect(
+        schema.userModifySchema.validateAsync({
+            nickname: clearData.SchemaNickname,
+            password: clearData.SchemaPassword,
+            newpassword: clearData.SchemaPassword,
+            confirm: "테스트",
+            profileImg: clearData.SchemaProfileImg,
+            likeItem: clearData.SchemaLikeItem,
+        })
+    ).rejects.toThrowError();
+});
+test("userModifySchema : password, newpassword, confirm이 6글자 미만일 경우 실패 ", async () => {
+    await expect(
+        schema.userModifySchema.validateAsync({
+            nickname: clearData.SchemaNickname,
+            password: "a",
+            newpassword: clearData.SchemaPassword,
+            confirm: clearData.SchemaPassword,
+            profileImg: clearData.SchemaProfileImg,
+            likeItem: clearData.SchemaLikeItem,
+        })
+    ).rejects.toThrowError();
+    await expect(
+        schema.userModifySchema.validateAsync({
+            nickname: clearData.SchemaNickname,
+            password: "",
+            newpassword: clearData.SchemaPassword,
+            confirm: clearData.SchemaPassword,
+            profileImg: clearData.SchemaProfileImg,
+            likeItem: clearData.SchemaLikeItem,
+        })
+    ).rejects.toThrowError();
+    await expect(
+        schema.userModifySchema.validateAsync({
+            nickname: clearData.SchemaNickname,
+            password: clearData.SchemaPassword,
+            newpassword: "abcd!",
+            confirm: clearData.SchemaPassword,
+            profileImg: clearData.SchemaProfileImg,
+            likeItem: clearData.SchemaLikeItem,
+        })
+    ).rejects.toThrowError();
+    await expect(
+        schema.userModifySchema.validateAsync({
+            nickname: clearData.SchemaNickname,
+            password: clearData.SchemaPassword,
+            newpassword: clearData.SchemaPassword,
+            confirm: "zz",
+            profileImg: clearData.SchemaProfileImg,
+            likeItem: clearData.SchemaLikeItem,
+        })
+    ).rejects.toThrowError();
+});
+test("userModifySchema : password, newpassword, confirm이 20글자가 넘을 경우 실패 ", async () => {
+    await expect(
+        schema.userModifySchema.validateAsync({
+            nickname: clearData.SchemaNickname,
+            password: "abcdefghijskvlksdjfvkladfjblafdebjl",
+            newpassword: clearData.SchemaPassword,
+            confirm: clearData.SchemaPassword,
+            profileImg: clearData.SchemaProfileImg,
+            likeItem: clearData.SchemaLikeItem,
+        })
+    ).rejects.toThrowError();
+    await expect(
+        schema.userModifySchema.validateAsync({
+            nickname: clearData.SchemaNickname,
+            password: clearData.SchemaPassword,
+            newpassword: "abcd!",
+            confirm: clearData.SchemaPassword,
+            profileImg: clearData.SchemaProfileImg,
+            likeItem: clearData.SchemaLikeItem,
+        })
+    ).rejects.toThrowError();
+    await expect(
+        schema.userModifySchema.validateAsync({
+            nickname: clearData.SchemaNickname,
+            password: clearData.SchemaPassword,
+            newpassword: clearData.SchemaPassword,
+            confirm: "zz",
+            profileImg: clearData.SchemaProfileImg,
+            likeItem: clearData.SchemaLikeItem,
+        })
+    ).rejects.toThrowError();
+});
+test("userModifySchema : password가 비어있을 경우 실패 ", async () => {
+    await expect(
+        schema.userModifySchema.validateAsync({
+            nickname: clearData.SchemaNickname,
+            password: "",
+            newpassword: clearData.SchemaPassword,
+            confirm: clearData.SchemaPassword,
+            profileImg: clearData.SchemaProfileImg,
+            likeItem: clearData.SchemaLikeItem,
+        })
+    ).rejects.toThrowError();
+});
+test("userModifySchema : password가 null이거나 undefined일 경우 실패 ", async () => {
+    await expect(
+        schema.userModifySchema.validateAsync({
+            nickname: clearData.SchemaNickname,
+            password: null,
+            newpassword: clearData.SchemaPassword,
+            confirm: clearData.SchemaPassword,
+            profileImg: clearData.SchemaProfileImg,
+            likeItem: clearData.SchemaLikeItem,
+        })
+    ).rejects.toThrowError();
+    await expect(
+        schema.userModifySchema.validateAsync({
+            nickname: clearData.SchemaNickname,
+            password: undefined,
+            newpassword: clearData.SchemaPassword,
+            confirm: clearData.SchemaPassword,
+            profileImg: clearData.SchemaProfileImg,
+            likeItem: clearData.SchemaLikeItem,
+        })
+    ).rejects.toThrowError();
+});
+test("userModifySchema : profileImg가 숫자일 경우 실패 ", async () => {
+    await expect(
+        schema.userModifySchema.validateAsync({
+            nickname: clearData.SchemaNickname,
+            password: clearData.SchemaPassword,
+            newpassword: clearData.SchemaPassword,
+            confirm: clearData.SchemaPassword,
+            profileImg: 12,
+            likeItem: clearData.SchemaLikeItem,
+        })
+    ).rejects.toThrowError();
+});
+test("userModifySchema : likeItem이 숫자일 경우 실패 ", async () => {
+    await expect(
+        schema.userModifySchema.validateAsync({
+            nickname: clearData.SchemaNickname,
+            password: clearData.SchemaPassword,
+            newpassword: clearData.SchemaPassword,
+            confirm: clearData.SchemaPassword,
+            profileImg: clearData.SchemaProfileImg,
+            likeItem: 1,
+        })
+    ).rejects.toThrowError();
+});
+test("userModifySchema : likeItem이 문자일 경우 실패 ", async () => {
+    await expect(
+        schema.userModifySchema.validateAsync({
+            nickname: clearData.SchemaNickname,
+            password: clearData.SchemaPassword,
+            newpassword: clearData.SchemaPassword,
+            confirm: clearData.SchemaPassword,
+            profileImg: clearData.SchemaProfileImg,
+            likeItem: "test",
+        })
+    ).rejects.toThrowError();
+});
+test("userModifySchema : 테스트 성공", async () => {
+    await expect(
+        schema.userModifySchema.validateAsync({
+            nickname: "홍길동",
+            password: "123456@@9",
+            newpassword: "sldk13!!",
+            confirm: "sldk13!!",
+            profileImg:
+                "https://cdn.hellodd.com/news/photo/202005/71835_craw1.jpg",
+            likeItem: ["test", "길동", "통과 기원"],
+        })
+    );
+});
+
+
+//userIdpostIdSchema 테스트
+test("userIdpostIdSchema : userId가 number 형식이 아닐 경우 실패", async () => {
+    await expect(
+        schema.userIdSchema.validateAsync({
+            userId: "hello",
+            postId: 1
+        })
+    ).rejects.toThrowError();
+    await expect(
+        schema.userIdSchema.validateAsync({
+            userId: "a",
+            postId: 1
+        })
+    ).rejects.toThrowError();
+    await expect(
+        schema.userIdSchema.validateAsync({
+            userId: [],
+            postId: 1
+        })
+    ).rejects.toThrowError();
+    await expect(
+        schema.userIdSchema.validateAsync({
+            userId: {},
+            postId: 1
+        })
+    ).rejects.toThrowError();
+    await expect(
+        schema.userIdSchema.validateAsync({
+            userId: true,
+            postId: 1
+        })
+    ).rejects.toThrowError();
+});
+test("userIdpostIdSchema : userId가 1보다 작을 경우 실패", async () => {
+    await expect(
+        schema.userIdSchema.validateAsync({
+            userId: 0,
+            postId: 1
+        })
+    ).rejects.toThrowError();
+    await expect(
+        schema.userIdSchema.validateAsync({
+            userId: -1,
+            postId: 1
+        })
+    ).rejects.toThrowError();
+});
+test("userIdpostIdSchema : userId가 비었거나 없을 경우 실패", async () => {
+    await expect(schema.userIdSchema.validateAsync({})).rejects.toThrowError();
+    await expect(
+        schema.userIdSchema.validateAsync({
+            userId: null,
+            postId: 1
+        })
+    ).rejects.toThrowError();
+});
+test("userIdpostIdSchema : postId가 1 미만일 경우", async () => {
+    await expect(
+        schema.userIdpostIdSchema.validateAsync({
+            userId: 1,
+            postId: 0,
+        })
+    ).rejects.toThrowError();
+});
+test("userIdpostIdSchema : postId가 int가 아닐 경우", async () => {
+    await expect(
+        schema.userIdpostIdSchema.validateAsync({
+            userId: 1,
+            postId: "string",
+        })
+    ).rejects.toThrowError();
+    await expect(
+        schema.userIdpostIdSchema.validateAsync({
+            userId: 1,
+            postId: [],
+        })
+    ).rejects.toThrowError();
+    await expect(
+        schema.userIdpostIdSchema.validateAsync({
+            userId: 1,
+            postId: {},
+        })
+    ).rejects.toThrowError();
+    await expect(
+        schema.userIdpostIdSchema.validateAsync({
+            userId: 1,
+            postId: null,
+        })
+    ).rejects.toThrowError();
+    await expect(
+        schema.userIdpostIdSchema.validateAsync({
+            userId: 1,
+            postId: undefined,
+        })
+    ).rejects.toThrowError();
+});
+test("userIdpostIdSchema : postId가 1 미만일 경우", async () => {
+    await expect(
+        schema.userIdpostIdSchema.validateAsync({
+            userId: 1,
+            postId: 0,
+        })
+    ).rejects.toThrowError();
+});
+test("userIdpostIdSchema : 테스트 성공", async () => {
+    await expect(schema.userIdSchema.validateAsync({
+        userId: 1,
+        postId: 1
+    }));
+});
+
+
+//inviteIdSchema 테스트
+test("inviteIdSchema : inviteId가 number 형식이 아닐 경우 실패", async () => {
+    await expect(
+        schema.inviteIdSchema.validateAsync({ inviteId: "hello" })
+    ).rejects.toThrowError();
+    await expect(
+        schema.inviteIdSchema.validateAsync({ inviteId: "a" })
+    ).rejects.toThrowError();
+    await expect(
+        schema.inviteIdSchema.validateAsync({ inviteId: [] })
+    ).rejects.toThrowError();
+    await expect(
+        schema.inviteIdSchema.validateAsync({ inviteId: {} })
+    ).rejects.toThrowError();
+    await expect(
+        schema.inviteIdSchema.validateAsync({ inviteId: true })
+    ).rejects.toThrowError();
+});
+test("inviteIdSchema : inviteId가 1보다 작을 경우 실패", async () => {
+    await expect(
+        schema.inviteIdSchema.validateAsync({ inviteId: 0 })
+    ).rejects.toThrowError();
+    await expect(
+        schema.inviteIdSchema.validateAsync({ inviteId: -1 })
+    ).rejects.toThrowError();
+});
+test("inviteIdSchema : inviteId가 비었거나 없을 경우 실패", async () => {
+    await expect(schema.inviteIdSchema.validateAsync({})).rejects.toThrowError();
+    await expect(
+        schema.inviteIdSchema.validateAsync({ inviteId: null })
+    ).rejects.toThrowError();
+});
+test("inviteIdSchema : inviteId가 성공", async () => {
+    await expect(schema.inviteIdSchema.validateAsync({ inviteId: 1 })); // 성공
+});
+
+
+//socketDistanceSchema 테스트
+test("socketDistanceSchema : 거리가 100m미만 일 경우 실패", async () => {
+    await expect(
+        schema.socketDistanceSchema.validateAsync({ distance: 99, })
+    ).rejects.toThrowError();
+});
+test("socketDistanceSchema : 테스트 통과", async () => {
+    await expect(
+        schema.socketDistanceSchema.validateAsync({ distance: 100, })
+    )
+});
