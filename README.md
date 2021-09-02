@@ -118,7 +118,7 @@ https://docs.google.com/spreadsheets/d/11TuiaIZ62mFtalb1SdkpFQVbLejM8pN0hRjcK1ke
 - Joi Schema부터 모든 API에 이르기까지 Jest를 이용해 테스트 코드를 생성하였습니다.
 
 <br><br>
-### 4) 마이크로 서비스 아키텍처 구성
+### 4) 모노리틱 아키텍처 벗어나기
 
 #### 발생한 문제
 - EC2 단일 서버에서 Express.js, MySQL, Redis를 사용하여 많은 부하가 발생하였습니다.
@@ -126,7 +126,7 @@ https://docs.google.com/spreadsheets/d/11TuiaIZ62mFtalb1SdkpFQVbLejM8pN0hRjcK1ke
 
 #### 개선 방법
 - EC2를 Express 단일 서버로 구성하였고, AWS ElastiCache로 Redis 서버의 데이터를 이관하였고, AWS RDS로 MySQL 5.7 서버의 데이터를 이관하였습니다.
-- 단일 서버에서 모든 것을 처리하는 모노리틱 아키텍처에서 모든 서버를 분리하여 관리하는 마이크로 서비스 아키텍처로 변경하였습니다.
+- 단일 서버에서 모든 것을 처리하는 모노리틱 아키텍처에서 모든 서버를 분리하여 관리하는 마이크로 서비스 아키텍처로 변경 하기위해 노력하였습니다.
 - 부하 테스트를 진행하였을 때 견딜 수 있는 부하량이 늘어났고, 서버의 안정성을 확보할 수 있었습니다.
 
 <br><br>
