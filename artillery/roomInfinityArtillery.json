@@ -1,0 +1,60 @@
+{
+    "config": {
+        "target": "https://astraios.shop",
+        "phases": [
+            {
+                "duration": 180,
+                "arrivalRate": 100
+            }
+        ],
+        "defaults": {
+            "headers": {
+                "Authorization": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsImlhdCI6MTYyOTcwMTI2NX0.e2nSuFaodDWRmDnvobHllnq5OmAuENw0CtqfDvlGxYg"
+            }
+        },
+        "payload": {
+            "path": "./payloadData/PostIdStartLimitCount.csv",
+            "fields": [
+                "count",
+                "start",
+                "limit"
+            ]
+        }
+    },
+    "scenarios": [
+        {
+            "name": "GET /api/room/info",
+            "flow": [
+                {
+                    "get": {
+                        "url": "/api/room/info?postId={{count}}"
+                    }
+                }
+            ]
+        },
+        {
+            "name": "GET /api/room/:postId",
+            "flow": [
+                {
+                    "get": {
+                        "url": "/api/room/{{count}}?start={{start}}&limit={{limit}}"
+                    }
+                }
+            ]
+        },
+        {
+            "name": "POST /api/room/chat",
+            "flow": [
+                {
+                    "post": {
+                        "url": "/api/room/chat",
+                        "json": {
+                            "postId": "{{count}}",
+                            "message": "Artillery"
+                        }
+                    }
+                }
+            ]
+        }
+    ]
+}

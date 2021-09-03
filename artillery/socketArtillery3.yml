@@ -3,6 +3,8 @@ config:
   phases:
     - duration: 50  # 실행시간
       arrivalRate: 3 # 1초당 실행횟수
+  engines:
+    socketio-v3: { }
   payload:
     path: ./payloadData/UserToken.csv
     fields:
@@ -10,12 +12,15 @@ config:
 
 scenarios:
   - name: map location test
-    engine: "socketio"
+    engine: socketio-v3
+    socketio-v3:
+      extraHeaders:
+        Authorization: "hello"
+      headers:
+          Authorization: "Hello"
     flow:
-      - emit:
-          namespace: "/location"
-          headers:
-            Authorization: token
+      - namespace: "/location"
+        emit:
           channel: 'latlng'
           data:
             "lat": 37.5592

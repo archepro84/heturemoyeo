@@ -1,22 +1,19 @@
 {
     "config": {
         "target": "http://localhost:4001",
+        "socketio": {
+            "path": "/location"
+        },
         "phases": [
             {
-                "duration": 30,
-                "arrivalRate": 100
+                "duration": 5,
+                "arrivalRate": 1
             }
         ],
         "defaults": {
             "headers": {
                 "Authorization": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsImlhdCI6MTYyOTcwMTI2NX0.e2nSuFaodDWRmDnvobHllnq5OmAuENw0CtqfDvlGxYg"
             }
-        },
-        "payload": {
-            "path": "./payloadData/UserIdCount.csv",
-            "fields": [
-                "count"
-            ]
         }
     },
     "scenarios": [
@@ -25,7 +22,10 @@
             "flow": [
                 {
                     "get": {
-                        "url": "/api/user/target/all?userId={{count}}"
+                        "url": "/api/user/target/all?userId={{count}}",
+                        "headers": {
+                            "Authorization": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsImlhdCI6MTYyOTcwMTI2NX0.e2nSuFaodDWRmDnvobHllnq5OmAuENw0CtqfDvlGxYg"
+                        }
                     }
                 }
             ]

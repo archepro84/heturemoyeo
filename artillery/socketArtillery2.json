@@ -1,0 +1,42 @@
+{
+    "config": {
+        "target": "http://localhost:4001",
+        "phases": [
+            {
+                "duration": 50,
+                "arrivalRate": 3
+            }
+        ],
+        "engines": {
+            "socketio-v3": {}
+        },
+        "payload": {
+            "path": "./payloadData/UserToken.csv",
+            "fields": [
+                "token"
+            ]
+        }
+    },
+    "scenarios": [
+        {
+            "name": "map location test",
+            "engine": "socketio-v3",
+            "flow": [
+                {
+                    "emit": {
+                        "namespace": "/location",
+                        "headers": {
+                            "Authorization": "{{token}}"
+                        },
+                        "channel": "latlng",
+                        "data": {
+                            "lat": 37.5592,
+                            "lng": 126.9397
+                        }
+                    },
+                    "think": 10
+                }
+            ]
+        }
+    ]
+}
