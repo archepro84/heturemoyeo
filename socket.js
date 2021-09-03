@@ -10,12 +10,11 @@ const redisClient = redis.createClient({
 })
 const geo = require('georedis').initialize(redisClient)
 
+// setInterval(function () {
+//     // 만약 생성된지 6시간 지난 location이 있다면, 지워라
 // redisClient.DEL('geo:locations', function (error, reply) {
 //     if (error) console.log(error);
 // })
-
-// setInterval(function () {
-//     // 만약 생성된지 6시간 지난 location이 있다면, 지워라
 // }, 60000)
 
 module.exports = (server, app) => {
@@ -29,6 +28,8 @@ module.exports = (server, app) => {
         count: 50, // N개의 일치하는 항목으로 결과를 제한, default undefined (All)
         accurate: true, // Useful if in emulated mode and accuracy is important, default false
     }
+
+    // GeoRedis Location 더미 데이터 생성
     const locationSet = {
         '2': {latitude: 37.5671461, longitude: 126.9309533},
         '3': {latitude: 37.5679144, longitude: 126.9344071},
@@ -50,7 +51,6 @@ module.exports = (server, app) => {
         '23': {latitude: 35.85719220896354, longitude: 128.62764924344924}, // W 오피스텔
         '24': {latitude: 35.85752603220386, longitude: 128.62628896758892}, // 대구여고 마을
         '25': {latitude: 35.85573882947642, longitude: 128.6294985578524}, // 대구여고 마을
-        
         '26': {latitude: 35.866305268282744, longitude: 128.59284327495126}, // 반월당
     }
     geo.addLocations(locationSet, function (err, reply) {
@@ -62,20 +62,21 @@ module.exports = (server, app) => {
         cors: {origins: '*:*'},
     })
 
-    app.set('io', io);
-    const location = io.of('/location');
-    const room = io.of("/room");
-    const chat = io.of("/chat");
+    app.set('io', io); // Socket을 Express Router에서 사용할 수 있도록 설정
+    const location = io.of('/location'); // 사용자 위치 Location 소켓 네임 스페이스
+    const room = io.of("/room"); // 모임 리스트 소켓 네임 스페이스
+    const chat = io.of("/chat"); // 대화방 소켓 네임 스페이스
 
 
-    location.use(socketAuthMiddleWare)
-    location.on("connection", async (socket) => {
+    location.use(socketAuthMiddleWare) // Location Socket 미들 웨어
+    location.on("connection", async (socket) => { // 사용자 위치 네임 스페이스
         const req = socket.request;
         const ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
         const {userId: socketUserId} = socket.user;
         const MAX_DISTANCE = 700000;
         let radiusDistance = 700000;
         console.log('Location Socket Connect / IP :', ip, socket.id);
+        console.log(socketUserId);
 
         if (loginUser[socketUserId]) {
             console.log(`Duplicatie Socket Id : ${loginUser[socketUserId]}, ${socket.id}`);
@@ -86,7 +87,6 @@ module.exports = (server, app) => {
             location.to(socket.id).emit("closeEvent");
 
             // 이전에 접속한 유저의 연결을 종료합니다.
-            // await io.in(loginUser[socketUserId]).fetchSockets();
             await location.to(loginUser[socketUserId]).disconnectSockets();
 
             // 로그인 중인 유저 목록에서 접속중인 유저를 삭제합니다.
@@ -96,6 +96,7 @@ module.exports = (server, app) => {
 
         loginUser[socketUserId] = socket.id
 
+        //사용자의 위치정보를 지정된 시간마다 가져온다.
         socket.on("latlng", (locationData) => {
             try {
                 const {lat, lng} = locationData;
@@ -106,13 +107,13 @@ module.exports = (server, app) => {
                 // Redis 내부에 geo:locations에 이미 데이터가 존재하더라도 덮어쓰기 된다. ☆
                 geo.addLocation(socketUserId, {latitude: lat, longitude: lng}, (error, reply) => {
                     if (error) console.error(error);
-                    // else console.log(`add Location : ${reply}`);
                 })
             } catch (error) {
                 console.log(`${req.method} ${req.originalUrl} : ${error.message}`);
             }
         })
 
+        //사용자의 검색 반경을 지정한다.
         socket.on("changeDistance", (distanceData) => {
             try {
                 Joi.socketDistanceSchema.validateAsync(distanceData)
@@ -120,14 +121,13 @@ module.exports = (server, app) => {
                         const {distance} = result;
                         if (distance <= MAX_DISTANCE)
                             radiusDistance = distance
-                        // console.log(`${socket.id} : ${radiusDistance}`);
                     })
             } catch (error) {
                 console.log(`${req.method} ${req.originalUrl} : ${error.message}`);
             }
         })
 
-        // 3초마다 클라이언트로 모든 유저의 위치 전송
+        // 3초마다 접속한 클라이언트로 지정한 반경 이내에 존재하는 다른 유저의 위치정보를 전송
         // GEORADIUSBYMEMBER geo:locations 1 5000 m WITHCOORD ASC
         socket.interval = setInterval(() => {
             // GEORADIUSBYMEMBER의 member룰 숫자로 정의할 경우 형식 에러가 발생한다.
@@ -137,6 +137,7 @@ module.exports = (server, app) => {
             })
         }, 3000);
 
+        //Location 소켓 접속 종료 시
         socket.on("disconnect", () => {
             delete loginUser[socketUserId]
             console.log("Location Socket Client Disconnect / IP :", ip, socketUserId);
@@ -144,11 +145,13 @@ module.exports = (server, app) => {
             clearInterval(socket.interval);
         })
 
+        //Location 소켓 에러 발생 시
         socket.on("error", (error) => {
             console.error(error);
         })
     });
 
+    // 모임 리스트 네임 스페이스
     room.on("connect", (socket) => {
         const req = socket.request;
         const ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
@@ -165,8 +168,9 @@ module.exports = (server, app) => {
     })
 
 
-    chat.use(socketAuthMiddleWareChat)
-    chat.on("connect", async (socket) => {
+    
+    chat.use(socketAuthMiddleWareChat) 
+    chat.on("connect", async (socket) => { // 대화방 네임 스페이스
         const req = socket.request; // Request
         const {userId: socketUserId, nickname} = socket.user
 
@@ -178,9 +182,6 @@ module.exports = (server, app) => {
         }
         loginChatUser[postId][socketUserId] = socket.id
         io.loginChatUser = loginChatUser;
-
-        // // 이전에 접속한 유저의 연결을 종료합니다.
-        // await io.in(loginUser[socketUserId]).fetchSockets();
 
         console.log('chat Socket Connect', ip, postId);
         socket.join(postId); //postId를 기준으로 socket 방을 join 한다.
