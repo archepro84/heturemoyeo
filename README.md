@@ -14,7 +14,7 @@ https://moyeora.org
 
 
 ## 1. 개발 인원
-- 이용우 (Node.js) @ [archepro84](https://github.com/archepro84)
+- 이용우 (Node.js)[팀장] @ [archepro84](https://github.com/archepro84)
 - 이해웅 (Node.js) @ [HW3542](https://github.com/HW3542)
 - 임관식 (Node.js) @ [gwansiklim](https://github.com/gwansiklim)
 - 주재인 (React) @ []()
