@@ -95,7 +95,7 @@ https://docs.google.com/spreadsheets/d/11TuiaIZ62mFtalb1SdkpFQVbLejM8pN0hRjcK1ke
 
 
 <br><br>
-### 2) 부하 테스트
+### 2) Express API 부하 테스트
 
 #### 발생한 문제
 - 현재 서버가 버틸 수 있는 부하량을 확인하여, 적절한 서버의 구성이 필요하다고 생각하였습니다.
@@ -106,8 +106,23 @@ https://docs.google.com/spreadsheets/d/11TuiaIZ62mFtalb1SdkpFQVbLejM8pN0hRjcK1ke
 
 ![헤쳐모여 리드 미 부하 테스트 결과](https://user-images.githubusercontent.com/49636918/131679620-aab58342-ca5b-49ca-9f5d-3f38d6c395d3.png)
 
+
+### 3) Socket 부하 테스트
+
+#### 발생한 문제
+- 현재 서버가 버틸 수 있는 부하량을 확인하여, 적절한 서버의 구성이 필요하다고 생각하였습니다.
+- 실시간으로 사용자의 위치를 입력 및 조회하는 기능의 한도를 확인할 수 있어야 안전한 서버 구현이 가능할 것으로 생각하였습니다.
+
+#### 개선 방법
+- Artillery 모듈에서는 Socket.Io-v3의 Header를 지원하지 않아 사용자 인증을 받을 수 없었습니다.
+- 차선책으로 자체 제작한 더미 소켓 클라이언트를 생성하여 테스트하였습니다.
+- 1,000명의 소켓을 테스트했을 때 EC2: 20%, Redis: 9%의 CPU 할당량을 보였습니다.
+- 1,000명의 소켓을 테스트했을 때 Redis의 메모리 할당량이 1%에서 1.6%로 상승하였습니다.
+
+![헤쳐모여 소켓 부하 테스트](https://user-images.githubusercontent.com/49636918/132089052-e0eaf4a3-c515-4457-9053-92ff207f1dcf.png)
+
 <br><br>
-### 3) 테스트 코드 구성
+### 4) 테스트 코드 구성
 
 #### 발생한 문제
 - 팀원들이 동시에 코드를 수정하게 될 경우, 변경되는 사항이 일치하지 않아 오류가 발생하였습니다.
@@ -118,7 +133,7 @@ https://docs.google.com/spreadsheets/d/11TuiaIZ62mFtalb1SdkpFQVbLejM8pN0hRjcK1ke
 - Joi Schema부터 모든 API에 이르기까지 Jest를 이용해 테스트 코드를 생성하였습니다.
 
 <br><br>
-### 4) 모노리틱 아키텍처 벗어나기
+### 5) 모노리틱 아키텍처 벗어나기
 
 #### 발생한 문제
 - EC2 단일 서버에서 Express.js, MySQL, Redis를 사용하여 많은 부하가 발생하였습니다.
@@ -130,7 +145,7 @@ https://docs.google.com/spreadsheets/d/11TuiaIZ62mFtalb1SdkpFQVbLejM8pN0hRjcK1ke
 - 부하 테스트를 진행하였을 때 견딜 수 있는 부하량이 늘어났고, 서버의 안정성을 확보할 수 있었습니다.
 
 <br><br>
-### 5) 서버 모니터링 구성
+### 6) 서버 모니터링 구성
 
 #### 발생한 문제
 - 모니터링을 진행할 때 서버에 접속된 상황에서만 서버의 상태를 조회할 수 있었습니다.
