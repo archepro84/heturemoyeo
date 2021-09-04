@@ -1,20 +1,28 @@
 # ✏️항해 최종 프로젝트 - Backend
-## 웹사이트 주소
-https://moyeora.org  
-<br><br>
 ![헤쳐모여](https://user-images.githubusercontent.com/47944165/131612195-a6ef2741-f344-4c67-9e07-84e8d2f0b7df.png)
 
+<br>
 
-## 프로젝트 소개
-실시간 위치 기반 소모임 플랫폼!
+## 🏠 [Home Page](https://moyeora.org) / [Youtube](https://youtu.be/MpwPiutwqaY)
+- 주변 사람들을 손쉽게 만나고 소통하기 위한, 실시간 위치기반 소모임 플랫폼!
+<br>
 
 
-## 프로젝트 기간
+
+## 🚩 프로젝트 소개
+#### 실시간 위치 기반 소모임 플랫폼!
+
+ - 👫 우리동네, 같은 취미를 가진 사람을 만나고 싶으신가요?
+ - 🗺 사소한 일상에서부터 다양하고 색다른 경험까지 찾을 수 있는 곳!
+ - 🎮당신과의 만남을 기다리고 있는 이웃을 만나보세요.
+
+
+## 🗓 프로젝트 기간
 2021년 7월 23일 ~ 2021년 9월 02일
 
 
-## 1. 개발 인원
-- 이용우 (Node.js)[팀장] @ [archepro84](https://github.com/archepro84)
+## 👥 개발 인원
+- 이용우 (Node.js) [팀장] @ [archepro84](https://github.com/archepro84)
 - 이해웅 (Node.js) @ [HW3542](https://github.com/HW3542)
 - 임관식 (Node.js) @ [gwansiklim](https://github.com/gwansiklim)
 - 주재인 (React) @ []()
@@ -24,7 +32,7 @@ https://moyeora.org
 - 정지우 (디자이너)
 
 
-## 2. 기술스텍
+## 🛠 기술스텍
 
 Front | Back
 ---|:---:
@@ -36,50 +44,53 @@ Socket.io | Socket.io
 카카오맵 API | 카카오맵 API
 
 
-## 3. 사용 라이브러리
+## 📖 라이브러리
 
 라이브러리 | 설명
 ---|:---:
-aws-sdk | AWS 서비스 호출
-cookie-parser | 쿠키 저장
-cors | 교차 리소스 공유
-cypto-js | 비밀번호 암호화
-dotenv | 환경변수 관리
-express | 서버
-express-session | 세션 관리
-joi | 입력데이터 검출
-jsonwebtoken | 서명 암호화
-morgan | Http Log 기록
-nunjucks | 템플릿 언어
-chokidar | 파일 감시 라이브러리
-redis | 캐시 메모리 DB 관리
-georedis | 위치 정보 관리
-request | 외부 API 요청
-mysql | MySQL
-sequelize | MySQL ORM
-sequelize-cli | MySQL ORM Console
-socket.io | Socket 통신
-swagger-ui-express | API 문서화
-artillery | 서버 부하 테스트
+<img src='https://img.shields.io/badge/cookie--parser-1.4.5-lightgrey'>  | 쿠키 저장
+<img src='https://img.shields.io/badge/cors-2.8.5-lightgrey'> | 교차 리소스 공유
+<img src='https://img.shields.io/badge/crypto--js-4.1.1-lightgrey'> | 비밀번호 암호화
+<img src='https://img.shields.io/badge/dotenv-10.0.0-lightgrey'>  | 환경변수 관리
+<img src='https://img.shields.io/badge/express-4.17.1-lightgrey'> | 서버
+<img src='https://img.shields.io/badge/express--session-1.17.2-lightgrey'> | 세션 관리
+<img src='https://img.shields.io/badge/joi-17.4.1-lightgrey'>  | 입력데이터 검출
+<img src='https://img.shields.io/badge/jsonwebtoken-8.5.1-lightgrey'>  | 서명 암호화
+<img src='https://img.shields.io/badge/morgan-1.10.0-lightgrey'> | Http Log 기록
+<img src='https://img.shields.io/badge/nunjucks-3.2.3-lightgrey'> | 템플릿 언어
+<img src='https://img.shields.io/badge/chokidar-2.8.5-lightgrey'> | 파일 감시 라이브러리
+<img src='https://img.shields.io/badge/redis-3.1.2-lightgrey'>  | 캐시 메모리 DB 관리
+<img src='https://img.shields.io/badge/georedis-3.1.3-lightgrey'>  | 위치 정보 관리
+<img src='https://img.shields.io/badge/request-2.88.2-lightgrey'> | 외부 API 요청
+<img src='https://img.shields.io/badge/mysql-2.18.1-lightgrey'> | MySQL
+<img src='https://img.shields.io/badge/sequelize-6.6.5-lightgrey'>  | MySQL ORM
+<img src='https://img.shields.io/badge/sequelize--cli-6.2.0-lightgrey'> | MySQL ORM Console
+<img src='https://img.shields.io/badge/socket.io-4.2.0-lightgrey'> | Socket 통신
+<img src='https://img.shields.io/badge/jest-27.0.6-lightgrey'>  | 테스트 코드
+<img src='https://img.shields.io/badge/swagger--ui--express-4.1.6-lightgrey'> | API 문서화
+<img src='https://img.shields.io/badge/artillery-1.7.7-lightgrey'> | 서버 부하 테스트
+
 
 <br>
 
-## 4. 아키텍처
+## 📚 프로젝트 아키텍처
 ![헤쳐모여 아키텍처](https://user-images.githubusercontent.com/49636918/131686936-176aa7b7-e40f-4ee4-a5de-c0ef1000c138.png)
 
 <br>
 
-## 5. DB ERD
+## 🗃 DB ERD
 ![drawSQL-export-2021-09-01_22_37](https://user-images.githubusercontent.com/49636918/131681338-538513a2-1272-479b-92c3-6b95ce49420e.png)
 
 <br>
 
-## 6. API Document
-https://docs.google.com/spreadsheets/d/11TuiaIZ62mFtalb1SdkpFQVbLejM8pN0hRjcK1keJn0/edit?usp=sharing  
+## 📋 [API Document](https://docs.google.com/spreadsheets/d/11TuiaIZ62mFtalb1SdkpFQVbLejM8pN0hRjcK1keJn0/edit?usp=sharing)
 
-<br>
+## 📂 [Notion](https://www.notion.so/99-9-b3c6d3acc4cd489d8abda6c0b7f3c714)
 
-## 7. 코드 리뷰 및 개선사항
+## 🔨 [Front-End Git hub](https://github.com/demian0721/heturemoyeo)
+
+
+## 📌 코드 리뷰 및 개선사항
 
 
 ### 1) Socket GeoRedis 연산 부하 문제 
@@ -160,16 +171,3 @@ https://docs.google.com/spreadsheets/d/11TuiaIZ62mFtalb1SdkpFQVbLejM8pN0hRjcK1ke
 
 
 <br><br>
-## 8. Notion
-https://www.notion.so/99-9-b3c6d3acc4cd489d8abda6c0b7f3c714
-
-<br>
-
-## 9. Front-End Git hub
-https://github.com/demian0721/heturemoyeo
-
-<br>
-
-## 10. Youtube
-https://www.youtube.com/watch?v=MpwPiutwqaY&t=48s
-<br>
