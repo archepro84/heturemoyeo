@@ -81,7 +81,7 @@ Socket.io | Socket.io
 
 ## 📋 [API Document](https://docs.google.com/spreadsheets/d/11TuiaIZ62mFtalb1SdkpFQVbLejM8pN0hRjcK1keJn0/edit?usp=sharing)
 
-## 📂 [프로젝트 기록](https://www.notion.so/99-9-b3c6d3acc4cd489d8abda6c0b7f3c714)
+## 📂 [Project Board](https://www.notion.so/99-9-b3c6d3acc4cd489d8abda6c0b7f3c714)
 
 ## 🔨 [Front-End Git hub](https://github.com/demian0721/heturemoyeo)
 
