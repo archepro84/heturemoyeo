@@ -21,14 +21,14 @@
 - 이용우 (Node.js) [팀장] @ [archepro84](https://github.com/archepro84)
 - 이해웅 (Node.js) @ [HW3542](https://github.com/HW3542)
 - 임관식 (Node.js) @ [gwansiklim](https://github.com/gwansiklim)
-- 주재인 (React) @ []()
-- 황준연 (React) @ []()
-- 김유진 (React) @ []()
+- 주재인 (React) @ [joonior99](https://github.com/joonior99)
+- 황준연 (React) @ [yoojin-kim90](https://github.com/yoojin-kim90)
+- 김유진 (React) @ [demian0721](https://github.com/demian0721)
 - 서정화 (디자이너)
 - 정지우 (디자이너)
 
 
-## 🛠 기술스텍
+## 🛠 기술스택
 
 Front | Back
 ---|:---:
@@ -81,7 +81,7 @@ Socket.io | Socket.io
 
 ## 📋 [API Document](https://docs.google.com/spreadsheets/d/11TuiaIZ62mFtalb1SdkpFQVbLejM8pN0hRjcK1keJn0/edit?usp=sharing)
 
-## 📂 [Notion](https://www.notion.so/99-9-b3c6d3acc4cd489d8abda6c0b7f3c714)
+## 📂 [프로젝트 기록](https://www.notion.so/99-9-b3c6d3acc4cd489d8abda6c0b7f3c714)
 
 ## 🔨 [Front-End Git hub](https://github.com/demian0721/heturemoyeo)
 
