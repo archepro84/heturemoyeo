@@ -1,4 +1,4 @@
-# ✏️항해 최종 프로젝트 - Backend
+# ✏️ 헤쳐모여! - Backend
 ![헤쳐모여](https://user-images.githubusercontent.com/47944165/131612195-a6ef2741-f344-4c67-9e07-84e8d2f0b7df.png)
 
 
