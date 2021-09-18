@@ -38,11 +38,11 @@ module.exports = (server, app) => {
         '6': {latitude: 37.561851, longitude: 126.944231},
         '7': {latitude: 37.559209, longitude: 126.939785},
         '8': {latitude: 37.5663129, longitude: 126.9316755},
-        '11': {latitude: 35.867960744332244, longitude: 128.6352843455837}, //마 보노 유치원
+        '11': {latitude: 35.867960744332244, longitude: 128.6352843455837}, // 범어 유치원
         '12': {latitude: 35.8663227899076, longitude: 128.63512890641002}, // 새범어
-        '13': {latitude: 35.86514753509743, longitude: 128.63606790888352}, //비성 빌라
-        '14': {latitude: 35.86529023619457, longitude: 128.63485306412625}, //약국
-        '15': {latitude: 35.86717621007772, longitude: 128.63068483731408}, //LPG
+        '13': {latitude: 35.86514753509743, longitude: 128.63606790888352}, // 비성 빌라
+        '14': {latitude: 35.86529023619457, longitude: 128.63485306412625}, // 약국
+        '15': {latitude: 35.86717621007772, longitude: 128.63068483731408}, // LPG
         '16': {latitude: 35.86517136691063, longitude: 128.6336549866826}, // 인생의 갈림길
 
         '20': {latitude: 35.85618567277376, longitude: 128.63275935627814}, // 대구 KBS
@@ -73,12 +73,12 @@ module.exports = (server, app) => {
         const req = socket.request;
         const ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
         const {userId: socketUserId} = socket.user;
-        const MAX_DISTANCE = 700000;
-        let radiusDistance = 700000;
+        const MAX_DISTANCE = 700000; // 700km
+        let radiusDistance = 700000; // 700km
         console.log('Location Socket Connect / IP :', ip, socket.id);
         console.log(socketUserId);
 
-        if (loginUser[socketUserId]) {
+        if (loginUser[socketUserId]) { // 중복 로그인 방지
             console.log(`Duplicatie Socket Id : ${loginUser[socketUserId]}, ${socket.id}`);
 
             // 이전에 접속한 유저에게 연결을 종료한다는 메시지를 보냅니다.
@@ -92,8 +92,10 @@ module.exports = (server, app) => {
             // 로그인 중인 유저 목록에서 접속중인 유저를 삭제합니다.
             delete loginUser[socketUserId]
             return;
+            // return == await location.to(socket.id).disconnectSockets();
         }
 
+        // loginUser = { 1:8AC2AF3174, 2:63f2ab23, }
         loginUser[socketUserId] = socket.id
 
         //사용자의 위치정보를 지정된 시간마다 가져온다.
@@ -103,6 +105,8 @@ module.exports = (server, app) => {
 
                 // Redis의 geo:locations 만료시간을 기록하는 별도의 테이블을 생성한다.
                 redisClient.ZADD('geo:locations:expire', new Date().getTime(), socketUserId)
+                // geo:locations:expires = {};
+                // geo:locations:expires[socketUserId] = new Date().getTime();
 
                 // Redis 내부에 geo:locations에 이미 데이터가 존재하더라도 덮어쓰기 된다. ☆
                 geo.addLocation(socketUserId, {latitude: lat, longitude: lng}, (error, reply) => {
@@ -119,8 +123,7 @@ module.exports = (server, app) => {
                 Joi.socketDistanceSchema.validateAsync(distanceData)
                     .then((result) => {
                         const {distance} = result;
-                        if (distance <= MAX_DISTANCE)
-                            radiusDistance = distance
+                        if (distance <= MAX_DISTANCE) radiusDistance = distance
                     })
             } catch (error) {
                 console.log(`${req.method} ${req.originalUrl} : ${error.message}`);
@@ -168,8 +171,7 @@ module.exports = (server, app) => {
     })
 
 
-    
-    chat.use(socketAuthMiddleWareChat) 
+    chat.use(socketAuthMiddleWareChat)
     chat.on("connect", async (socket) => { // 대화방 네임 스페이스
         const req = socket.request; // Request
         const {userId: socketUserId, nickname} = socket.user
